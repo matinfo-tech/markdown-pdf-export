@@ -22,6 +22,7 @@ export default defineConfig({
 
     nav: [
       { text: "Guide", link: "/guide/getting-started" },
+      { text: "Configurator", link: "/configurator" },
       { text: "Reference", link: "/reference/settings" },
       { text: "Examples", link: "/examples/quick-templates" },
       {
@@ -73,6 +74,7 @@ export default defineConfig({
           text: "Configuration",
           items: [
             { text: "Global Settings", link: "/guide/global-settings" },
+            { text: "Configurator", link: "/configurator" },
             { text: "Front Matter", link: "/guide/front-matter" },
             { text: "Custom Styling", link: "/guide/custom-styling" },
           ],
