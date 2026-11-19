@@ -611,7 +611,12 @@ async function createMarkdown(options) {
   if (options.math) {
     try {
       const katex = await getKatexPlugin();
+      // Inject our own katex so the rendered markup and the stylesheet
+      // (vendor/katex-inline.css, built from the same package) always match.
+      // The plugin's bundled katex is pinned to an older release line.
+      const katexModule = await import("katex");
       md.use(katex, {
+        katex: katexModule.default ?? katexModule,
         throwOnError: options.math_options.throw_on_error,
         errorColor: options.math_options.error_color,
         macros: options.math_options.macros,
