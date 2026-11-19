@@ -1,6 +1,6 @@
-# Zed Task
+# Zed
 
-A Zed task runs the exporter on the file you have open. It needs no extension and no AI assistant:
+In Zed, a task runs the exporter on the file you have open. It needs no extension and no AI assistant:
 you trigger it from the command palette or with a key.
 
 ## Add the Task

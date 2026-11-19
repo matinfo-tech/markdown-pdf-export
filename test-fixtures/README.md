@@ -171,7 +171,7 @@ Nothing is downloaded automatically. The server uses Google Chrome, then
 Microsoft Edge, then Playwright's Chromium if present. If none is found, the
 doctor step prints a warning with the hint, and the export scenarios fail with
 `No usable Chrome/Chromium browser found.` Install Chrome or Edge, set
-`MARKDOWN_PDF_BROWSER`, or run `node cli.mjs install-browser` (~150 MB) from
+`MARKDOWN_PDF_BROWSER`, or run `node cli.mjs install-browser` (~200 MB) from
 the repository root.
 
 ### A scenario fails with "output too small"

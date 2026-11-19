@@ -676,12 +676,17 @@ async function createMarkdown(options) {
 // A browser is NEVER downloaded implicitly — see installBrowser().
 export const INSTALL_BROWSER_HINT = "npx -y markdown-pdf-export install-browser";
 
+// Playwright's own Chromium. `install-browser` installs the full browser
+// (`--no-shell`), which is selected with channel "chromium"; plain `{}` is the
+// separate headless-shell build, tried last in case only that one is present.
+const PLAYWRIGHT_CHROMIUM = [{ channel: "chromium" }, {}];
+
 function browserCandidates() {
   const override = (process.env.MARKDOWN_PDF_BROWSER ?? "").trim();
   if (!override) {
-    return [{ channel: "chrome" }, { channel: "msedge" }, {}];
+    return [{ channel: "chrome" }, { channel: "msedge" }, ...PLAYWRIGHT_CHROMIUM];
   }
-  if (override === "chromium") return [{}];
+  if (override === "chromium") return PLAYWRIGHT_CHROMIUM;
   if (/^(chrome|msedge)(-(beta|dev|canary))?$/.test(override)) {
     return [{ channel: override }];
   }
@@ -713,7 +718,7 @@ export async function launchBrowser() {
     `No usable Chrome/Chromium browser found.\n` +
     `Tried:\n  ${failures.join("\n  ")}\n` +
     `Install Google Chrome or Microsoft Edge, set MARKDOWN_PDF_BROWSER to a ` +
-    `browser executable, or download Playwright's Chromium (~150 MB) with:\n` +
+    `browser executable, or download Playwright's Chromium (~200 MB) with:\n` +
     `  ${INSTALL_BROWSER_HINT}`;
   debugLog(message);
   throw new Error(message);
@@ -722,10 +727,9 @@ export async function launchBrowser() {
 /** Explicit, user-initiated download of Playwright's Chromium. */
 export async function installBrowser({ onOutput } = {}) {
   const { spawn } = await import("node:child_process");
-  const { createRequire } = await import("node:module");
-  const playwrightCliPath = createRequire(import.meta.url).resolve(
-    "playwright-core/cli.js",
-  );
+  // playwright-core's "exports" map does not expose ./cli.js, so locate the
+  // package directory through its package.json and join the path.
+  const playwrightCliPath = path.join(packageDir("playwright-core"), "cli.js");
 
   await new Promise((resolve, reject) => {
     const proc = spawn(

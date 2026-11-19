@@ -4,7 +4,7 @@
  *
  *   markdown-pdf-export <file.md> [options]   export a file
  *   markdown-pdf-export doctor [file.md]      check browser + settings
- *   markdown-pdf-export install-browser       download Playwright's Chromium (~150 MB)
+ *   markdown-pdf-export install-browser       download Playwright's Chromium (~200 MB)
  *   markdown-pdf-export mcp                   run as an MCP server on stdio
  *
  * Export options are generated from the same JSON schema the MCP tool uses
@@ -199,7 +199,7 @@ async function main(argv) {
   }
 
   if (first === "install-browser") {
-    process.stderr.write("Downloading Chromium (~150 MB)…\n");
+    process.stderr.write("Downloading Chromium (~200 MB)…\n");
     await installBrowser({ onOutput: (text) => process.stderr.write(text) });
     process.stderr.write("Chromium installed.\n");
     return 0;

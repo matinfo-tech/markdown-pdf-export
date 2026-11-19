@@ -1,7 +1,8 @@
 # Command Line
 
-`markdown-pdf-export` is a regular command-line tool. The [Zed task](/guide/zed-task) is this command
-with the current file as its argument, so everything on this page also applies to a task's `args`.
+`markdown-pdf-export` is a regular command-line tool. The [VS Code](/guide/vscode) or
+[Zed](/guide/zed-task) task is this command with the current file as its argument, so everything on
+this page also applies to a task's `args`.
 
 ## Usage
 
@@ -25,7 +26,7 @@ npx -y markdown-pdf-export doc.md -o out.pdf --math --toc --page-format Letter
 |---------|--------------|
 | `<file.md> [options]` | Export one Markdown file to PDF |
 | `doctor [file.md]` | Print browser status and the active settings as JSON. The optional file is used to resolve relative paths in settings. |
-| `install-browser` | Download Playwright's Chromium (~150 MB). Only needed if no Chromium-based browser is installed — see [Browser](/guide/browser). |
+| `install-browser` | Download Playwright's Chromium (~200 MB). Only needed if no Chromium-based browser is installed — see [Browser](/guide/browser). |
 | `mcp` | Start the MCP server on stdio — see [AI Assistant (MCP)](/guide/mcp) |
 
 `--help` (`-h`) prints the usage and all options; `--version` (`-v`) prints the version.
@@ -159,6 +160,7 @@ markdown-pdf-export README.md -o dist/README.pdf
 
 ## Next Steps
 
-- [Zed Task](/guide/zed-task) — run this command from Zed
+- [VS Code](/guide/vscode) — run this command from VS Code
+- [Zed](/guide/zed-task) — run this command from Zed
 - [Browser](/guide/browser) — which browsers work and why
 - [Settings Reference](/reference/settings) — every setting

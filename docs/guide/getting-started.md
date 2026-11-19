@@ -4,21 +4,22 @@ Markdown PDF exports Markdown files to high-quality PDFs using Playwright and Ch
 
 It is an npm package, `markdown-pdf-export`, that contains a **command-line tool** and an
 **MCP server**. It is not tied to one editor: anything that can run a command on the current file or
-register an MCP server can use it. These pages use Zed for the examples — there you run the command
-as a task, or let the AI assistant call the MCP server, with no extension to install. For VS Code,
-JetBrains, Vim/Neovim, Claude Code, Claude Desktop and Cursor, see
+register an MCP server can use it. These pages give the examples for VS Code first and Zed second —
+in both you run the command as a task, or let the AI assistant call the MCP server, with no extension
+to install. For JetBrains, Vim/Neovim, Claude Code, Claude Desktop and Cursor, see
 [Other Editors & MCP Clients](/guide/other-editors).
 
-## Three Ways to Use It
+## Ways to Use It
 
 | | How you trigger an export | Guide |
 |---|---|---|
-| **Zed task** | **task: spawn** or a key binding, on the open file | [Zed Task](/guide/zed-task) |
-| **AI assistant** | Ask the assistant: "Export this file to PDF" | [AI Assistant (MCP)](/guide/mcp) |
+| **VS Code task** | **Tasks: Run Task** or a key binding, on the open file | [VS Code](/guide/vscode) |
+| **Zed task** | **task: spawn** or a key binding, on the open file | [Zed](/guide/zed-task) |
+| **AI assistant** | Ask the assistant (VS Code, Zed, Claude, Cursor…): "Export this file to PDF" | [AI Assistant (MCP)](/guide/mcp) |
 | **Command line** | `npx -y markdown-pdf-export doc.md` in a terminal, script or CI job | [Command Line](/guide/cli) |
-| **Another editor or MCP client** | A VS Code / JetBrains / Vim command, or any MCP client | [Other Editors & MCP Clients](/guide/other-editors) |
+| **Another editor or MCP client** | A JetBrains / Vim command, or any MCP client | [Other Editors & MCP Clients](/guide/other-editors) |
 
-All three run the same exporter and read the same settings, so everything in the rest of this guide
+All of them run the same exporter and read the same settings, so everything in the rest of this guide
 applies to each of them.
 
 ## Requirements
@@ -32,7 +33,7 @@ There is no install step: `npx` downloads the package on first use. See
 
 ## Features
 
-- **Zed integration** — run it as a task or from the AI assistant (MCP)
+- **Editor integration** — VS Code and Zed tasks, or any AI assistant over MCP
 - **Structured headers & footers** — declarative configuration with zones and typed elements
 - **Custom placeholders** — use front matter variables in headers/footers
 - **Date formatting** — flexible date-fns patterns
@@ -44,7 +45,7 @@ There is no install step: `npx` downloads the package on first use. See
 
 ## How It Works
 
-1. You run the Zed task, the CLI, or ask the AI assistant to export a Markdown file
+1. You run the editor task (VS Code or Zed), the CLI, or ask the AI assistant to export a Markdown file
 2. The exporter parses the Markdown and any front matter configuration
 3. HTML is generated with syntax highlighting and emoji rendering
 4. Chromium, driven through Playwright, converts the HTML to PDF
@@ -59,7 +60,7 @@ npx -y markdown-pdf-export report.md
 npx -y markdown-pdf-export report.md --orientation landscape --display-header-footer
 ```
 
-In Zed, run the *Markdown: Export to PDF* task on the open file, or ask the assistant:
+In VS Code or Zed, run the *Markdown: Export to PDF* task on the open file, or ask the assistant:
 
 ```
 Export this file to PDF
@@ -105,7 +106,7 @@ pdf:
 ## Next Steps
 
 - [Installation](/guide/installation) — requirements and how the package is fetched
-- [Zed Task](/guide/zed-task), [AI Assistant (MCP)](/guide/mcp), [Command Line](/guide/cli) — set up
-  the way you want to use it
+- [VS Code](/guide/vscode), [Zed](/guide/zed-task), [AI Assistant (MCP)](/guide/mcp),
+  [Command Line](/guide/cli) — set up the way you want to use it
 - [First Export](/guide/first-export) — your first PDF
 - [Header & Footer](/guide/header-footer) — configure headers and footers

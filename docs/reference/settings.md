@@ -14,7 +14,29 @@ Settings are a plain JSON object. Keep it in a file, for example
 }
 ```
 
-Then point Markdown PDF at that file. Use an absolute path (`~` is not expanded).
+Then point Markdown PDF at that file. Use an absolute path (`~` is not expanded); in a VS Code task,
+`${userHome}` expands to your home folder.
+
+**VS Code task** — add `options.env` to the task in `tasks.json`:
+
+```json
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Markdown: Export to PDF",
+      "type": "shell",
+      "command": "npx",
+      "args": ["-y", "markdown-pdf-export", "${file}"],
+      "options": {
+        "env": { "MARKDOWN_PDF_SETTINGS": "${userHome}/.config/markdown-pdf/settings.json" }
+      },
+      "presentation": { "reveal": "silent" },
+      "problemMatcher": []
+    }
+  ]
+}
+```
 
 **Zed task** — add `env` to the task in `tasks.json`:
 
@@ -31,7 +53,24 @@ Then point Markdown PDF at that file. Use an absolute path (`~` is not expanded)
 ]
 ```
 
-**MCP server** — add `env` to the `context_servers` entry in Zed's `settings.json`:
+**MCP server in VS Code** — add `env` to the `mcpServers` entry (see
+[VS Code](/guide/vscode#ai-assistant-mcp)). `${userHome}` is a tasks variable; write the full path
+here:
+
+```json
+{
+  "mcpServers": {
+    "markdown-pdf": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "markdown-pdf-export", "mcp"],
+      "env": { "MARKDOWN_PDF_SETTINGS": "/Users/me/.config/markdown-pdf/settings.json" }
+    }
+  }
+}
+```
+
+**MCP server in Zed** — add `env` to the `context_servers` entry in Zed's `settings.json`:
 
 ```json
 {

@@ -3,9 +3,12 @@
 `markdown-pdf-export` is not tied to one editor. It is a command-line tool and a standard MCP server
 (stdio), so it works anywhere you can run a command on the current file or register an MCP server.
 
-Zed is the editor this project is developed with, and has its own pages: [Zed Task](/guide/zed-task)
-and [AI Assistant (MCP)](/guide/mcp). The snippets below follow each tool's documented configuration
-format; the project has not tested every one of them. The exporter behind them is the same.
+VS Code and Zed have their own pages: [VS Code](/guide/vscode) and [Zed](/guide/zed-task). This page
+covers JetBrains IDEs, Vim/Neovim, Claude Code, Claude Desktop, Cursor and generic MCP clients.
+
+The project is developed with Zed and documents VS Code as the main target; the snippets on this page
+follow each tool's documented format and have not all been tested. The exporter behind them is the
+same.
 
 Requirements are the same everywhere: Node.js 20 or newer and a Chromium-based browser
 (see [Browser](/guide/browser)).
@@ -13,28 +16,6 @@ Requirements are the same everywhere: Node.js 20 or newer and a Chromium-based b
 ## Run It on the Current File
 
 Any editor that can run a shell command with the current file path can export with one key press.
-
-### VS Code
-
-Add a task to `.vscode/tasks.json` (or to your user tasks):
-
-```json
-{
-  "version": "2.0.0",
-  "tasks": [
-    {
-      "label": "Markdown: Export to PDF",
-      "type": "shell",
-      "command": "npx",
-      "args": ["-y", "markdown-pdf-export", "${file}"],
-      "presentation": { "reveal": "silent" },
-      "problemMatcher": []
-    }
-  ]
-}
-```
-
-Run it with **Tasks: Run Task**.
 
 ### JetBrains IDEs
 
@@ -93,22 +74,6 @@ Both use the same `mcpServers` shape — in `claude_desktop_config.json` for Cla
 }
 ```
 
-### VS Code
-
-In `.vscode/mcp.json`:
-
-```json
-{
-  "servers": {
-    "markdown-pdf": {
-      "type": "stdio",
-      "command": "npx",
-      "args": ["-y", "markdown-pdf-export", "mcp"]
-    }
-  }
-}
-```
-
 ### Any Other MCP Client
 
 Register a stdio server with command `npx` and arguments `-y markdown-pdf-export mcp`.
@@ -126,6 +91,7 @@ Register a stdio server with command `npx` and arguments `-y markdown-pdf-export
 
 ## Next Steps
 
+- [VS Code](/guide/vscode) and [Zed](/guide/zed-task) — the two editors with their own pages
 - [Command Line](/guide/cli) — every option
 - [Global Settings](/guide/global-settings) — defaults for all exports
 - [First Export](/guide/first-export)

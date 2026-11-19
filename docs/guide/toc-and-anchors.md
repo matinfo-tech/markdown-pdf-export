@@ -19,8 +19,8 @@ In your settings file (see [Global Settings](/guide/global-settings#configuratio
 > on its own.
 
 For a single export — CLI: `--toc` (or `--heading-anchors` for anchors only; add it to the `args` of a
-[Zed task](/guide/zed-task)), or ask the assistant: `Export this file to PDF with a table of contents`.
-TOC options go in `--toc-options '<json>'`.
+[VS Code](/guide/vscode) or [Zed](/guide/zed-task) task), or ask the assistant:
+`Export this file to PDF with a table of contents`. TOC options go in `--toc-options '<json>'`.
 
 ## Usage
 
