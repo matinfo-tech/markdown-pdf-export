@@ -22,13 +22,15 @@
     "default.css",
     "lib/*.mjs",
     "templates/",
+    "schema/",
     "vendor/"
   ],
   "scripts": {
     "check": "node --check export.mjs && node --check mcp.mjs && node --check cli.mjs && node --check tool-schemas.mjs",
     "lint": "eslint .",
-    "build": "npm run check && node scripts/bundle-katex-css.mjs",
+    "build": "npm run check && node scripts/bundle-katex-css.mjs && node scripts/build-settings-schema.mjs --check",
     "build:katex-css": "node scripts/bundle-katex-css.mjs",
+    "build:schema": "node scripts/build-settings-schema.mjs",
     "prepack": "npm run build",
     "test": "node --test lib/__tests__/*.test.mjs",
     "test:export": "node test-fixtures/test-export.mjs",
@@ -82,6 +84,7 @@
   "packageManager": "npm@11.12.1",
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "ajv": "^8.20.0",
     "eslint": "^10.15.0",
     "globals": "^17.14.0"
   },
