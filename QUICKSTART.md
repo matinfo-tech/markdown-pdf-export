@@ -161,7 +161,7 @@ Chromium if you installed it. Nothing is downloaded automatically. If no browser
 fails with `No usable Chrome/Chromium browser found.` and a hint. Either install Chrome/Edge or run once:
 
 ```bash
-npx -y markdown-pdf-export install-browser   # ~150 MB
+npx -y markdown-pdf-export install-browser   # ~200 MB
 ```
 
 Firefox and Safari users only need one Chromium-based browser installed alongside, or that one-time

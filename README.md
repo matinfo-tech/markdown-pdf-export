@@ -193,7 +193,7 @@ So any Chromium-based browser works:
 - Then **Playwright's own Chromium**, if you installed it. Nothing is downloaded unless you ask for it:
 
   ```sh
-  npx -y markdown-pdf-export install-browser   # optional, ~150 MB
+  npx -y markdown-pdf-export install-browser   # optional, ~200 MB
   ```
 
 - **Other Chromium-based browsers** (Brave, Vivaldi, Chromium builds, …) can be used by setting
@@ -206,7 +206,7 @@ Edge channel variants `chrome-beta`, `chrome-dev`, `chrome-canary`, `msedge-beta
 `msedge-canary` are also accepted.
 
 If you use Firefox or Safari, you only need one Chromium-based browser installed alongside, or the
-one-time `install-browser` download (~150 MB). Your default browser is not changed or used.
+one-time `install-browser` download (~200 MB). Your default browser is not changed or used.
 More: [Browser guide](https://matinfo.github.io/markdown-pdf-export/guide/browser).
 
 ### Why not a Zed extension?
@@ -717,7 +717,7 @@ active settings, and the package directory in one call.
 
 The exporter needs a Chromium-based browser (see [Browser](#browser)) and does not download one on its
 own. Install Google Chrome or Microsoft Edge, point `MARKDOWN_PDF_BROWSER` at a browser (`chrome`,
-`msedge`, `chromium` or an executable path), or download Playwright's Chromium (~150 MB):
+`msedge`, `chromium` or an executable path), or download Playwright's Chromium (~200 MB):
 
 ```bash
 npx -y markdown-pdf-export install-browser

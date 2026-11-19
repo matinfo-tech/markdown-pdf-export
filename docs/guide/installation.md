@@ -61,7 +61,7 @@ generation only for Chromium. Firefox and Safari cannot be used for this, so one
 browser must be present:
 
 - Google Chrome and Microsoft Edge are detected automatically, in that order
-- otherwise, download Playwright's Chromium once (~150 MB):
+- otherwise, download Playwright's Chromium once (~200 MB):
 
   ```bash
   npx -y markdown-pdf-export install-browser

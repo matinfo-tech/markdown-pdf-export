@@ -26,7 +26,7 @@ npx -y markdown-pdf-export doc.md -o out.pdf --math --toc --page-format Letter
 |---------|--------------|
 | `<file.md> [options]` | Export one Markdown file to PDF |
 | `doctor [file.md]` | Print browser status and the active settings as JSON. The optional file is used to resolve relative paths in settings. |
-| `install-browser` | Download Playwright's Chromium (~150 MB). Only needed if no Chromium-based browser is installed — see [Browser](/guide/browser). |
+| `install-browser` | Download Playwright's Chromium (~200 MB). Only needed if no Chromium-based browser is installed — see [Browser](/guide/browser). |
 | `mcp` | Start the MCP server on stdio — see [AI Assistant (MCP)](/guide/mcp) |
 
 `--help` (`-h`) prints the usage and all options; `--version` (`-v`) prints the version.

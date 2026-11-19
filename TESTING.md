@@ -7,7 +7,7 @@ This guide covers local testing of the exporter as a CLI, as a standalone MCP se
 1. **Node.js** version 20 or higher
 2. **A Chromium-based browser:** Google Chrome or Microsoft Edge, or Playwright's Chromium. PDF
    generation uses Chromium's print-to-PDF engine through Playwright, which does not support Firefox
-   or WebKit/Safari for PDFs. Nothing is downloaded automatically. To install Chromium (~150 MB):
+   or WebKit/Safari for PDFs. Nothing is downloaded automatically. To install Chromium (~200 MB):
    ```sh
    node cli.mjs install-browser
    ```
@@ -148,7 +148,7 @@ a hint. Fix it by one of:
 
 1. Installing Google Chrome or Microsoft Edge
 2. Setting `MARKDOWN_PDF_BROWSER` to `chrome`, `msedge`, `chromium` or an executable path
-3. Downloading Playwright's Chromium (~150 MB): `npx -y markdown-pdf-export install-browser`
+3. Downloading Playwright's Chromium (~200 MB): `npx -y markdown-pdf-export install-browser`
    (or `node cli.mjs install-browser` from a checkout)
 
 ### Debug log
@@ -184,7 +184,7 @@ MARKDOWN_PDF_DEBUG=/tmp/mdpdf.log node cli.mjs test-fixtures/sample.md -o /tmp/x
 ### Windows-specific issues
 
 1. `install-browser` puts Playwright's Chromium under `%USERPROFILE%\AppData\Local\ms-playwright\`
-2. Ensure you have sufficient disk space (~150 MB) if you download it
+2. Ensure you have sufficient disk space (~200 MB) if you download it
 3. If Windows Defender or antivirus blocks the download, add an exception for Playwright
 4. File paths in settings should use forward slashes or escaped backslashes in JSON
 

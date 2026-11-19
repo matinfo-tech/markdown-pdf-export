@@ -29,7 +29,7 @@ default browser is not changed or used.
 
 ### Installing Playwright's Chromium
 
-If you do not want to install Chrome or Edge, download Playwright's Chromium once (~150 MB):
+If you do not want to install Chrome or Edge, download Playwright's Chromium once (~200 MB):
 
 ```sh
 npx -y markdown-pdf-export install-browser
