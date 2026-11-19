@@ -1,15 +1,22 @@
-# Markdown PDF for Zed
+# Markdown PDF Export
 
-[![Version](https://img.shields.io/github/v/release/matinfo/zed-markdown-pdf?label=version&color=blue)](https://github.com/matinfo/zed-markdown-pdf/releases)
-[![Publish](https://github.com/matinfo/zed-markdown-pdf/actions/workflows/npm-publish.yml/badge.svg)](https://github.com/matinfo/zed-markdown-pdf/actions/workflows/npm-publish.yml)
+[![Version](https://img.shields.io/github/v/release/matinfo/markdown-pdf-export?label=version&color=blue)](https://github.com/matinfo/markdown-pdf-export/releases)
+[![Publish](https://github.com/matinfo/markdown-pdf-export/actions/workflows/npm-publish.yml/badge.svg)](https://github.com/matinfo/markdown-pdf-export/actions/workflows/npm-publish.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-[![Docs](https://img.shields.io/badge/docs-online-blue?logo=gitbook)](https://matinfo.github.io/zed-markdown-pdf/)
+[![Docs](https://img.shields.io/badge/docs-online-blue?logo=gitbook)](https://matinfo.github.io/markdown-pdf-export/)
 [![Node.js ≥ 20](https://img.shields.io/badge/node-%E2%89%A520-brightgreen?logo=node.js&logoColor=white)](https://nodejs.org)
-[![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-lightgrey?logo=github)](https://github.com/matinfo/zed-markdown-pdf)
+[![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-lightgrey?logo=github)](https://github.com/matinfo/markdown-pdf-export)
 
-Export Markdown files to high-quality PDFs from Zed, from any MCP client, or from the command line, using Chromium.
+Export Markdown files to high-quality PDFs — from your editor, from an AI assistant, or from the command line. Rendering uses Chromium, with syntax highlighting, KaTeX math, a table of contents and structured headers and footers.
 
-The exporter ships as the npm package `markdown-pdf-export`: a **CLI** and an **MCP server**. In Zed you run it as a **task** (no extension needed) or let the AI agent call it over **MCP**.
+`markdown-pdf-export` is one npm package with two front-ends, a **CLI** and an **MCP server**, so it is not tied to one editor:
+
+| Where | How | Guide |
+|---|---|---|
+| **Zed** | A task on the open file, or the AI assistant over MCP. No extension needed | [Setup](#setup) below |
+| **VS Code, JetBrains, Vim/Neovim** | An editor task or command that runs the CLI on the current file | [Other editors](#4-other-editors-and-mcp-clients) |
+| **Claude Code, Claude Desktop, Cursor, any MCP client** | Register the stdio MCP server | [Other editors](#4-other-editors-and-mcp-clients) |
+| **Terminal, scripts, CI** | `npx -y markdown-pdf-export file.md` | [Command line](#3-command-line) |
 
 ## Setup
 
@@ -54,7 +61,7 @@ file. To bind it to a key, add this to `keymap.json`:
 ]
 ```
 
-More: [Zed Task guide](https://matinfo.github.io/zed-markdown-pdf/guide/zed-task) — fixed options, several presets, settings file.
+More: [Zed Task guide](https://matinfo.github.io/markdown-pdf-export/guide/zed-task) — fixed options, several presets, settings file.
 
 ### 2. MCP: let the Zed agent (or any MCP client) export
 
@@ -73,7 +80,7 @@ Add this to Zed's `settings.json`:
 ```
 
 The server exposes two tools, `export_markdown_pdf` and `doctor_markdown_pdf`. Its MCP registry
-name is `io.github.matinfo/markdown-pdf-export`. More: [AI Assistant (MCP) guide](https://matinfo.github.io/zed-markdown-pdf/guide/mcp).
+name is `io.github.matinfo/markdown-pdf-export`. More: [AI Assistant (MCP) guide](https://matinfo.github.io/markdown-pdf-export/guide/mcp).
 
 ### 3. Command line
 
@@ -87,7 +94,48 @@ npx -y markdown-pdf-export --help                  # all options
 Flags mirror the MCP tool's options in kebab-case (`--page-format Letter`, `--math`, `--toc`,
 `--no-highlight`, `--margin 10mm` or `--margin '{"top":"10mm"}'`), plus `-o/--output` and
 `--settings <json|file.json>`. The CLI prints the PDF path on stdout and exits with `0` (ok), `1` (error)
-or `2` (usage error). More: [Command Line guide](https://matinfo.github.io/zed-markdown-pdf/guide/cli) — every option.
+or `2` (usage error). More: [Command Line guide](https://matinfo.github.io/markdown-pdf-export/guide/cli) — every option.
+
+### 4. Other editors and MCP clients
+
+Anything that can run a command on the current file, or register a stdio MCP server, can use it.
+
+```jsonc
+// VS Code — .vscode/tasks.json
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Markdown: Export to PDF",
+      "type": "shell",
+      "command": "npx",
+      "args": ["-y", "markdown-pdf-export", "${file}"],
+      "problemMatcher": []
+    }
+  ]
+}
+```
+
+```sh
+# Vim / Neovim
+:!npx -y markdown-pdf-export %:S
+
+# Claude Code
+claude mcp add markdown-pdf -- npx -y markdown-pdf-export mcp
+```
+
+```jsonc
+// Claude Desktop (claude_desktop_config.json) and Cursor (.cursor/mcp.json)
+{
+  "mcpServers": {
+    "markdown-pdf": { "command": "npx", "args": ["-y", "markdown-pdf-export", "mcp"] }
+  }
+}
+```
+
+More, including JetBrains and VS Code MCP: [Other Editors & MCP Clients](https://matinfo.github.io/markdown-pdf-export/guide/other-editors).
+Zed is the editor this project is developed with; the snippets for other tools follow each tool's
+documented format and have not all been tested by the project.
 
 ### Browser
 
@@ -117,7 +165,7 @@ Edge channel variants `chrome-beta`, `chrome-dev`, `chrome-canary`, `msedge-beta
 
 If you use Firefox or Safari, you only need one Chromium-based browser installed alongside, or the
 one-time `install-browser` download (~150 MB). Your default browser is not changed or used.
-More: [Browser guide](https://matinfo.github.io/zed-markdown-pdf/guide/browser).
+More: [Browser guide](https://matinfo.github.io/markdown-pdf-export/guide/browser).
 
 ### Why not a Zed extension?
 
@@ -133,16 +181,16 @@ contributes a Markdown task may follow.
 Markdown PDF exports Markdown documents to PDF with:
 
 - **Syntax highlighting** for fenced code blocks via highlight.js (80+ themes)
-- **[Math rendering](https://matinfo.github.io/zed-markdown-pdf/guide/math)** via KaTeX (`$inline$`, `$$display$$`) — fonts inlined, fully self-contained
-- **[Table of contents](https://matinfo.github.io/zed-markdown-pdf/guide/toc-and-anchors)** auto-generated from `[[toc]]` marker with clickable heading anchors
+- **[Math rendering](https://matinfo.github.io/markdown-pdf-export/guide/math)** via KaTeX (`$inline$`, `$$display$$`) — fonts inlined, fully self-contained
+- **[Table of contents](https://matinfo.github.io/markdown-pdf-export/guide/toc-and-anchors)** auto-generated from `[[toc]]` marker with clickable heading anchors
 - **Emoji shortcodes** rendered to Unicode via markdown-it-emoji
-- **[Structured header/footer](https://matinfo.github.io/zed-markdown-pdf/guide/header-footer)** with zones (left, center, right), custom variables, and date formatting
-- **[Per-document overrides](https://matinfo.github.io/zed-markdown-pdf/guide/front-matter)** via YAML front matter (`pdf:` block)
+- **[Structured header/footer](https://matinfo.github.io/markdown-pdf-export/guide/header-footer)** with zones (left, center, right), custom variables, and date formatting
+- **[Per-document overrides](https://matinfo.github.io/markdown-pdf-export/guide/front-matter)** via YAML front matter (`pdf:` block)
 - **Configurable page layout** — format, orientation, scale, margins, page ranges
-- **[Custom CSS](https://matinfo.github.io/zed-markdown-pdf/guide/custom-styling)** support appended after the built-in neutral stylesheet
+- **[Custom CSS](https://matinfo.github.io/markdown-pdf-export/guide/custom-styling)** support appended after the built-in neutral stylesheet
 - **No runtime installs** — dependencies come with the npm package; uses your installed Chrome or Edge
 
-📖 **Full documentation:** <https://matinfo.github.io/zed-markdown-pdf/> · [Settings reference](https://matinfo.github.io/zed-markdown-pdf/reference/settings) · [Getting started](https://matinfo.github.io/zed-markdown-pdf/guide/getting-started)
+📖 **Full documentation:** <https://matinfo.github.io/markdown-pdf-export/> · [Settings reference](https://matinfo.github.io/markdown-pdf-export/reference/settings) · [Getting started](https://matinfo.github.io/markdown-pdf-export/guide/getting-started)
 
 ---
 
@@ -576,7 +624,7 @@ Registry when a tag matching `npm-v*` is pushed. It uses npm trusted publishing 
 secret is needed.
 
 - **One-time setup:** on npmjs.com, open the package's **Settings → Trusted Publisher** and enter user
-  `matinfo`, repository `zed-markdown-pdf`, workflow filename `npm-publish.yml`. The package must exist
+  `matinfo`, repository `markdown-pdf-export`, workflow filename `npm-publish.yml`. The package must exist
   first, so publish the very first version by hand with `npm publish`.
 - **Later releases:** bump `version` in `package.json`, then push
   the tag `npm-v<version>`.

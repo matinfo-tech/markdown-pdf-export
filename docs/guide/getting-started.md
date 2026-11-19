@@ -3,8 +3,11 @@
 Markdown PDF exports Markdown files to high-quality PDFs using Playwright and Chromium.
 
 It is an npm package, `markdown-pdf-export`, that contains a **command-line tool** and an
-**MCP server**. There is no Zed extension to install: in Zed you run the command as a task, or let
-the AI assistant call the MCP server.
+**MCP server**. It is not tied to one editor: anything that can run a command on the current file or
+register an MCP server can use it. These pages use Zed for the examples — there you run the command
+as a task, or let the AI assistant call the MCP server, with no extension to install. For VS Code,
+JetBrains, Vim/Neovim, Claude Code, Claude Desktop and Cursor, see
+[Other Editors & MCP Clients](/guide/other-editors).
 
 ## Three Ways to Use It
 
@@ -13,6 +16,7 @@ the AI assistant call the MCP server.
 | **Zed task** | **task: spawn** or a key binding, on the open file | [Zed Task](/guide/zed-task) |
 | **AI assistant** | Ask the assistant: "Export this file to PDF" | [AI Assistant (MCP)](/guide/mcp) |
 | **Command line** | `npx -y markdown-pdf-export doc.md` in a terminal, script or CI job | [Command Line](/guide/cli) |
+| **Another editor or MCP client** | A VS Code / JetBrains / Vim command, or any MCP client | [Other Editors & MCP Clients](/guide/other-editors) |
 
 All three run the same exporter and read the same settings, so everything in the rest of this guide
 applies to each of them.

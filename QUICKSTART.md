@@ -3,6 +3,10 @@
 Export any Markdown file to a polished PDF from Zed — with a task or through the AI assistant (MCP) —
 or from the command line.
 
+This quick start uses Zed. The same tool works from VS Code, JetBrains, Vim/Neovim, Claude Code, Claude
+Desktop, Cursor or any MCP client — see
+[Other Editors & MCP Clients](https://matinfo.github.io/markdown-pdf-export/guide/other-editors).
+
 ---
 
 ## 1. Requirements
@@ -159,7 +163,7 @@ Load it by absolute path (`~` is not expanded):
 - **CLI:** `--settings /Users/me/.config/markdown-pdf/settings.json`
 
 `MARKDOWN_PDF_SETTINGS` also accepts inline JSON. The JSON snippets in the sections below go in this
-settings file. Full details: [Global Settings](https://matinfo.github.io/zed-markdown-pdf/guide/global-settings).
+settings file. Full details: [Global Settings](https://matinfo.github.io/markdown-pdf-export/guide/global-settings).
 
 ---
 
@@ -333,4 +337,4 @@ The log is written to `markdown-pdf-debug.log` in the OS temp directory — on m
 ## Full Documentation
 
 - [`README.md`](README.md) — Complete settings reference
-- [Online Documentation](https://matinfo.github.io/zed-markdown-pdf/) — Full structured header/footer reference
+- [Online Documentation](https://matinfo.github.io/markdown-pdf-export/) — Full structured header/footer reference

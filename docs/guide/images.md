@@ -89,14 +89,14 @@ For organization-wide branding, configure a global assets directory and referenc
 
 ```json
 {
-  "assets_directory": "~/.config/zed-markdown-pdf/assets"
+  "assets_directory": "~/.config/markdown-pdf/assets"
 }
 ```
 
 **Step 2: Place your shared assets there:**
 
 ```
-~/.config/zed-markdown-pdf/assets/
+~/.config/markdown-pdf/assets/
 ├── company-logo.svg
 ├── partner-logo.png
 └── watermark.svg
@@ -395,7 +395,7 @@ For teams and organizations, set up a shared assets directory:
 ### Recommended Structure
 
 ```
-~/.config/zed-markdown-pdf/
+~/.config/markdown-pdf/
 └── assets/
     ├── logos/
     │   ├── company-logo.svg
@@ -412,7 +412,7 @@ Share this settings file with your team for consistent branding:
 
 ```json
 {
-  "assets_directory": "~/.config/zed-markdown-pdf/assets",
+  "assets_directory": "~/.config/markdown-pdf/assets",
   "header": {
     "height": "18mm",
     "padding": "0 15mm",
@@ -426,7 +426,7 @@ Share this settings file with your team for consistent branding:
 }
 ```
 
-Each team member places their copy of the logos in `~/.config/zed-markdown-pdf/assets/logos/`.
+Each team member places their copy of the logos in `~/.config/markdown-pdf/assets/logos/`.
 
 ## Next Steps
 

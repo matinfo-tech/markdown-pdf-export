@@ -3,11 +3,11 @@ layout: home
 
 hero:
   name: Markdown PDF
-  text: for Zed Editor
-  tagline: Export Markdown to polished PDFs from a Zed task, the AI assistant (MCP) or the command line — with structured headers, footers, and custom styling
+  text: Editor, AI assistant or CLI
+  tagline: Export Markdown to polished PDFs from Zed, VS Code or any editor task, from any MCP client, or from the command line — with structured headers, footers, and custom styling
   image:
     src: /logo.png
-    alt: Markdown PDF for Zed
+    alt: Markdown PDF Export
   actions:
     - theme: brand
       text: Get Started
@@ -17,12 +17,12 @@ hero:
       link: /examples/quick-templates
     - theme: alt
       text: View on GitHub
-      link: https://github.com/matinfo/zed-markdown-pdf
+      link: https://github.com/matinfo/markdown-pdf-export
 
 features:
   - icon: ⌨️
     title: Task, Assistant or CLI
-    details: One npm package, three ways to use it — a Zed task bound to a key, the AI assistant over MCP, or the markdown-pdf-export command in a terminal or CI job. No extension to install.
+    details: One npm package, not tied to one editor — an editor task bound to a key (Zed, VS Code, JetBrains, Vim), any AI assistant that speaks MCP (Zed, Claude, Cursor), or the markdown-pdf-export command in a terminal or CI job. No extension to install.
   - icon: 📄
     title: Structured Headers & Footers
     details: Declarative configuration with zones (left, center, right) and typed elements — no raw HTML required.

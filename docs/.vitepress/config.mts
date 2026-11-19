@@ -1,20 +1,20 @@
 import { defineConfig } from "vitepress";
 
 export default defineConfig({
-  title: "Markdown PDF for Zed",
+  title: "Markdown PDF Export",
   description:
     "Export Markdown to PDF with structured headers, footers, and custom styling",
 
-  base: "/zed-markdown-pdf/",
+  base: "/markdown-pdf-export/",
 
   head: [
     [
       "link",
-      { rel: "icon", type: "image/png", href: "/zed-markdown-pdf/logo.png" },
+      { rel: "icon", type: "image/png", href: "/markdown-pdf-export/logo.png" },
     ],
     ["meta", { name: "theme-color", content: "#3eaf7c" }],
     ["meta", { name: "og:type", content: "website" }],
-    ["meta", { name: "og:site_name", content: "Markdown PDF for Zed" }],
+    ["meta", { name: "og:site_name", content: "Markdown PDF Export" }],
   ],
 
   themeConfig: {
@@ -29,7 +29,7 @@ export default defineConfig({
         items: [
           {
             text: "GitHub",
-            link: "https://github.com/matinfo/zed-markdown-pdf",
+            link: "https://github.com/matinfo/markdown-pdf-export",
           },
           { text: "Zed Editor", link: "https://zed.dev" },
         ],
@@ -46,6 +46,7 @@ export default defineConfig({
             { text: "Zed Task", link: "/guide/zed-task" },
             { text: "AI Assistant (MCP)", link: "/guide/mcp" },
             { text: "Command Line", link: "/guide/cli" },
+            { text: "Other Editors & MCP Clients", link: "/guide/other-editors" },
             { text: "Browser", link: "/guide/browser" },
             { text: "First Export", link: "/guide/first-export" },
           ],
@@ -111,7 +112,7 @@ export default defineConfig({
     },
 
     socialLinks: [
-      { icon: "github", link: "https://github.com/matinfo/zed-markdown-pdf" },
+      { icon: "github", link: "https://github.com/matinfo/markdown-pdf-export" },
     ],
 
     footer: {
@@ -125,7 +126,7 @@ export default defineConfig({
 
     editLink: {
       pattern:
-        "https://github.com/matinfo/zed-markdown-pdf/edit/main/docs/:path",
+        "https://github.com/matinfo/markdown-pdf-export/edit/main/docs/:path",
       text: "Edit this page on GitHub",
     },
   },

@@ -1,7 +1,7 @@
 {
   "name": "markdown-pdf-export",
   "version": "0.2.0",
-  "description": "Export Markdown to PDF with Chromium — CLI and MCP server (works great as a Zed task)",
+  "description": "Export Markdown to PDF with Chromium: CLI and MCP server for any editor or AI assistant (Zed, VS Code, Claude, Cursor), with math, TOC, headers and footers",
   "type": "module",
   "mcpName": "io.github.matinfo/markdown-pdf-export",
   "main": "export.mjs",
@@ -51,9 +51,17 @@
   "keywords": [
     "markdown",
     "pdf",
-    "playwright",
-    "zed",
+    "markdown-to-pdf",
+    "md-to-pdf",
+    "cli",
     "mcp",
+    "mcp-server",
+    "model-context-protocol",
+    "playwright",
+    "chromium",
+    "katex",
+    "zed",
+    "vscode",
     "export",
     "converter"
   ],
@@ -61,11 +69,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/matinfo/zed-markdown-pdf.git"
+    "url": "git+https://github.com/matinfo/markdown-pdf-export.git"
   },
-  "homepage": "https://matinfo.github.io/zed-markdown-pdf/",
+  "homepage": "https://matinfo.github.io/markdown-pdf-export/",
   "bugs": {
-    "url": "https://github.com/matinfo/zed-markdown-pdf/issues"
+    "url": "https://github.com/matinfo/markdown-pdf-export/issues"
   },
   "packageManager": "npm@11.12.1"
 }

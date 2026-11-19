@@ -353,14 +353,14 @@ Global directory for shared assets (images, logos). Supports `~` for home direct
 - **Default**: `null`
 
 ```json
-{ "assets_directory": "~/.config/zed-markdown-pdf/assets" }
+{ "assets_directory": "~/.config/markdown-pdf/assets" }
 ```
 
 Paths starting with `@/` in image sources are resolved relative to this directory:
 
 ```json
 {
-  "assets_directory": "~/.config/zed-markdown-pdf/assets",
+  "assets_directory": "~/.config/markdown-pdf/assets",
   "header": {
     "left_image": "@/company-logo.svg"
   }
@@ -425,7 +425,7 @@ For consistent branding across all documents, use the global assets directory:
 
 ```json
 {
-  "assets_directory": "~/.config/zed-markdown-pdf/assets",
+  "assets_directory": "~/.config/markdown-pdf/assets",
   "font_family": "Helvetica, Arial, sans-serif",
   "header": {
     "height": "20mm",
@@ -450,7 +450,7 @@ For consistent branding across all documents, use the global assets directory:
 Each team member places their copy of the brand assets in the configured `assets_directory`.
 
 ::: tip Team Setup
-Share a ZIP of your brand assets with team members. They extract it to `~/.config/zed-markdown-pdf/assets/` and the same settings work for everyone.
+Share a ZIP of your brand assets with team members. They extract it to `~/.config/markdown-pdf/assets/` and the same settings work for everyone.
 :::
 
 ## Next Steps

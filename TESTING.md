@@ -73,7 +73,7 @@ Add a task to `.zed/tasks.json` that points at your checkout:
   {
     "label": "Markdown: Export to PDF (dev)",
     "command": "node",
-    "args": ["/path/to/zed-markdown-pdf/cli.mjs", "$ZED_FILE"],
+    "args": ["/path/to/markdown-pdf-export/cli.mjs", "$ZED_FILE"],
     "reveal": "no_focus",
     "hide": "on_success"
   }
@@ -92,7 +92,7 @@ Add a `context_servers` entry in Zed's `settings.json` that runs your checkout:
   "context_servers": {
     "markdown-pdf": {
       "command": "node",
-      "args": ["/path/to/zed-markdown-pdf/mcp.mjs"],
+      "args": ["/path/to/markdown-pdf-export/mcp.mjs"],
       "env": {
         "MARKDOWN_PDF_SETTINGS": "/path/to/settings.json",
         "MARKDOWN_PDF_DEBUG": "1"

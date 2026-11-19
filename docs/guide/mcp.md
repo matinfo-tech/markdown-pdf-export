@@ -93,6 +93,9 @@ The server speaks MCP over stdio, so any client that can launch a command works.
 
 Its name in the MCP Registry is `io.github.matinfo/markdown-pdf-export`.
 
+Ready-made snippets for Claude Code, Claude Desktop, Cursor and VS Code are in
+[Other Editors & MCP Clients](/guide/other-editors).
+
 ## Troubleshooting
 
 If the tools do not appear in the assistant:

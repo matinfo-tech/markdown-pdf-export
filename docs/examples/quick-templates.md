@@ -129,7 +129,7 @@ Logo on left, title centered, date on right.
 
 ```json
 {
-  "assets_directory": "~/.config/zed-markdown-pdf/assets",
+  "assets_directory": "~/.config/markdown-pdf/assets",
   "margin": {
     "top": "25mm",
     "bottom": "20mm"
@@ -154,7 +154,7 @@ Logo on left, title centered, date on right.
 ```
 
 ::: tip Logo Setup
-Place your logo at `~/.config/zed-markdown-pdf/assets/company-logo.svg`
+Place your logo at `~/.config/markdown-pdf/assets/company-logo.svg`
 :::
 
 ---
@@ -177,7 +177,7 @@ Your logo on left, partner logo on right.
 
 ```json
 {
-  "assets_directory": "~/.config/zed-markdown-pdf/assets",
+  "assets_directory": "~/.config/markdown-pdf/assets",
   "margin": {
     "top": "28mm",
     "bottom": "22mm"
@@ -634,20 +634,20 @@ For logos and shared images:
 **1. Create the assets folder:**
 
 ```bash
-mkdir -p ~/.config/zed-markdown-pdf/assets
+mkdir -p ~/.config/markdown-pdf/assets
 ```
 
 **2. Copy your logos there:**
 
 ```bash
-cp company-logo.svg ~/.config/zed-markdown-pdf/assets/
+cp company-logo.svg ~/.config/markdown-pdf/assets/
 ```
 
 **3. Reference with @/ prefix:**
 
 ```json
 {
-  "assets_directory": "~/.config/zed-markdown-pdf/assets",
+  "assets_directory": "~/.config/markdown-pdf/assets",
   "header": {
     "left_image": "@/company-logo.svg"
   }

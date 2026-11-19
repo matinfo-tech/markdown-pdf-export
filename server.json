@@ -3,7 +3,7 @@
   "name": "io.github.matinfo/markdown-pdf-export",
   "description": "Export Markdown files to PDF with Chromium: highlighting, KaTeX math, TOC, headers/footers.",
   "repository": {
-    "url": "https://github.com/matinfo/zed-markdown-pdf",
+    "url": "https://github.com/matinfo/markdown-pdf-export",
     "source": "github"
   },
   "version": "0.2.0",
