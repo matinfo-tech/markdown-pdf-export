@@ -6,17 +6,11 @@ output is fully self-contained.
 
 ## Enable
 
-In your Zed `settings.json`:
+In your settings file (see [Global Settings](/guide/global-settings#configuration-location) for how it is loaded):
 
 ```json
 {
-  "context_servers": {
-    "markdown-pdf": {
-      "settings": {
-        "math": true
-      }
-    }
-  }
+  "math": true
 }
 ```
 
@@ -29,6 +23,9 @@ pdf:
   math: true
 ---
 ```
+
+For a single export — CLI: `--math` (add it to the `args` of a [Zed task](/guide/zed-task)), or ask the
+assistant: `Export this file to PDF with math rendering`. KaTeX options go in `--math-options '<json>'`.
 
 ## Syntax
 

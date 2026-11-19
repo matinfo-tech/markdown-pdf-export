@@ -19,16 +19,16 @@ for both automated CI and manual interactive testing in Zed.
 
 ## Running the tests
 
-From the `server/` directory:
+From the repository root:
 
 ```sh
-npm test
+npm run test:export
 ```
 
 This is equivalent to:
 
 ```sh
-node ../test-fixtures/test-export.mjs
+node test-fixtures/test-export.mjs
 ```
 
 ### CLI flags
@@ -43,13 +43,13 @@ node ../test-fixtures/test-export.mjs
 
 ```sh
 # Run all scenarios and keep the PDFs so you can open them
-node test-export.mjs --keep
+node test-fixtures/test-export.mjs --keep
 
 # Debugging a failure with full server output
-node test-export.mjs --verbose
+node test-fixtures/test-export.mjs --verbose
 
 # Both flags together
-node test-export.mjs --keep --verbose
+node test-fixtures/test-export.mjs --keep --verbose
 ```
 
 ---
@@ -141,16 +141,15 @@ Key points:
 
 ## Manual testing in Zed
 
-1. Install the extension as a dev extension
-2. Enable `markdown-pdf` in **Agent → Context Servers**
-3. Open `test-fixtures/sample.md`
-4. Ask the assistant:
+1. Add a `context_servers` entry that runs `node /path/to/repo/mcp.mjs` (see `TESTING.md`)
+2. Open `test-fixtures/sample.md`
+3. Ask the assistant:
 
 ```
 Export this file to PDF
 ```
 
-5. Confirm that `sample.pdf` is created next to `sample.md`
+4. Confirm that `sample.pdf` is created next to `sample.md`
 
 To test a specific scenario interactively:
 
@@ -166,12 +165,14 @@ Export this file to PDF in landscape, scale 0.9, with custom stylesheet test-fix
 
 ## Troubleshooting
 
-### Chromium downloads on first run
+### No browser available
 
-On the very first export, Chromium (~150 MB) downloads automatically. The test
-runner handles this gracefully — it passes the `doctor_markdown_pdf` check even
-when Chromium is not yet installed, then waits up to 3 minutes per scenario for
-the download and first render to complete.
+Nothing is downloaded automatically. The server uses Google Chrome, then
+Microsoft Edge, then Playwright's Chromium if present. If none is found, the
+doctor step prints a warning with the hint, and the export scenarios fail with
+`No usable Chrome/Chromium browser found.` Install Chrome or Edge, set
+`MARKDOWN_PDF_BROWSER`, or run `node cli.mjs install-browser` (~150 MB) from
+the repository root.
 
 ### A scenario fails with "output too small"
 
@@ -186,7 +187,7 @@ Pass `--keep` to retain all generated PDFs after the run. Open them in a PDF
 viewer to visually verify each scenario:
 
 ```sh
-node test-export.mjs --keep
-open out-01-default.pdf          # macOS
-xdg-open out-01-default.pdf      # Linux
+node test-fixtures/test-export.mjs --keep
+open test-fixtures/out-01-default.pdf          # macOS
+xdg-open test-fixtures/out-01-default.pdf      # Linux
 ```

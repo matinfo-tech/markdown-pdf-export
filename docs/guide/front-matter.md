@@ -184,15 +184,15 @@ Content goes here...
 Settings are merged with this priority (highest to lowest):
 
 1. **Front matter** (`pdf:` block)
-2. **Tool call arguments** (from AI assistant)
-3. **Global settings** (`settings.json`)
-4. **Extension defaults**
+2. **Per-export options** (CLI flags or tool call arguments from the AI assistant)
+3. **Global settings** (your settings file, see [Global Settings](/guide/global-settings))
+4. **Built-in defaults**
 
 ```yaml
 # This overrides any global settings:
 ---
 pdf:
-  page_format: Letter  # Takes priority over "A4" in settings.json
+  page_format: Letter  # Takes priority over "A4" in your settings file
 ---
 ```
 
@@ -241,11 +241,9 @@ Result: Left shows "Different Left", center and right use global settings.
 
 ## Validation
 
-Invalid front matter configuration triggers warnings in the debug log:
-
-```
-/tmp/zed-markdown-pdf-debug.log
-```
+Invalid front matter configuration triggers warnings in the debug log. Enable it with
+`MARKDOWN_PDF_DEBUG=1`; it is written to `markdown-pdf-debug.log` in the OS temp directory (on macOS
+under `/var/folders/…/T/`, not `/tmp`). Set `MARKDOWN_PDF_DEBUG=/some/file.log` to choose the path.
 
 Common issues:
 
@@ -297,7 +295,13 @@ pdf:
 
 ### Check Active Settings
 
-Ask the AI assistant:
+Run the diagnostic from a terminal:
+
+```sh
+npx -y markdown-pdf-export doctor
+```
+
+Or ask the AI assistant:
 
 ```
 Run doctor_markdown_pdf
@@ -307,10 +311,10 @@ This shows the effective settings after merging.
 
 ### Debug Front Matter
 
-Check the debug log to see how front matter is parsed:
+Check the debug log to see how front matter is parsed. With `MARKDOWN_PDF_DEBUG=1`:
 
 ```bash
-tail -f /tmp/zed-markdown-pdf-debug.log
+tail -f "${TMPDIR:-/tmp}/markdown-pdf-debug.log"
 ```
 
 ## Next Steps

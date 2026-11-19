@@ -1,0 +1,35 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.matinfo/markdown-pdf-export",
+  "description": "Export Markdown files to PDF with Chromium: highlighting, KaTeX math, TOC, headers/footers.",
+  "repository": {
+    "url": "https://github.com/matinfo/markdown-pdf-export",
+    "source": "github"
+  },
+  "version": "0.2.0",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "markdown-pdf-export",
+      "version": "0.2.0",
+      "transport": { "type": "stdio" },
+      "packageArguments": [{ "type": "positional", "value": "mcp" }],
+      "environmentVariables": [
+        {
+          "name": "MARKDOWN_PDF_SETTINGS",
+          "description": "Default export settings as JSON, e.g. {\"page_format\":\"Letter\"}",
+          "isRequired": false,
+          "format": "string",
+          "isSecret": false
+        },
+        {
+          "name": "MARKDOWN_PDF_BROWSER",
+          "description": "Browser to use: chrome, msedge, chromium, or a path to an executable",
+          "isRequired": false,
+          "format": "string",
+          "isSecret": false
+        }
+      ]
+    }
+  ]
+}

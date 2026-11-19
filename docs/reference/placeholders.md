@@ -232,7 +232,7 @@ Currently, there is no escape syntax for literal curly braces. Avoid text that m
 1. Check spelling and case
 2. Verify front matter is valid YAML
 3. Ensure the field exists in front matter
-4. Check the debug log: `/tmp/zed-markdown-pdf-debug.log`
+4. Check the debug log: set `MARKDOWN_PDF_DEBUG=1` and read `markdown-pdf-debug.log` in the OS temp directory (on macOS under `/var/folders/…/T/`), or set `MARKDOWN_PDF_DEBUG=/some/file.log`
 
 ### Date Format Invalid
 

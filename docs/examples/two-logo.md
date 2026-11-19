@@ -175,7 +175,7 @@ Content goes here...
 
 ### Image Alignment
 
-Both logos use the same `height` value to appear balanced. The actual image files don't need to be the same dimensions — the extension scales them proportionally.
+Both logos use the same `height` value to appear balanced. The actual image files don't need to be the same dimensions — the exporter scales them proportionally.
 
 ### File Formats
 
@@ -186,7 +186,7 @@ SVG is recommended for logos because:
 
 ### Fallback for Missing Images
 
-If an image file is not found, the extension logs a warning and continues. Consider adding a text fallback:
+If an image file is not found, the exporter logs a warning and continues. Consider adding a text fallback:
 
 ```json
 {

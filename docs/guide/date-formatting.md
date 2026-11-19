@@ -1,6 +1,6 @@
 # Date Formatting
 
-The Markdown PDF extension uses [date-fns](https://date-fns.org/) for date formatting. This gives you powerful, flexible control over how dates appear in your headers and footers.
+Markdown PDF uses [date-fns](https://date-fns.org/) for date formatting. This gives you powerful, flexible control over how dates appear in your headers and footers.
 
 ## Basic Usage
 

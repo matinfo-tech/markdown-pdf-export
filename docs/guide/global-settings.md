@@ -1,59 +1,106 @@
 # Global Settings
 
-Configure default options for all PDF exports in your Zed `settings.json`.
+Configure default options for all PDF exports.
 
 ## Configuration Location
 
-Add settings under `context_servers.markdown-pdf.settings`:
+Settings are a plain JSON object. Keep it in a file, for example
+`~/.config/markdown-pdf/settings.json`:
+
+```json
+{
+  "page_format": "A4",
+  "highlight_style": "github.css"
+}
+```
+
+Then point Markdown PDF at that file. Use an absolute path (`~` is not expanded).
+
+**Zed task** — add `env` to the task in `tasks.json`:
+
+```json
+[
+  {
+    "label": "Markdown: Export to PDF",
+    "command": "npx",
+    "args": ["-y", "markdown-pdf-export", "$ZED_FILE"],
+    "env": { "MARKDOWN_PDF_SETTINGS": "/Users/me/.config/markdown-pdf/settings.json" },
+    "reveal": "no_focus",
+    "hide": "on_success"
+  }
+]
+```
+
+**MCP server** — add `env` to the `context_servers` entry in Zed's `settings.json`:
 
 ```json
 {
   "context_servers": {
     "markdown-pdf": {
-      "settings": {
-        // Your settings here
-      }
+      "command": "npx",
+      "args": ["-y", "markdown-pdf-export", "mcp"],
+      "env": { "MARKDOWN_PDF_SETTINGS": "/Users/me/.config/markdown-pdf/settings.json" }
     }
   }
 }
 ```
 
+**Command line** — pass the file with `--settings`:
+
+```sh
+npx -y markdown-pdf-export doc.md --settings /Users/me/.config/markdown-pdf/settings.json
+```
+
+`MARKDOWN_PDF_SETTINGS` accepts either the path to a JSON file or inline JSON
+(`"{\"page_format\":\"A4\"}"`). `--settings` accepts the same two forms.
+
+The JSON examples on this site show the content of that settings file. See
+[Priority Order](#priority-order) for how the sources combine.
+
+## One-Off Overrides
+
+Most settings can also be given for a single export without touching the settings file:
+
+- **CLI / Zed task:** the flag of the same name in kebab-case, for example `page_format` →
+  `--page-format Letter`, `toc` → `--toc`, `highlight` → `--no-highlight`. See
+  [Command Line](/guide/cli#options) for the full list.
+- **AI assistant:** say it in the prompt, for example `Export this file to PDF in Letter format`.
+
+`header` and `footer` take JSON (`--header '{"center_text":"{title}"}'`). `output_directory` and
+`assets_directory` have no flag; set them in the settings file.
+
 ## Complete Example
+
+`settings.json`:
 
 ```json
 {
-  "context_servers": {
-    "markdown-pdf": {
-      "settings": {
-        "page_format": "A4",
-        "orientation": "portrait",
-        "scale": 1,
-        "print_background": true,
-        "margin": {
-          "top": "20mm",
-          "right": "15mm",
-          "bottom": "20mm",
-          "left": "15mm"
-        },
-        "font_family": "Georgia, serif",
-        "include_default_styles": true,
-        "highlight": true,
-        "highlight_style": "github.css",
-        "emoji": true,
-        "open_after_export": false,
-        "header": {
-          "height": "15mm",
-          "left_image": "./logo.svg",
-          "left_image_height": "12mm",
-          "center_text": "{title}",
-          "right_text": "{date:MMMM d, yyyy}"
-        },
-        "footer": {
-          "height": "10mm",
-          "center_text": "Page {page} of {pages}"
-        }
-      }
-    }
+  "page_format": "A4",
+  "orientation": "portrait",
+  "scale": 1,
+  "print_background": true,
+  "margin": {
+    "top": "20mm",
+    "right": "15mm",
+    "bottom": "20mm",
+    "left": "15mm"
+  },
+  "font_family": "Georgia, serif",
+  "include_default_styles": true,
+  "highlight": true,
+  "highlight_style": "github.css",
+  "emoji": true,
+  "open_after_export": false,
+  "header": {
+    "height": "15mm",
+    "left_image": "./logo.svg",
+    "left_image_height": "12mm",
+    "center_text": "{title}",
+    "right_text": "{date:MMMM d, yyyy}"
+  },
+  "footer": {
+    "height": "10mm",
+    "center_text": "Page {page} of {pages}"
   }
 }
 ```
@@ -306,14 +353,14 @@ Global directory for shared assets (images, logos). Supports `~` for home direct
 - **Default**: `null`
 
 ```json
-{ "assets_directory": "~/.config/zed-markdown-pdf/assets" }
+{ "assets_directory": "~/.config/markdown-pdf/assets" }
 ```
 
 Paths starting with `@/` in image sources are resolved relative to this directory:
 
 ```json
 {
-  "assets_directory": "~/.config/zed-markdown-pdf/assets",
+  "assets_directory": "~/.config/markdown-pdf/assets",
   "header": {
     "left_image": "@/company-logo.svg"
   }
@@ -348,12 +395,13 @@ Open the PDF in the default viewer after export.
 
 ## Priority Order
 
-Settings are applied in this order (later overrides earlier):
+Highest priority first:
 
-1. **Extension defaults** — Built-in sensible defaults
-2. **Global settings** — Your `settings.json` configuration
-3. **Front matter** — Per-document `pdf:` block
-4. **Tool arguments** — Options passed in the prompt
+1. **Front matter** — the `pdf:` block of the document
+2. **Per-export options** — CLI flags (`--page-format Letter`) or MCP tool arguments (from the prompt)
+3. **`--settings <json|file.json>`** — CLI only
+4. **`MARKDOWN_PDF_SETTINGS`** — environment variable (file path or inline JSON)
+5. **Built-in defaults**
 
 ## Minimal Configuration
 
@@ -361,18 +409,12 @@ A minimal setup with header and footer:
 
 ```json
 {
-  "context_servers": {
-    "markdown-pdf": {
-      "settings": {
-        "header": {
-          "center_text": "{title}",
-          "right_text": "{date:yyyy-MM-dd}"
-        },
-        "footer": {
-          "center_text": "Page {page} of {pages}"
-        }
-      }
-    }
+  "header": {
+    "center_text": "{title}",
+    "right_text": "{date:yyyy-MM-dd}"
+  },
+  "footer": {
+    "center_text": "Page {page} of {pages}"
   }
 }
 ```
@@ -383,30 +425,24 @@ For consistent branding across all documents, use the global assets directory:
 
 ```json
 {
-  "context_servers": {
-    "markdown-pdf": {
-      "settings": {
-        "assets_directory": "~/.config/zed-markdown-pdf/assets",
-        "font_family": "Helvetica, Arial, sans-serif",
-        "header": {
-          "height": "20mm",
-          "padding": "0 15mm",
-          "border_bottom": "2px solid #0066cc",
-          "left_image": "@/logos/company-logo.svg",
-          "left_image_height": "15mm",
-          "right_text": "{date:MMMM d, yyyy}"
-        },
-        "footer": {
-          "height": "12mm",
-          "padding": "0 15mm",
-          "font_size": "8px",
-          "color": "#666",
-          "left_text": "© 2025 Company Name",
-          "center_text": "Page {page} of {pages}",
-          "right_text": "Confidential"
-        }
-      }
-    }
+  "assets_directory": "~/.config/markdown-pdf/assets",
+  "font_family": "Helvetica, Arial, sans-serif",
+  "header": {
+    "height": "20mm",
+    "padding": "0 15mm",
+    "border_bottom": "2px solid #0066cc",
+    "left_image": "@/logos/company-logo.svg",
+    "left_image_height": "15mm",
+    "right_text": "{date:MMMM d, yyyy}"
+  },
+  "footer": {
+    "height": "12mm",
+    "padding": "0 15mm",
+    "font_size": "8px",
+    "color": "#666",
+    "left_text": "© 2025 Company Name",
+    "center_text": "Page {page} of {pages}",
+    "right_text": "Confidential"
   }
 }
 ```
@@ -414,7 +450,7 @@ For consistent branding across all documents, use the global assets directory:
 Each team member places their copy of the brand assets in the configured `assets_directory`.
 
 ::: tip Team Setup
-Share a ZIP of your brand assets with team members. They extract it to `~/.config/zed-markdown-pdf/assets/` and the same settings work for everyone.
+Share a ZIP of your brand assets with team members. They extract it to `~/.config/markdown-pdf/assets/` and the same settings work for everyone.
 :::
 
 ## Next Steps

@@ -1,0 +1,79 @@
+{
+  "name": "markdown-pdf-export",
+  "version": "0.2.0",
+  "description": "Export Markdown to PDF with Chromium: CLI and MCP server for any editor or AI assistant (Zed, VS Code, Claude, Cursor), with math, TOC, headers and footers",
+  "type": "module",
+  "mcpName": "io.github.matinfo/markdown-pdf-export",
+  "main": "export.mjs",
+  "exports": {
+    ".": "./export.mjs",
+    "./mcp": "./mcp.mjs",
+    "./schemas": "./tool-schemas.mjs",
+    "./package.json": "./package.json"
+  },
+  "bin": {
+    "markdown-pdf-export": "cli.mjs"
+  },
+  "files": [
+    "cli.mjs",
+    "export.mjs",
+    "mcp.mjs",
+    "tool-schemas.mjs",
+    "default.css",
+    "lib/*.mjs",
+    "vendor/"
+  ],
+  "scripts": {
+    "check": "node --check export.mjs && node --check mcp.mjs && node --check cli.mjs && node --check tool-schemas.mjs",
+    "build": "npm run check && node scripts/bundle-katex-css.mjs",
+    "build:katex-css": "node scripts/bundle-katex-css.mjs",
+    "prepack": "npm run build",
+    "test": "node --test lib/__tests__/*.test.mjs",
+    "test:export": "node test-fixtures/test-export.mjs",
+    "test:all": "npm run test && npm run test:export",
+    "install-browser": "node cli.mjs install-browser"
+  },
+  "dependencies": {
+    "@vscode/markdown-it-katex": "^1.1.2",
+    "date-fns": "^4.4.0",
+    "highlight.js": "^11.12.0",
+    "katex": "^0.19.1",
+    "markdown-it": "^15.0.3",
+    "markdown-it-anchor": "^10.1.0",
+    "markdown-it-emoji": "^3.1.0",
+    "markdown-it-toc-done-right": "^4.2.0",
+    "playwright-core": "^1.65.1",
+    "yaml": "^2.9.1"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": [
+    "markdown",
+    "pdf",
+    "markdown-to-pdf",
+    "md-to-pdf",
+    "cli",
+    "mcp",
+    "mcp-server",
+    "model-context-protocol",
+    "playwright",
+    "chromium",
+    "katex",
+    "zed",
+    "vscode",
+    "export",
+    "converter"
+  ],
+  "author": "Mat <mat@matinfo.ch>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/matinfo/markdown-pdf-export.git"
+  },
+  "homepage": "https://matinfo.github.io/markdown-pdf-export/",
+  "bugs": {
+    "url": "https://github.com/matinfo/markdown-pdf-export/issues"
+  },
+  "packageManager": "npm@11.12.1"
+}

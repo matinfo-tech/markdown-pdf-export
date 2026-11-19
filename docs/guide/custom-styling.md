@@ -4,17 +4,11 @@ Customize the appearance of your PDFs with CSS stylesheets. You can append style
 
 ## Adding a Custom Stylesheet
 
-Create a CSS file and reference it in your settings:
+Create a CSS file and reference it in your settings file (see [Global Settings](/guide/global-settings#configuration-location) for how it is loaded):
 
 ```json
 {
-  "context_servers": {
-    "markdown-pdf": {
-      "settings": {
-        "stylesheet_path": "./styles/custom.css"
-      }
-    }
-  }
+  "stylesheet_path": "./styles/custom.css"
 }
 ```
 
@@ -29,6 +23,9 @@ pdf:
 
 The path is resolved relative to the Markdown file.
 
+For a single export — CLI: `--stylesheet-path ./custom.css` (add `--no-include-default-styles` to drop
+the built-in stylesheet), or ask the assistant: `Export this file to PDF with the stylesheet custom.css`.
+
 ## How Styles Are Applied
 
 By default, styles are layered in this order:
@@ -41,7 +38,7 @@ Later styles override earlier ones.
 
 ## The Built-in Stylesheet
 
-The extension includes a neutral, print-friendly stylesheet with:
+Markdown PDF includes a neutral, print-friendly stylesheet with:
 
 - Clean typography and spacing
 - Responsive tables

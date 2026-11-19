@@ -1,0 +1,95 @@
+name: Publish npm package + MCP Registry
+
+# Release flow:
+#   1. bump "version" in package.json
+#   2. git tag npm-v<version> && git push origin npm-v<version>
+# server.json versions are synced from the tag below.
+#
+# Authentication: npm trusted publishing (OIDC). No NPM_TOKEN secret.
+#   One-time setup on npmjs.com → package Settings → Trusted Publisher:
+#     Organization or user: matinfo
+#     Repository:           markdown-pdf-export
+#     Workflow filename:    npm-publish.yml
+#   The package must already exist on npm, so publish the very first version
+#   by hand (`npm publish`). The publish step below is skipped when the tagged
+#   version is already on npm, so that first tag still registers the server
+#   in the MCP Registry.
+
+on:
+  push:
+    tags:
+      - "npm-v*"
+
+permissions:
+  id-token: write # OIDC for npm trusted publishing and the MCP Registry
+  contents: read
+
+env:
+  MCP_PUBLISHER_VERSION: v1.8.1 # bump deliberately; never use releases/latest
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24" # trusted publishing needs Node >= 22.14 and npm >= 11.5.1
+          registry-url: "https://registry.npmjs.org"
+          package-manager-cache: false # never use caching in release builds
+
+      - name: Check tag matches package.json
+        run: |
+          set -euo pipefail
+          TAG_VERSION="${GITHUB_REF_NAME#npm-v}"
+          PKG_VERSION="$(node -p "require('./package.json').version")"
+          echo "tag=$TAG_VERSION package.json=$PKG_VERSION"
+          test "$TAG_VERSION" = "$PKG_VERSION"
+
+      - run: npm ci
+      - run: npm test
+
+      - name: Publish package to npm (trusted publishing, provenance is automatic)
+        run: |
+          set -euo pipefail
+          NAME="$(node -p "require('./package.json').name")"
+          VERSION="$(node -p "require('./package.json').version")"
+          if [ "$(npm view "$NAME@$VERSION" version 2>/dev/null)" = "$VERSION" ]; then
+            echo "$NAME@$VERSION is already on npm — skipping npm publish."
+          else
+            npm publish # prepack builds vendor/katex-inline.css
+          fi
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@756fe2d284c7292c4e9b62c8a28f1e5629c59532 # v4.1.3
+
+      - name: Download and verify mcp-publisher
+        run: |
+          set -euo pipefail
+          os="$(uname -s | tr '[:upper:]' '[:lower:]')"
+          arch="$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/')"
+          archive="mcp-publisher_${os}_${arch}.tar.gz"
+          base_url="https://github.com/modelcontextprotocol/registry/releases/download/${MCP_PUBLISHER_VERSION}"
+          curl --fail --location --silent --show-error --output "$archive" "$base_url/$archive"
+          curl --fail --location --silent --show-error --output "$archive.sigstore.json" "$base_url/$archive.sigstore.json"
+          cosign verify-blob \
+            --bundle "$archive.sigstore.json" \
+            --certificate-identity "https://github.com/modelcontextprotocol/registry/.github/workflows/release.yml@refs/tags/${MCP_PUBLISHER_VERSION}" \
+            --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+            "$archive"
+          tar xzf "$archive" mcp-publisher
+          rm -f "$archive" "$archive.sigstore.json"
+
+      - name: Set version in server.json
+        run: |
+          VERSION="${GITHUB_REF_NAME#npm-v}"
+          jq --arg v "$VERSION" '.version = $v | .packages[0].version = $v' server.json > server.tmp
+          mv server.tmp server.json
+
+      - name: Authenticate to MCP Registry
+        run: ./mcp-publisher login github-oidc
+
+      - name: Publish server to MCP Registry
+        run: ./mcp-publisher publish

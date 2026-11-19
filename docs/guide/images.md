@@ -85,24 +85,18 @@ On each platform, `~` expands to:
 
 For organization-wide branding, configure a global assets directory and reference files with the `@/` prefix:
 
-**Step 1: Configure the assets directory in Zed settings:**
+**Step 1: Configure the assets directory in your settings file (see [Global Settings](/guide/global-settings#configuration-location) for how it is loaded):**
 
 ```json
 {
-  "context_servers": {
-    "markdown-pdf": {
-      "settings": {
-        "assets_directory": "~/.config/zed-markdown-pdf/assets"
-      }
-    }
-  }
+  "assets_directory": "~/.config/markdown-pdf/assets"
 }
 ```
 
 **Step 2: Place your shared assets there:**
 
 ```
-~/.config/zed-markdown-pdf/assets/
+~/.config/markdown-pdf/assets/
 ├── company-logo.svg
 ├── partner-logo.png
 └── watermark.svg
@@ -267,7 +261,7 @@ Setting both width and height may distort the image if the aspect ratio doesn't 
 
 When you export a PDF:
 
-1. The extension finds all image paths in your header/footer configuration
+1. The exporter finds all image paths in your header/footer configuration
 2. Each image file is read from disk
 3. The image content is encoded as base64
 4. A data URI is generated: `data:image/svg+xml;base64,...`
@@ -277,7 +271,7 @@ This ensures images work reliably without external dependencies.
 
 ## File Size Considerations
 
-Large images increase PDF generation time and file size. The extension warns when an image exceeds 500KB.
+Large images increase PDF generation time and file size. The exporter warns when an image exceeds 500KB.
 
 ### Optimization Tips
 
@@ -401,7 +395,7 @@ For teams and organizations, set up a shared assets directory:
 ### Recommended Structure
 
 ```
-~/.config/zed-markdown-pdf/
+~/.config/markdown-pdf/
 └── assets/
     ├── logos/
     │   ├── company-logo.svg
@@ -414,31 +408,25 @@ For teams and organizations, set up a shared assets directory:
 
 ### Team Configuration
 
-Share this snippet with your team for consistent branding:
+Share this settings file with your team for consistent branding:
 
 ```json
 {
-  "context_servers": {
-    "markdown-pdf": {
-      "settings": {
-        "assets_directory": "~/.config/zed-markdown-pdf/assets",
-        "header": {
-          "height": "18mm",
-          "padding": "0 15mm",
-          "left_image": "@/logos/company-logo.svg",
-          "left_image_height": "14mm",
-          "right_text": "{date:MMMM d, yyyy}"
-        },
-        "footer": {
-          "center_text": "Page {page} of {pages}"
-        }
-      }
-    }
+  "assets_directory": "~/.config/markdown-pdf/assets",
+  "header": {
+    "height": "18mm",
+    "padding": "0 15mm",
+    "left_image": "@/logos/company-logo.svg",
+    "left_image_height": "14mm",
+    "right_text": "{date:MMMM d, yyyy}"
+  },
+  "footer": {
+    "center_text": "Page {page} of {pages}"
   }
 }
 ```
 
-Each team member places their copy of the logos in `~/.config/zed-markdown-pdf/assets/logos/`.
+Each team member places their copy of the logos in `~/.config/markdown-pdf/assets/logos/`.
 
 ## Next Steps
 

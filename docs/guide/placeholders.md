@@ -209,7 +209,7 @@ If a placeholder doesn't resolve:
 
 1. Check the front matter field name (case-insensitive)
 2. Ensure the front matter is valid YAML
-3. Check the debug log: `/tmp/zed-markdown-pdf-debug.log`
+3. Check the debug log: set `MARKDOWN_PDF_DEBUG=1` and read `markdown-pdf-debug.log` in the OS temp directory (on macOS under `/var/folders/…/T/`), or set `MARKDOWN_PDF_DEBUG=/some/file.log`
 
 ```yaml
 # This works:

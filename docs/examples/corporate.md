@@ -20,69 +20,65 @@ A professional corporate letterhead with company logo, document title, and compr
 
 ### Global Settings (settings.json)
 
+Settings file — see [Global Settings](/guide/global-settings#configuration-location) for how it is loaded:
+
 ```json
 {
-  "context_servers": {
-    "markdown-pdf": {
-      "settings": {
-        "page_format": "A4",
-        "margin": {
-          "top": "25mm",
-          "right": "20mm",
-          "bottom": "25mm",
-          "left": "20mm"
-        },
-        "font_family": "Helvetica Neue, Arial, sans-serif",
-        "header": {
-          "height": "20mm",
-          "padding": "0 15mm",
-          "font_size": "9px",
-          "border_bottom": "2px solid #0066cc",
-          "left": [
-            {
-              "type": "image",
-              "src": "./assets/logo.svg",
-              "height": "16mm"
-            },
-            {
-              "type": "text",
-              "content": "{company}",
-              "font_weight": "bold",
-              "color": "#0066cc"
-            }
-          ],
-          "center": {
-            "type": "title",
-            "font_weight": "600"
-          },
-          "right": {
-            "type": "date",
-            "format": "MMMM d, yyyy",
-            "color": "#666"
-          }
-        },
-        "footer": {
-          "height": "15mm",
-          "padding": "0 15mm",
-          "font_size": "8px",
-          "color": "#666",
-          "border_top": "1px solid #ddd",
-          "left": {
-            "type": "text",
-            "content": "© {date:yyyy} {company}"
-          },
-          "center": {
-            "type": "text",
-            "content": "Page {page} of {pages}"
-          },
-          "right": {
-            "type": "text",
-            "content": "Confidential",
-            "font_weight": "bold",
-            "color": "#cc0000"
-          }
-        }
+  "page_format": "A4",
+  "margin": {
+    "top": "25mm",
+    "right": "20mm",
+    "bottom": "25mm",
+    "left": "20mm"
+  },
+  "font_family": "Helvetica Neue, Arial, sans-serif",
+  "header": {
+    "height": "20mm",
+    "padding": "0 15mm",
+    "font_size": "9px",
+    "border_bottom": "2px solid #0066cc",
+    "left": [
+      {
+        "type": "image",
+        "src": "./assets/logo.svg",
+        "height": "16mm"
+      },
+      {
+        "type": "text",
+        "content": "{company}",
+        "font_weight": "bold",
+        "color": "#0066cc"
       }
+    ],
+    "center": {
+      "type": "title",
+      "font_weight": "600"
+    },
+    "right": {
+      "type": "date",
+      "format": "MMMM d, yyyy",
+      "color": "#666"
+    }
+  },
+  "footer": {
+    "height": "15mm",
+    "padding": "0 15mm",
+    "font_size": "8px",
+    "color": "#666",
+    "border_top": "1px solid #ddd",
+    "left": {
+      "type": "text",
+      "content": "© {date:yyyy} {company}"
+    },
+    "center": {
+      "type": "text",
+      "content": "Page {page} of {pages}"
+    },
+    "right": {
+      "type": "text",
+      "content": "Confidential",
+      "font_weight": "bold",
+      "color": "#cc0000"
     }
   }
 }
@@ -299,7 +295,7 @@ blockquote {
 }
 ```
 
-Reference in settings:
+Reference in your settings file:
 
 ```json
 {

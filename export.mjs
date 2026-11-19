@@ -1,21 +1,9 @@
 /**
- * Markdown PDF MCP server
+ * Markdown PDF core — Markdown → HTML → PDF (Playwright/Chromium).
  *
- * Runs as a stdio MCP server.
- * External npm packages are imported lazily so the MCP handshake can succeed
- * even before dependencies are installed.
- */
-
-/**
- * Example of a supported tool call :
- * {
- *  "input_path": "/Users/me/docs/report.md",
- *  "page_format": "A4",
- *  "margin": {
- *    "top": "10mm",
- *    "bottom": "12mm"
- *  }
- * }
+ * No stdio or process side effects at import time, so it can be used from the
+ * CLI (cli.mjs), the MCP server (mcp.mjs) or any other Node program.
+ * Dependencies come from `npm install`; nothing is installed at runtime.
  */
 
 // ── Built-in imports only at top level ────────────────────────────────────────
@@ -24,6 +12,7 @@ import fsSync from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import process from "node:process";
+import { createRequire } from "node:module";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 // ── Structured header/footer pipeline imports ─────────────────────────────────
@@ -40,38 +29,48 @@ import {
 } from "./lib/placeholder-resolver.mjs";
 import { createHtmlGenerator } from "./lib/html-generator.mjs";
 
-// ── Debug logging ──────────────────────────────────────────────────────────────
-// On macOS os.tmpdir() returns /var/folders/…/T which is hard to find.
-// Use /tmp directly on macOS/Linux so the path matches what is documented.
-const DEBUG_LOG =
-  process.platform === "win32"
-    ? path.join(os.tmpdir(), "zed-markdown-pdf-debug.log")
-    : "/tmp/zed-markdown-pdf-debug.log";
+// ── Debug logging (opt-in) ────────────────────────────────────────────────────
+// Set MARKDOWN_PDF_DEBUG=1 to log to <tmpdir>/markdown-pdf-debug.log, or set it
+// to a file path to log there. Disabled by default.
+const DEBUG_ENV = process.env.MARKDOWN_PDF_DEBUG ?? "";
+export const DEBUG_LOG =
+  DEBUG_ENV === "" || DEBUG_ENV === "0" || DEBUG_ENV.toLowerCase() === "false"
+    ? null
+    : DEBUG_ENV === "1" || DEBUG_ENV.toLowerCase() === "true"
+      ? path.join(os.tmpdir(), "markdown-pdf-debug.log")
+      : path.resolve(DEBUG_ENV);
 
-function debugLog(message) {
+export function debugLog(message) {
+  if (!DEBUG_LOG) return;
   try {
     fsSync.appendFileSync(
       DEBUG_LOG,
       `[${new Date().toISOString()}] ${message}\n`,
     );
   } catch {
-    // Never let logging break the server.
+    // Never let logging break the caller.
   }
 }
 
-debugLog(`server starting — pid=${process.pid} node=${process.execPath}`);
-debugLog(`argv=${JSON.stringify(process.argv)}`);
-debugLog(`cwd=${process.cwd()}`);
-debugLog(`__filename=${fileURLToPath(import.meta.url)}`);
-debugLog(`PATH=${process.env.PATH ?? ""}`);
-
 // ── Constants ─────────────────────────────────────────────────────────────────
-const SERVER_NAME = "markdown-pdf";
-const SERVER_VERSION = "0.2.0";
+export const SERVER_NAME = "markdown-pdf";
+// Single source of truth for the version: package.json.
+export const SERVER_VERSION = createRequire(import.meta.url)(
+  "./package.json",
+).version;
 const SERVER_DIR = path.dirname(fileURLToPath(import.meta.url));
+
+/**
+ * Directory of an installed dependency. Works whether npm nested it under
+ * server/node_modules or hoisted it (npx cache, global install, workspaces).
+ */
+function packageDir(name) {
+  const require = createRequire(import.meta.url);
+  return path.dirname(require.resolve(`${name}/package.json`));
+}
 const DEFAULT_CSS_PATH = path.join(SERVER_DIR, "default.css");
 
-const DEFAULT_SETTINGS = {
+export const DEFAULT_SETTINGS = {
   // output
   stylesheet_path: null,
   output_directory: null,
@@ -111,7 +110,7 @@ const DEFAULT_SETTINGS = {
 
 const ALLOWED_ORIENTATIONS = new Set(["portrait", "landscape"]);
 
-const HIGHLIGHT_STYLES = new Set([
+export const HIGHLIGHT_STYLES = new Set([
   "1c-light.css",
   "a11y-dark.css",
   "a11y-light.css",
@@ -194,7 +193,7 @@ const HIGHLIGHT_STYLES = new Set([
   "xt256.css",
 ]);
 
-const ALLOWED_PAGE_FORMATS = new Set([
+export const ALLOWED_PAGE_FORMATS = new Set([
   "A4",
   "Letter",
   "Legal",
@@ -280,7 +279,7 @@ function normalizeTocOptions(raw, fallback = DEFAULT_SETTINGS.toc_options) {
   return { level, list_type };
 }
 
-function normalizeSettings(raw) {
+export function normalizeSettings(raw) {
   const safe = raw && typeof raw === "object" ? raw : {};
   return {
     stylesheet_path: normalizeNonEmptyString(safe.stylesheet_path),
@@ -341,13 +340,33 @@ function normalizeSettings(raw) {
   };
 }
 
+/**
+ * Default settings come from MARKDOWN_PDF_SETTINGS: either inline JSON
+ * ('{"page_format":"Letter"}') or the path to a JSON file.
+ */
 function loadSettings() {
-  const raw = process.env.MARKDOWN_PDF_SETTINGS ?? "{}";
+  let raw = process.env.MARKDOWN_PDF_SETTINGS ?? "{}";
   debugLog(`MARKDOWN_PDF_SETTINGS env: ${raw}`);
 
   // Empty or missing env — use defaults silently
   if (!raw || raw.trim() === "" || raw.trim() === "{}") {
     return normalizeSettings({});
+  }
+
+  let source = "the MARKDOWN_PDF_SETTINGS environment variable";
+  if (!raw.trim().startsWith("{")) {
+    const settingsPath = path.resolve(raw.trim());
+    source = settingsPath;
+    try {
+      raw = fsSync.readFileSync(settingsPath, "utf8");
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error);
+      console.error(
+        `[markdown-pdf] ⚠️  Could not read settings file — falling back to defaults.\n` +
+          `  Reason : ${msg}`,
+      );
+      return normalizeSettings({});
+    }
   }
 
   let parsed;
@@ -358,8 +377,7 @@ function loadSettings() {
     console.error(
       `[markdown-pdf] ⚠️  Could not parse settings — falling back to defaults.\n` +
         `  Reason : ${msg}\n` +
-        `  Fix    : Check the "context_servers.markdown-pdf.settings" block in your Zed settings.json for syntax errors.\n` +
-        `  Tip    : Use a JSON validator (e.g. https://jsonlint.com) to locate the problem.`,
+        `  Fix    : Check ${source} for JSON syntax errors.`,
     );
     debugLog(`raw settings that failed to parse: ${raw}`);
     return normalizeSettings({});
@@ -381,7 +399,12 @@ function loadSettings() {
   }
 }
 
-const settings = loadSettings();
+let settings = loadSettings();
+
+/** Replace the active settings (used by the CLI for --settings / config files). */
+export function setSettings(raw) {
+  settings = normalizeSettings(raw ?? {});
+}
 debugLog(
   `final loaded settings.display_header_footer: ${settings.display_header_footer}`,
 );
@@ -445,125 +468,37 @@ function buildEffectiveOptions(args = {}) {
       typeof args.display_header_footer === "boolean"
         ? args.display_header_footer
         : settings.display_header_footer,
+    // Structured header/footer: a per-call object replaces the one from settings.
+    header:
+      args.header && typeof args.header === "object"
+        ? args.header
+        : settings.header,
+    footer:
+      args.footer && typeof args.footer === "object"
+        ? args.footer
+        : settings.footer,
 
     font_family:
       normalizeNonEmptyString(args.font_family) ?? settings.font_family,
   };
 }
 
-// ── Dependency management ─────────────────────────────────────────────────────
+// ── Dependency loading ────────────────────────────────────────────────────────
+// Packages are resolved by npm at install time. These two just preload the
+// lazily-imported helpers used by lib/*.
 let dependenciesPromise = null;
 
 function ensureDependencies() {
   if (!dependenciesPromise) {
-    dependenciesPromise = installDepsIfNeeded()
-      .then(() => Promise.all([ensureYamlLoaded(), ensureDateFnsLoaded()]))
-      .catch((error) => {
-        dependenciesPromise = null;
-        throw error;
-      });
+    dependenciesPromise = Promise.all([
+      ensureYamlLoaded(),
+      ensureDateFnsLoaded(),
+    ]).catch((error) => {
+      dependenciesPromise = null;
+      throw error;
+    });
   }
   return dependenciesPromise;
-}
-
-async function installDepsIfNeeded() {
-  const requiredPackages = [
-    "playwright-core",
-    "markdown-it",
-    "highlight.js",
-    "markdown-it-emoji",
-    "@vscode/markdown-it-katex",
-    "katex",
-    "markdown-it-anchor",
-    "markdown-it-toc-done-right",
-    "yaml",
-    "date-fns",
-  ];
-
-  try {
-    await Promise.all(
-      requiredPackages.map((packageName) =>
-        fs.access(path.join(SERVER_DIR, "node_modules", packageName)),
-      ),
-    );
-    debugLog("required node_modules found — skipping npm install");
-    return;
-  } catch {
-    // Continue to installation.
-  }
-
-  debugLog("required node_modules missing — running npm install");
-  console.error("Installing npm dependencies (first run)…");
-
-  const { spawn } = await import("node:child_process");
-  const npmPath = findNpmPath();
-
-  await new Promise((resolve, reject) => {
-    const proc = spawn(
-      npmPath,
-      ["install", "--no-audit", "--no-fund", "--prefer-offline"],
-      {
-        cwd: SERVER_DIR,
-        stdio: ["ignore", "pipe", "pipe"],
-      },
-    );
-
-    let stdout = "";
-    let stderr = "";
-
-    proc.stdout?.on("data", (chunk) => {
-      stdout += chunk.toString();
-    });
-
-    proc.stderr?.on("data", (chunk) => {
-      stderr += chunk.toString();
-    });
-
-    proc.on("exit", (code) => {
-      if (code === 0) {
-        debugLog("npm install succeeded");
-        if (stdout.trim()) debugLog(`npm stdout: ${stdout.trim()}`);
-        if (stderr.trim()) debugLog(`npm stderr: ${stderr.trim()}`);
-        console.error("npm dependencies installed successfully.");
-        resolve();
-        return;
-      }
-
-      const message =
-        `npm install failed (exit ${code}).\n` +
-        `${stderr.trim() || stdout.trim()}\n` +
-        `Please run manually:\n  cd ${SERVER_DIR}\n  npm install`;
-
-      debugLog(message);
-      reject(new Error(message));
-    });
-
-    proc.on("error", (error) => {
-      const message =
-        `Failed to run npm (${npmPath}): ${error.message}\n` +
-        `Please run manually:\n  cd ${SERVER_DIR}\n  npm install`;
-
-      debugLog(message);
-      reject(new Error(message));
-    });
-  });
-}
-
-function findNpmPath() {
-  const nodeDir = path.dirname(process.execPath);
-  const candidates = [
-    path.join(nodeDir, "npm"),
-    path.join(nodeDir, "npm.cmd"),
-    path.join(nodeDir, "npm.bat"),
-    "npm",
-  ];
-
-  for (const candidate of candidates) {
-    if (candidate === "npm") return candidate;
-    if (fsSync.existsSync(candidate)) return candidate;
-  }
-
-  return "npm";
 }
 
 // ── Lazy module loading ───────────────────────────────────────────────────────
@@ -688,7 +623,12 @@ async function createMarkdown(options) {
   if (options.math) {
     try {
       const katex = await getKatexPlugin();
+      // Inject our own katex so the rendered markup and the stylesheet
+      // (vendor/katex-inline.css, built from the same package) always match.
+      // The plugin's bundled katex is pinned to an older release line.
+      const katexModule = await import("katex");
       md.use(katex, {
+        katex: katexModule.default ?? katexModule,
         throwOnError: options.math_options.throw_on_error,
         errorColor: options.math_options.error_color,
         macros: options.math_options.macros,
@@ -731,528 +671,101 @@ async function createMarkdown(options) {
 }
 
 // ── Browser setup ─────────────────────────────────────────────────────────────
-async function ensureChromiumInstalled() {
-  const chromium = await getChromium();
+// Order: system Chrome → system Edge → Playwright's own Chromium.
+// Override with MARKDOWN_PDF_BROWSER = chrome | msedge | chromium | <path to executable>.
+// A browser is NEVER downloaded implicitly — see installBrowser().
+export const INSTALL_BROWSER_HINT = "npx -y markdown-pdf-export install-browser";
 
-  try {
-    const browser = await chromium.launch({ headless: true });
-    await browser.close();
-    debugLog("Chromium launch test passed");
-    return;
-  } catch (error) {
-    debugLog(
-      `Chromium launch failed: ${error instanceof Error ? error.message : String(error)}`,
-    );
+function browserCandidates() {
+  const override = (process.env.MARKDOWN_PDF_BROWSER ?? "").trim();
+  if (!override) {
+    return [{ channel: "chrome" }, { channel: "msedge" }, {}];
+  }
+  if (override === "chromium") return [{}];
+  if (/^(chrome|msedge)(-(beta|dev|canary))?$/.test(override)) {
+    return [{ channel: override }];
+  }
+  return [{ executablePath: path.resolve(override) }];
+}
+
+let workingBrowserOptions = null;
+
+export async function launchBrowser() {
+  const chromium = await getChromium();
+  const candidates = workingBrowserOptions
+    ? [workingBrowserOptions]
+    : browserCandidates();
+  const failures = [];
+
+  for (const candidate of candidates) {
+    try {
+      const browser = await chromium.launch({ headless: true, ...candidate });
+      workingBrowserOptions = candidate;
+      debugLog(`browser launched: ${JSON.stringify(candidate)}`);
+      return browser;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      failures.push(`${JSON.stringify(candidate)} → ${message.split("\n")[0]}`);
+    }
   }
 
-  console.error("Chromium not found, installing automatically…");
+  const message =
+    `No usable Chrome/Chromium browser found.\n` +
+    `Tried:\n  ${failures.join("\n  ")}\n` +
+    `Install Google Chrome or Microsoft Edge, set MARKDOWN_PDF_BROWSER to a ` +
+    `browser executable, or download Playwright's Chromium (~150 MB) with:\n` +
+    `  ${INSTALL_BROWSER_HINT}`;
+  debugLog(message);
+  throw new Error(message);
+}
 
+/** Explicit, user-initiated download of Playwright's Chromium. */
+export async function installBrowser({ onOutput } = {}) {
   const { spawn } = await import("node:child_process");
-  const playwrightCliPath = path.join(
-    SERVER_DIR,
-    "node_modules",
-    "playwright-core",
-    "cli.js",
+  const { createRequire } = await import("node:module");
+  const playwrightCliPath = createRequire(import.meta.url).resolve(
+    "playwright-core/cli.js",
   );
 
   await new Promise((resolve, reject) => {
     const proc = spawn(
       process.execPath,
-      [playwrightCliPath, "install", "chromium"],
-      {
-        stdio: ["ignore", "pipe", "pipe"],
-        env: { ...process.env },
-      },
+      [playwrightCliPath, "install", "--no-shell", "chromium"],
+      { stdio: ["ignore", "pipe", "pipe"], env: { ...process.env } },
     );
 
-    let stdout = "";
-    let stderr = "";
-
-    proc.stdout?.on("data", (chunk) => {
-      stdout += chunk.toString();
-    });
-
-    proc.stderr?.on("data", (chunk) => {
-      stderr += chunk.toString();
-    });
+    let output = "";
+    const collect = (chunk) => {
+      output += chunk.toString();
+      onOutput?.(chunk.toString());
+    };
+    proc.stdout?.on("data", collect);
+    proc.stderr?.on("data", collect);
 
     proc.on("exit", (code) => {
       if (code === 0) {
-        debugLog("Chromium installed successfully");
-        if (stdout.trim()) debugLog(`playwright stdout: ${stdout.trim()}`);
-        if (stderr.trim()) debugLog(`playwright stderr: ${stderr.trim()}`);
-        console.error("Chromium installed successfully.");
+        workingBrowserOptions = null;
         resolve();
         return;
       }
-
-      const message =
-        `Chromium install failed (exit ${code}).\n` +
-        `${stderr.trim() || stdout.trim()}\n` +
-        `Please install manually:\n` +
-        `  cd ${SERVER_DIR}\n` +
-        `  node node_modules/playwright-core/cli.js install chromium`;
-
-      debugLog(message);
-      reject(new Error(message));
+      reject(new Error(`Chromium install failed (exit ${code}).\n${output.trim()}`));
     });
-
-    proc.on("error", (error) => {
-      const message =
-        `Failed to start Chromium installer: ${error.message}\n` +
-        `Please install manually:\n` +
-        `  cd ${SERVER_DIR}\n` +
-        `  node node_modules/playwright-core/cli.js install chromium`;
-
-      debugLog(message);
-      reject(new Error(message));
-    });
-  });
-}
-
-// ── MCP stdio framing ─────────────────────────────────────────────────────────
-//
-// The MCP specification (2024-11-05) defines the stdio transport as
-// newline-delimited JSON (NDJSON): one JSON object per line, separated
-// by '\n'.  Some older clients/tooling still use LSP-style
-// "Content-Length" framing.  We auto-detect the framing on the very
-// first non-whitespace byte of stdin and stick with that mode for the
-// rest of the session.
-// ───────────────────────────────────────────────────────────────────────────────
-
-let buffer = Buffer.alloc(0);
-/** @type {"ndjson"|"lsp"|null} */
-let framingMode = null;
-
-process.stdin.on("data", (chunk) => {
-  debugLog(`stdin data: ${chunk.length} bytes`);
-  buffer = Buffer.concat([buffer, chunk]);
-  processIncomingMessages();
-});
-
-process.stdin.on("end", () => {
-  debugLog("stdin ended — exiting");
-  process.exit(0);
-});
-
-function processIncomingMessages() {
-  // Auto-detect framing on first meaningful byte.
-  if (!framingMode) {
-    for (let i = 0; i < buffer.length; i++) {
-      const byte = buffer[i];
-      // Skip whitespace / newlines
-      if (byte === 0x20 || byte === 0x09 || byte === 0x0a || byte === 0x0d)
-        continue;
-      // '{' → newline-delimited JSON; anything else → LSP Content-Length
-      framingMode = byte === 0x7b ? "ndjson" : "lsp";
-      break;
-    }
-    if (!framingMode) return;
-    debugLog(`framing mode detected: ${framingMode}`);
-  }
-
-  if (framingMode === "ndjson") {
-    processNdjsonMessages();
-  } else {
-    processLspMessages();
-  }
-}
-
-// ── NDJSON framing (MCP spec) ─────────────────────────────────────────────────
-function processNdjsonMessages() {
-  while (true) {
-    const newlineIndex = buffer.indexOf(0x0a); // '\n'
-    if (newlineIndex === -1) return;
-
-    const line = buffer.subarray(0, newlineIndex).toString("utf8").trim();
-    buffer = buffer.subarray(newlineIndex + 1);
-
-    if (line.length === 0) continue;
-
-    let message;
-    try {
-      message = JSON.parse(line);
-    } catch (error) {
-      debugLog(
-        `JSON parse error: ${error instanceof Error ? error.message : String(error)}`,
-      );
-      continue;
-    }
-
-    handleMessage(message).catch((error) => {
-      const messageText =
-        error instanceof Error ? error.message : String(error);
-      debugLog(`handleMessage error: ${messageText}`);
-      console.error(messageText);
-    });
-  }
-}
-
-// ── LSP Content-Length framing (legacy / tooling compat) ──────────────────────
-function processLspMessages() {
-  while (true) {
-    let headerEnd = buffer.indexOf("\r\n\r\n");
-    let separatorLength = 4;
-
-    // Also accept \n\n (some tools omit \r)
-    if (headerEnd === -1) {
-      headerEnd = buffer.indexOf("\n\n");
-      separatorLength = 2;
-    }
-
-    if (headerEnd === -1) return;
-
-    const headerText = buffer.subarray(0, headerEnd).toString("utf8");
-    const match = headerText.match(/Content-Length:\s*(\d+)/i);
-
-    if (!match) {
-      debugLog("Missing Content-Length header — discarding buffer");
-      buffer = Buffer.alloc(0);
-      return;
-    }
-
-    const contentLength = Number.parseInt(match[1], 10);
-    const messageStart = headerEnd + separatorLength;
-    const messageEnd = messageStart + contentLength;
-
-    if (buffer.length < messageEnd) return;
-
-    const rawMessage = buffer
-      .subarray(messageStart, messageEnd)
-      .toString("utf8");
-    buffer = buffer.subarray(messageEnd);
-
-    let message;
-    try {
-      message = JSON.parse(rawMessage);
-    } catch (error) {
-      debugLog(
-        `JSON parse error: ${error instanceof Error ? error.message : String(error)}`,
-      );
-      continue;
-    }
-
-    handleMessage(message).catch((error) => {
-      const messageText =
-        error instanceof Error ? error.message : String(error);
-      debugLog(`handleMessage error: ${messageText}`);
-      console.error(messageText);
-    });
-  }
-}
-
-// ── Write outgoing messages ───────────────────────────────────────────────────
-function writeMessage(message) {
-  const json = JSON.stringify(message);
-  if (framingMode === "lsp") {
-    // LSP-style Content-Length framing
-    process.stdout.write(
-      `Content-Length: ${Buffer.byteLength(json, "utf8")}\r\n\r\n${json}`,
+    proc.on("error", (error) =>
+      reject(new Error(`Failed to start Chromium installer: ${error.message}`)),
     );
-  } else {
-    // MCP spec: newline-delimited JSON
-    process.stdout.write(json + "\n");
-  }
-}
-
-function respond(id, result) {
-  writeMessage({ jsonrpc: "2.0", id, result });
-}
-
-function respondError(id, code, message) {
-  writeMessage({
-    jsonrpc: "2.0",
-    id,
-    error: { code, message },
   });
-}
-
-// ── MCP dispatch ──────────────────────────────────────────────────────────────
-async function handleMessage(message) {
-  if (!message.method) {
-    debugLog(`received message without method: ${JSON.stringify(message)}`);
-    return;
-  }
-
-  debugLog(
-    `handling method=${message.method} id=${message.id ?? "(notification)"}`,
-  );
-
-  switch (message.method) {
-    case "initialize":
-      respond(message.id, {
-        protocolVersion: "2024-11-05",
-        capabilities: { tools: {} },
-        serverInfo: { name: SERVER_NAME, version: SERVER_VERSION },
-      });
-      return;
-
-    case "notifications/initialized":
-      return;
-
-    case "ping":
-      respond(message.id, {});
-      return;
-
-    case "tools/list":
-      respond(message.id, {
-        tools: [
-          {
-            name: "export_markdown_pdf",
-            title: "Export Markdown PDF",
-            description:
-              "Render a Markdown file to HTML and convert it to PDF with Playwright/Chromium.",
-            inputSchema: {
-              type: "object",
-              additionalProperties: false,
-              required: ["input_path"],
-              properties: {
-                input_path: {
-                  type: "string",
-                  description:
-                    "Absolute or relative path to the Markdown file.",
-                },
-                output_path: {
-                  type: "string",
-                  description: "Optional output PDF path.",
-                },
-                stylesheet_path: {
-                  type: "string",
-                  description:
-                    "Optional CSS file applied after the built-in stylesheet.",
-                },
-                open_after_export: {
-                  type: "boolean",
-                  description: "Open the PDF after export.",
-                },
-                page_format: {
-                  type: "string",
-                  enum: [...ALLOWED_PAGE_FORMATS],
-                  description: "Paper format.",
-                },
-                print_background: {
-                  type: "boolean",
-                  description:
-                    "Whether to print background colours and images.",
-                },
-                margin: {
-                  type: "object",
-                  description:
-                    "Optional per-call page margins. Any omitted side falls back to settings/defaults.",
-                  additionalProperties: false,
-                  properties: {
-                    top: {
-                      type: "string",
-                      description: "Top margin, for example '10mm' or '0.5in'.",
-                    },
-                    right: {
-                      type: "string",
-                      description:
-                        "Right margin, for example '10mm' or '0.5in'.",
-                    },
-                    bottom: {
-                      type: "string",
-                      description:
-                        "Bottom margin, for example '10mm' or '0.5in'.",
-                    },
-                    left: {
-                      type: "string",
-                      description:
-                        "Left margin, for example '10mm' or '0.5in'.",
-                    },
-                  },
-                },
-                orientation: {
-                  type: "string",
-                  enum: ["portrait", "landscape"],
-                  description: "Paper orientation.",
-                },
-                scale: {
-                  type: "number",
-                  description: "Scale of the page rendering (default 1).",
-                },
-                page_ranges: {
-                  type: "string",
-                  description:
-                    "Paper ranges to print, e.g. '1-5, 8, 11-13'. Empty means all pages.",
-                },
-                include_default_styles: {
-                  type: "boolean",
-                  description: "Include the built-in default CSS stylesheet.",
-                },
-                highlight: {
-                  type: "boolean",
-                  description: "Enable syntax highlighting for code blocks.",
-                },
-                highlight_style: {
-                  type: "string",
-                  enum: [...HIGHLIGHT_STYLES].sort(),
-                  description:
-                    "Highlight.js style filename to use (e.g. 'github.css', 'monokai.css').",
-                },
-                breaks: {
-                  type: "boolean",
-                  description:
-                    "Enable hard line breaks in the Markdown renderer.",
-                },
-                emoji: {
-                  type: "boolean",
-                  description:
-                    "Render :emoji: shortcodes as Unicode characters.",
-                },
-                math: {
-                  type: "boolean",
-                  description:
-                    "Render LaTeX math via KaTeX. Use $inline$ and $$display$$ syntax.",
-                },
-                math_options: {
-                  type: "object",
-                  additionalProperties: false,
-                  description: "KaTeX rendering options.",
-                  properties: {
-                    throw_on_error: {
-                      type: "boolean",
-                      description:
-                        "If true, abort rendering on a LaTeX error. Default false (renders error inline).",
-                    },
-                    error_color: {
-                      type: "string",
-                      description: "CSS color used for inline error messages.",
-                    },
-                    macros: {
-                      type: "object",
-                      additionalProperties: { type: "string" },
-                      description:
-                        'User-defined LaTeX macros, e.g. {"\\\\RR": "\\\\mathbb{R}"}.',
-                    },
-                  },
-                },
-                heading_anchors: {
-                  type: "boolean",
-                  description:
-                    "Add id slugs to headings (required infrastructure for TOC links).",
-                },
-                toc: {
-                  type: "boolean",
-                  description:
-                    "Render a [[toc]] marker as an auto-generated table of contents (also enables heading anchors).",
-                },
-                toc_options: {
-                  type: "object",
-                  additionalProperties: false,
-                  description: "Table-of-contents rendering options.",
-                  properties: {
-                    level: {
-                      type: "array",
-                      items: { type: "number" },
-                      description: "Heading levels to include, e.g. [1, 2, 3].",
-                    },
-                    list_type: {
-                      type: "string",
-                      enum: ["ul", "ol"],
-                      description: "List type for the TOC.",
-                    },
-                  },
-                },
-                display_header_footer: {
-                  type: "boolean",
-                  default: false,
-                  description:
-                    "Display header and footer on each page. Defaults to false — omit this parameter to use the saved setting (which defaults to false if not configured).",
-                },
-
-                font_family: {
-                  type: "string",
-                  description:
-                    "CSS font-family value for the document body and header/footer. Overrides the default system font stack. Example: \"Georgia, 'Times New Roman', serif\".",
-                },
-              },
-            },
-          },
-          {
-            name: "doctor_markdown_pdf",
-            title: "Doctor Markdown PDF",
-            description:
-              "Inspect Playwright/Chromium setup and current server settings.",
-            inputSchema: {
-              type: "object",
-              additionalProperties: false,
-              properties: {
-                input_path: {
-                  type: "string",
-                  description:
-                    "Optional Markdown file used to resolve relative settings.",
-                },
-              },
-            },
-          },
-        ],
-      });
-      return;
-
-    case "tools/call": {
-      const result = await callTool(
-        message.params?.name,
-        message.params?.arguments ?? {},
-      );
-      respond(message.id, result);
-      return;
-    }
-
-    default:
-      if (message.id !== undefined) {
-        respondError(message.id, -32601, `Method not found: ${message.method}`);
-      }
-  }
-}
-
-// ── Tool dispatch ─────────────────────────────────────────────────────────────
-async function callTool(name, args) {
-  try {
-    await ensureDependencies();
-
-    switch (name) {
-      case "export_markdown_pdf":
-        return toolResult(await exportMarkdownPdf(args));
-
-      case "doctor_markdown_pdf":
-        return toolResult(await doctorMarkdownPdf(args));
-
-      default:
-        throw new Error(`Unknown tool: ${name}`);
-    }
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    debugLog(`callTool(${name}) error: ${message}`);
-    return toolError(message);
-  }
-}
-
-function toolResult(data) {
-  return {
-    content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
-    structuredContent: data,
-  };
-}
-
-function toolError(message) {
-  return {
-    content: [{ type: "text", text: message }],
-    structuredContent: { error: message },
-    isError: true,
-  };
 }
 
 // ── Tool implementations ──────────────────────────────────────────────────────
-async function doctorMarkdownPdf(args) {
+export async function doctorMarkdownPdf(args) {
+  await ensureDependencies();
   const inputPath = args.input_path
     ? await resolveInputPath(args.input_path)
     : null;
 
   let browserInfo;
   try {
-    const chromium = await getChromium();
-    const browser = await chromium.launch({ headless: true });
+    const browser = await launchBrowser();
     const version = browser.version();
     await browser.close();
 
@@ -1260,12 +773,13 @@ async function doctorMarkdownPdf(args) {
       available: true,
       version,
       backend: "Chromium (Playwright)",
+      launch_options: workingBrowserOptions,
     };
   } catch (error) {
     browserInfo = {
       available: false,
       error: error instanceof Error ? error.message : String(error),
-      hint: `Run: node ${path.join(SERVER_DIR, "node_modules", "playwright-core", "cli.js")} install chromium`,
+      hint: `Install Chrome/Edge, set MARKDOWN_PDF_BROWSER, or run: ${INSTALL_BROWSER_HINT}`,
     };
   }
 
@@ -1297,7 +811,8 @@ async function doctorMarkdownPdf(args) {
   };
 }
 
-async function exportMarkdownPdf(args) {
+export async function exportMarkdownPdf(args) {
+  await ensureDependencies();
   const inputPath = await resolveInputPath(args.input_path);
   debugLog(`exportMarkdownPdf args: ${JSON.stringify(args)}`);
   debugLog(
@@ -1361,9 +876,9 @@ async function exportMarkdownPdf(args) {
     breaks: options.breaks,
     emoji: options.emoji,
     display_header_footer: options.display_header_footer,
-    // Include structured header/footer from settings if present
-    header: settings.header || null,
-    footer: settings.footer || null,
+    // Structured header/footer from the call arguments, else from settings
+    header: options.header || null,
+    footer: options.footer || null,
   };
 
   const { config: mergedConfig, hasHeaderFooter } = mergeConfig(
@@ -1416,10 +931,7 @@ async function exportMarkdownPdf(args) {
     effectiveOptions,
   );
 
-  await ensureChromiumInstalled();
-
-  const chromium = await getChromium();
-  const browser = await chromium.launch({ headless: true });
+  const browser = await launchBrowser();
 
   let displayHeaderFooterResult = false;
 
@@ -1621,7 +1133,7 @@ async function renderMarkdownToHtmlWithBody(inputPath, body, title, options) {
       const vendorCss = path.join(SERVER_DIR, "vendor", "katex-inline.css");
       const katexCssPath = (await fileExists(vendorCss))
         ? vendorCss
-        : path.join(SERVER_DIR, "node_modules", "katex", "dist", "katex.min.css");
+        : path.join(packageDir("katex"), "dist", "katex.min.css");
       const katexCss = await fs.readFile(katexCssPath, "utf8");
       styleBlocks += `<style>${katexCss}</style>\n    `;
     } catch (error) {
@@ -1634,12 +1146,7 @@ async function renderMarkdownToHtmlWithBody(inputPath, body, title, options) {
   // Highlight.js stylesheet
   if (options.highlight && options.highlight_style) {
     try {
-      const hljsStylesDir = path.join(
-        SERVER_DIR,
-        "node_modules",
-        "highlight.js",
-        "styles",
-      );
+      const hljsStylesDir = path.join(packageDir("highlight.js"), "styles");
       const hljsCssPath = path.join(hljsStylesDir, options.highlight_style);
       const hljsCss = await fs.readFile(hljsCssPath, "utf8");
       styleBlocks += `<style>${hljsCss}</style>\n    `;

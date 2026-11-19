@@ -1,6 +1,6 @@
 # Header & Footer
 
-The Markdown PDF extension provides a structured, declarative system for configuring PDF headers and footers. No raw HTML required — just describe what you want using zones and typed elements.
+Markdown PDF provides a structured, declarative system for configuring PDF headers and footers. No raw HTML required — just describe what you want using zones and typed elements.
 
 ## Overview
 
@@ -42,23 +42,23 @@ This creates:
 
 ### Global Settings (settings.json)
 
-Apply to all exports:
+Apply to all exports, in your settings file (see [Global Settings](/guide/global-settings#configuration-location) for how it is loaded):
 
 ```json
 {
-  "context_servers": {
-    "markdown-pdf": {
-      "settings": {
-        "header": {
-          "height": "15mm",
-          "center_text": "{title}",
-          "right_text": "{date:yyyy-MM-dd}"
-        }
-      }
-    }
+  "header": {
+    "height": "15mm",
+    "center_text": "{title}",
+    "right_text": "{date:yyyy-MM-dd}"
   }
 }
 ```
+
+Structured `header` and `footer` objects can live in the settings file or in front matter, and are
+shown automatically once configured. For a single export, pass them directly — CLI:
+`--footer '{"center_text":"Page {page} of {pages}"}'` (same for `--header`), or ask the assistant:
+`Export this file to PDF with a footer showing page numbers` (the `export_markdown_pdf` tool accepts
+`header` and `footer`). `--display-header-footer` alone shows only what is already configured.
 
 ### Per-Document (Front Matter)
 
@@ -184,7 +184,7 @@ Elements are laid out horizontally within the zone.
 
 ## Automatic Enabling
 
-When you set `header` or `footer` as an object, the extension automatically:
+When you set `header` or `footer` as an object, the exporter automatically:
 
 1. Enables `display_header_footer`
 2. Generates the HTML template

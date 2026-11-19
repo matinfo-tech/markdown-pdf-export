@@ -1,24 +1,16 @@
 # ── Build output ───────────────────────────────────────────────────────────────
 dist/
 
-# ── Rust / Cargo ───────────────────────────────────────────────────────────────
-/target/
-**/*.rs.bk
-
 # ── Node.js ────────────────────────────────────────────────────────────────────
-server/node_modules/
+node_modules/
 docs/node_modules/
 
-# ── Generated KaTeX CSS bundle (built by server/scripts/bundle-katex-css.mjs) ──
-server/vendor/
+# ── Generated KaTeX CSS bundle (built by scripts/bundle-katex-css.mjs) ──
+vendor/
 
 # ── VitePress build / cache ────────────────────────────────────────────────────
 docs/.vitepress/cache/
 docs/.vitepress/dist/
-
-# ── Built WASM artifact ───────────────────────────────────────────────────────
-# Rebuilt via `cargo build --release --target wasm32-wasip1`
-extension.wasm
 
 # ── Claude / AI tooling ───────────────────────────────────────────────────────
 .claude/
@@ -39,4 +31,4 @@ desktop.ini
 *~
 
 # ── Debug logs ─────────────────────────────────────────────────────────────────
-zed-markdown-pdf-debug.log
+markdown-pdf-debug.log

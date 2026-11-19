@@ -1,233 +1,190 @@
-# Testing the Markdown PDF Extension
+# Testing Markdown PDF
 
-This guide covers local testing of the extension both as a standalone MCP server and as an installed Zed extension.
+This guide covers local testing of the exporter as a CLI, as a standalone MCP server, and from Zed.
 
 ## Prerequisites
 
-1. **Node.js** version 18 or higher (required for the MCP server)
+1. **Node.js** version 20 or higher
+2. **A Chromium-based browser:** Google Chrome or Microsoft Edge, or Playwright's Chromium. PDF
+   generation uses Chromium's print-to-PDF engine through Playwright, which does not support Firefox
+   or WebKit/Safari for PDFs. Nothing is downloaded automatically. To install Chromium (~150 MB):
+   ```sh
+   node cli.mjs install-browser
+   ```
+   To force a browser, set `MARKDOWN_PDF_BROWSER` to `chrome`, `msedge`, `chromium` or an executable path.
 
-2. **Rust toolchain** (for building the extension)
-
-3. **Nothing else!** – Chromium downloads automatically on first use
-
-## Quick Start: Install in Zed
-
-### Step 1: Build the extension
+Install the dependencies once, from the repository root:
 
 ```sh
-cd zed-markdown-pdf
-cargo check
+npm install
 ```
 
-This verifies the Rust code compiles correctly.
+All commands below run from the repository root.
 
-### Step 2: Install as dev extension
+## CLI
 
-1. Open Zed
-2. Open the command palette (Cmd+Shift+P on macOS)
-3. Run: `zed: install dev extension`
-4. Navigate to the `zed-markdown-pdf` directory and select it
+```sh
+node cli.mjs test-fixtures/sample.md -o /tmp/x.pdf   # prints the PDF path on stdout
+node cli.mjs doctor                                  # browser + settings
+node cli.mjs --help                                  # all options
+```
 
-Zed will build and install the extension. You should see it appear in the Extensions list.
+Exit codes: `0` success, `1` error, `2` usage error. Flags mirror the MCP tool's options in kebab-case,
+for example:
 
-### Step 3: Enable the MCP server and start using it
+```sh
+node cli.mjs test-fixtures/sample.md -o /tmp/x.pdf --page-format Letter --toc --no-highlight
+node cli.mjs test-fixtures/sample.md -o /tmp/x.pdf --margin '{"top":"10mm"}'
+node cli.mjs test-fixtures/sample.md -o /tmp/x.pdf --settings '{"orientation":"landscape"}'
+node cli.mjs test-fixtures/sample.md -o /tmp/x.pdf --settings /path/to/settings.json
+MARKDOWN_PDF_SETTINGS=/path/to/settings.json node cli.mjs test-fixtures/sample.md -o /tmp/x.pdf
+```
 
-1. Open Zed settings (Cmd+, on macOS)
-2. Navigate to **Agent** settings
-3. Find **Context Servers** section
-4. Enable the `markdown-pdf` server
-5. (Optional) Configure server settings:
+Settings precedence, highest first: front matter `pdf:` block, CLI flags, `--settings`,
+`MARKDOWN_PDF_SETTINGS` (file path or inline JSON), built-in defaults.
+
+## Automated Tests
+
+```sh
+npm run check          # syntax check of export.mjs, mcp.mjs, cli.mjs, tool-schemas.mjs
+npm test               # unit tests (lib/__tests__)
+npm run test:export    # end-to-end: runs the MCP server against test-fixtures/
+npm run test:all       # both
+```
+
+`test:export` starts the MCP server (`mcp.mjs`) once, runs `doctor_markdown_pdf`, then a set of
+`export_markdown_pdf` scenarios, and prints a pass/fail summary. Options (run the script directly):
+
+```sh
+node test-fixtures/test-export.mjs --keep      # keep the generated PDFs
+node test-fixtures/test-export.mjs --verbose   # print every server stderr line
+```
+
+If no browser is found, the doctor step reports it with the `install-browser` hint.
+
+## Testing in Zed
+
+### As a task
+
+Add a task to `.zed/tasks.json` that points at your checkout:
+
+```json
+[
+  {
+    "label": "Markdown: Export to PDF (dev)",
+    "command": "node",
+    "args": ["/path/to/markdown-pdf-export/cli.mjs", "$ZED_FILE"],
+    "reveal": "no_focus",
+    "hide": "on_success"
+  }
+]
+```
+
+Open `test-fixtures/sample.md`, run **task: spawn** and choose the task. `sample.pdf` should appear
+next to the file.
+
+### As an MCP server
+
+Add a `context_servers` entry in Zed's `settings.json` that runs your checkout:
 
 ```json
 {
   "context_servers": {
     "markdown-pdf": {
-      "settings": {
-        "stylesheet_path": "",
-        "output_directory": "",
-        "open_after_export": false,
-        "page_format": "A4",
-        "print_background": true,
-        "margin": {
-          "top": "18mm",
-          "right": "18mm",
-          "bottom": "18mm",
-          "left": "18mm"
-        }
+      "command": "node",
+      "args": ["/path/to/markdown-pdf-export/mcp.mjs"],
+      "env": {
+        "MARKDOWN_PDF_SETTINGS": "/path/to/settings.json",
+        "MARKDOWN_PDF_DEBUG": "1"
       }
     }
   }
 }
 ```
 
-### Step 4: Test with sample fixture
+Then open `test-fixtures/sample.md` and ask the assistant: "Export this Markdown file to PDF". The AI
+uses the `export_markdown_pdf` tool and writes `sample.pdf` next to the source file.
 
-1. Open `test-fixtures/sample.md` in Zed
-2. Open the Assistant panel
-3. Ask: "Export this Markdown file to PDF"
-4. **On first use only:** Chromium (~150MB) will download automatically. You'll see a message in the Assistant:
-   ```
-   Chromium not found, installing automatically (this may take a few minutes)...
-   Chromium installed successfully
-   ```
-5. The AI will use the `export_markdown_pdf` MCP tool
-6. Check that `sample.pdf` was created in the `test-fixtures` directory
+`MARKDOWN_PDF_SETTINGS` is optional. It takes the absolute path of a JSON file containing the plain
+settings object, or inline JSON. The same `env` works in the task above.
 
-After the first export, all subsequent exports are instant with no download needed.
+To check the MCP handshake without Zed, run `./test-mcp-init.sh` from the repository root; it sends an
+`initialize` request to `mcp.mjs`.
 
-## Standalone Testing (Without Zed)
-
-You can test the MCP server directly without installing it in Zed:
-
-### Step 1: Install dependencies
-
-```sh
-cd zed-markdown-pdf/server
-npm install
-```
-
-This installs `markdown-it` and `playwright-core`. Chromium will be downloaded automatically on the first export path that needs it.
-
-### Step 2: Run the test script
-
-```sh
-# Syntax check the MCP server
-cd server
-npm run build
-
-# Basic test with default styling
-npm run test
-
-# Test with custom CSS
-node ../test-fixtures/test-export.mjs --custom-css custom.css
-```
-
-On first run, the export step will automatically download Chromium (~150MB). You'll see:
-```
-Chromium not found, installing automatically (this may take a few minutes)...
-Chromium installed successfully
-```
-
-### Expected output
-
-```
-Markdown PDF MCP Server Test
-
-Starting MCP server...
-Initializing server...
-Server initialized: markdown-pdf v0.1.0
-
-Listing available tools...
-Found 2 tools:
-  - export_markdown_pdf: Render a Markdown file to HTML and convert it to PDF with Playwright/Chromium.
-  - doctor_markdown_pdf: Inspect Playwright/Chromium setup and current server settings.
-
-Running doctor to check Playwright/Chromium...
-Chromium available: Chromium (Playwright) 120.0.6099.28
-Settings: {...}
-
-Exporting sample.md to PDF...
-PDF exported successfully!
-
-Verifying output file...
-PDF created: test-fixtures/sample.pdf
-File size: XX.XX KB
-
-All tests passed!
-```
-</text>
-
-<old_text line=127>
-- `stylesheet_path` (optional): Custom CSS file
-- `open_after_export` (optional): Auto-open the PDF
-
-## Testing MCP Tools
-
-The extension provides two MCP tools:
+## MCP Tools
 
 ### `export_markdown_pdf`
 
-Converts a Markdown file to PDF.
+Converts a Markdown file to PDF. Main arguments:
 
-**Arguments:**
 - `input_path` (required): Path to the Markdown file
 - `output_path` (optional): Where to save the PDF
 - `stylesheet_path` (optional): Custom CSS file
 - `open_after_export` (optional): Auto-open the PDF
-**Example prompts in Zed:**
+
+Any setting can be passed as an argument for a one-off override. Example prompts:
+
 - "Export this file to PDF"
 - "Convert docs/README.md to PDF with custom styling from print.css"
 - "Export this to build/output.pdf"
 
 ### `doctor_markdown_pdf`
 
-Diagnoses the Playwright/Chromium setup and shows current settings.
+Reports browser availability and the active settings.
 
-**Arguments:**
 - `input_path` (optional): Markdown file for resolving relative paths
 
-**Example prompt:**
+Example prompts:
+
 - "Check the Markdown PDF setup"
-- "Show me the Chromium configuration"
 - "Verify the PDF exporter is working"
 
 ## Troubleshooting
 
-### Chromium installation in progress
+### No usable Chrome/Chromium browser found
 
-**Message:** `Chromium not found, installing automatically...`
+The export fails with `No usable Chrome/Chromium browser found.` followed by the browsers it tried and
+a hint. Fix it by one of:
 
-**What's happening:**
-On first use, the extension automatically downloads Chromium (~150MB). This takes a few minutes depending on your internet connection. Just wait for the installation to complete.
+1. Installing Google Chrome or Microsoft Edge
+2. Setting `MARKDOWN_PDF_BROWSER` to `chrome`, `msedge`, `chromium` or an executable path
+3. Downloading Playwright's Chromium (~150 MB): `npx -y markdown-pdf-export install-browser`
+   (or `node cli.mjs install-browser` from a checkout)
 
-**If automatic installation fails:**
-1. Check your internet connection
-2. Manually install Chromium:
-   ```sh
-   # macOS
-   cd ~/Library/Application\ Support/Zed/extensions/installed/markdown-pdf/server
-   node node_modules/playwright-core/cli.js install chromium
-   
-   # Linux
-   cd ~/.local/share/zed/extensions/installed/markdown-pdf/server
-   node node_modules/playwright-core/cli.js install chromium
-   ```
+### Debug log
 
-### Extension not loading
+The debug log is off by default. Set `MARKDOWN_PDF_DEBUG=1` to write
+`markdown-pdf-debug.log` in the OS temp directory (on macOS under `/var/folders/…/T/`, not `/tmp`), or
+`MARKDOWN_PDF_DEBUG=/some/file.log` to choose the path:
 
-**Symptom:** Extension doesn't appear after installation
-
-**Solutions:**
-1. Check the Zed log (Help → View Logs)
-2. Verify `cargo check` passes
-3. Try restarting Zed
-4. Reinstall the extension
+```sh
+MARKDOWN_PDF_DEBUG=/tmp/mdpdf.log node cli.mjs test-fixtures/sample.md -o /tmp/x.pdf
+```
 
 ### MCP server not starting
 
 **Symptom:** Tools don't appear in the Assistant
 
-**Solutions:**
 1. Verify the server is enabled in Agent settings
 2. Check that Node.js is available: `which node`
-3. View the MCP server logs in Zed (Agent panel → Server logs)
-4. Run `doctor_markdown_pdf` to check configuration
+3. Check that the command runs in a terminal (`npx -y markdown-pdf-export --help` or
+   `node cli.mjs --help`)
+4. View the MCP server logs in Zed (Agent panel → Server logs)
+5. Run `doctor_markdown_pdf` to check configuration
 
 ### PDF export fails
 
 **Symptom:** Export completes but no PDF is created
 
-**Solutions:**
 1. Check file permissions in the output directory
 2. Verify the input Markdown file exists
-3. Run the standalone test script to isolate the issue
-4. Check for error messages in the Assistant panel
+3. Run the CLI on the same file to isolate the issue
+4. Check for error messages in the terminal or Assistant panel
 
 ### Windows-specific issues
 
-On Windows:
-1. Chromium installs automatically to `%USERPROFILE%\AppData\Local\ms-playwright\`
-2. Ensure you have sufficient disk space (~150MB) for the browser download
+1. `install-browser` puts Playwright's Chromium under `%USERPROFILE%\AppData\Local\ms-playwright\`
+2. Ensure you have sufficient disk space (~150 MB) if you download it
 3. If Windows Defender or antivirus blocks the download, add an exception for Playwright
 4. File paths in settings should use forward slashes or escaped backslashes in JSON
 
@@ -236,11 +193,13 @@ On Windows:
 The `test-fixtures` directory contains:
 
 - **`sample.md`**: Comprehensive Markdown document with various features
+- **`structured-header-test.md`**: Structured header/footer document
 - **`custom.css`**: Example custom stylesheet
-- **`test-export.mjs`**: Standalone test script
+- **`test-export.mjs`**: End-to-end MCP test script
 - **`README.md`**: Detailed fixture documentation
 
 Use these to validate:
+
 - Basic Markdown rendering (headings, lists, code blocks)
 - Advanced features (tables, blockquotes, inline HTML)
 - Custom styling
@@ -248,51 +207,33 @@ Use these to validate:
 
 ## Development Workflow
 
-When making changes to the extension:
-
-1. **Rust changes** (`src/lib.rs`):
+1. **Code changes** (`*.mjs`, `lib/`):
    ```sh
-   cargo check
-   # Build the WASM binary (requires wasm32-wasip1 target)
-   cargo build --target wasm32-wasip1 --release
-   cp target/wasm32-wasip1/release/markdown_pdf.wasm extension.wasm
-   # Reinstall dev extension in Zed
+   npm run check
+   npm test
+   npm run test:export
    ```
+   Restart the MCP server in Zed (disable/enable in settings) to pick up changes.
 
-2. **Server changes** (`server/markdown_pdf_server.mjs`):
+2. **CSS changes** (`default.css`): take effect on the next export.
+
+3. **Dependency changes** (`package.json`):
    ```sh
-   cd server
-   npm install  # if dependencies changed
-   node --check markdown_pdf_server.mjs
-   # Reload the MCP server in Zed (disable/enable in settings)
-   ```
-
-3. **CSS changes** (`server/default.css`):
-   - Changes take effect immediately on next export
-   - No reload needed
-
-4. **Dependency changes** (`server/package.json`):
-   ```sh
-   cd server
    npm install
-   # Reinstall dev extension in Zed
    ```
 
-## Next Steps
+## Releasing
 
-After validating locally:
-
-1. Test across different operating systems if possible
-2. Try exporting various Markdown documents from real projects
-3. Experiment with custom CSS for different use cases
-4. Report any issues or edge cases
-5. Consider contributing improvements back to the repository
+Publishing is done by `.github/workflows/npm-publish.yml` with npm trusted publishing (OIDC); no token
+secret is involved. Bump `version` in `package.json`, then push
+the tag `npm-v<version>`. The one-time Trusted Publisher setup and the manual first publish are
+described in the README's "Publishing" section.
 
 ## Feedback
 
 If you encounter issues not covered here, check:
-- The main README.md for architecture details and Playwright advantages
-- The README.md for architecture and design decisions
+
+- The main README.md for architecture details
 - GitHub Issues for similar problems
 - The MCP server logs in Zed for detailed error messages
 - Playwright documentation: https://playwright.dev/

@@ -4,6 +4,23 @@ This guide walks you through creating your first PDF export with Markdown PDF.
 
 ## Basic Export
 
+Pick the way you set up. All three produce the same PDF, next to your source file.
+
+**1. Zed task** ([setup](/guide/zed-task))
+
+1. Open any Markdown file in Zed
+2. Run **task: spawn** and choose *Markdown: Export to PDF* (or press your key binding)
+
+**2. Command line** ([reference](/guide/cli))
+
+```sh
+npx -y markdown-pdf-export report.md
+```
+
+The command prints the path of the PDF.
+
+**3. AI assistant** ([setup](/guide/mcp))
+
 1. Open any Markdown file in Zed
 2. Open the assistant panel (`Cmd+Enter` / `Ctrl+Enter`)
 3. Type:
@@ -12,14 +29,22 @@ This guide walks you through creating your first PDF export with Markdown PDF.
    Export this file to PDF
    ```
 
-4. The PDF will be created next to your source file
-
-That's it! The extension handles everything automatically.
-
+If the export reports `No usable Chrome/Chromium browser found.`, install Google Chrome or Microsoft
+Edge, or run `npx -y markdown-pdf-export install-browser` once (see [Browser](/guide/browser)).
 
 ## Export with Options
 
-You can specify options directly in your prompt:
+On the command line, options are flags. In a Zed task, add the same flags to `args`:
+
+```sh
+npx -y markdown-pdf-export report.md --orientation landscape
+npx -y markdown-pdf-export report.md -o docs/output.pdf --highlight-style monokai.css
+npx -y markdown-pdf-export report.md --display-header-footer
+```
+
+`--display-header-footer` shows the header and footer you configured (see the next section).
+
+With the assistant, specify options directly in your prompt:
 
 ```
 Export this file to PDF in landscape orientation
@@ -54,11 +79,8 @@ pdf:
 Content goes here...
 ```
 
-Then export normally:
-
-```
-Export this file to PDF
-```
+Then export normally, with the task, the command line or the prompt `Export this file to PDF`. Front
+matter applies to all three.
 
 ## Output Location
 
@@ -70,43 +92,37 @@ docs/
 └── report.pdf    ← Generated here
 ```
 
-To specify a different location:
+To specify a different location, use `-o` on the command line (or in the task's `args`):
+
+```sh
+npx -y markdown-pdf-export report.md -o build/output.pdf
+```
+
+Or ask the assistant:
 
 ```
 Export to build/output.pdf
 ```
 
-Or configure a default output directory in settings:
+Or configure a default output directory in your settings file (see [Global Settings](/guide/global-settings#configuration-location) for how it is loaded):
 
 ```json
 {
-  "context_servers": {
-    "markdown-pdf": {
-      "settings": {
-        "output_directory": "./build"
-      }
-    }
-  }
+  "output_directory": "./build"
 }
 ```
 
 ## Open After Export
 
-To automatically open the PDF after export:
+To automatically open the PDF after export, add to your settings file:
 
 ```json
 {
-  "context_servers": {
-    "markdown-pdf": {
-      "settings": {
-        "open_after_export": true
-      }
-    }
-  }
+  "open_after_export": true
 }
 ```
 
-Or ask the assistant:
+Or pass `--open-after-export` on the command line, or ask the assistant:
 
 ```
 Export this file to PDF and open it
@@ -114,38 +130,39 @@ Export this file to PDF and open it
 
 ## Syntax Highlighting
 
-Code blocks are automatically syntax-highlighted using the `github.css` theme. To change the theme:
+Code blocks are automatically syntax-highlighted using the `github.css` theme. To change the theme,
+pass `--highlight-style atom-one-dark.css` on the command line, or ask the assistant:
 
 ```
 Export with the atom-one-dark theme
 ```
 
-Or set a default in settings:
+Or set a default in your settings file:
 
 ```json
 {
-  "context_servers": {
-    "markdown-pdf": {
-      "settings": {
-        "highlight_style": "atom-one-dark.css"
-      }
-    }
-  }
+  "highlight_style": "atom-one-dark.css"
 }
 ```
 
 ## Verify Your Setup
 
-If something doesn't work, run the diagnostic tool:
+If something doesn't work, run the diagnostic from a terminal:
+
+```sh
+npx -y markdown-pdf-export doctor
+```
+
+Or ask the assistant:
 
 ```
 Run doctor_markdown_pdf
 ```
 
 This shows:
-- Chromium availability and version
+- Browser availability, version, and which browser was picked
 - Current settings
-- Server directory path
+- Package directory path
 
 ## Next Steps
 

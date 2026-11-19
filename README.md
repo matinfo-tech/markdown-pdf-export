@@ -1,35 +1,202 @@
-# Markdown PDF for Zed
+# Markdown PDF Export
 
-[![Version](https://img.shields.io/github/v/release/matinfo/zed-markdown-pdf?label=version&color=blue)](https://github.com/matinfo/zed-markdown-pdf/releases)
-[![CI](https://github.com/matinfo/zed-markdown-pdf/actions/workflows/server-release.yml/badge.svg)](https://github.com/matinfo/zed-markdown-pdf/actions/workflows/server-release.yml)
+[![Version](https://img.shields.io/github/v/release/matinfo/markdown-pdf-export?label=version&color=blue)](https://github.com/matinfo/markdown-pdf-export/releases)
+[![Publish](https://github.com/matinfo/markdown-pdf-export/actions/workflows/npm-publish.yml/badge.svg)](https://github.com/matinfo/markdown-pdf-export/actions/workflows/npm-publish.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-[![Docs](https://img.shields.io/badge/docs-online-blue?logo=gitbook)](https://matinfo.github.io/zed-markdown-pdf/)
+[![Docs](https://img.shields.io/badge/docs-online-blue?logo=gitbook)](https://matinfo.github.io/markdown-pdf-export/)
 [![Node.js ≥ 20](https://img.shields.io/badge/node-%E2%89%A520-brightgreen?logo=node.js&logoColor=white)](https://nodejs.org)
-[![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-lightgrey?logo=github)](https://github.com/matinfo/zed-markdown-pdf)
+[![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-lightgrey?logo=github)](https://github.com/matinfo/markdown-pdf-export)
 
-Export Markdown files to high-quality PDFs directly from Zed using Playwright and Chromium.
+Export Markdown files to high-quality PDFs — from your editor, from an AI assistant, or from the command line. Rendering uses Chromium, with syntax highlighting, KaTeX math, a table of contents and structured headers and footers.
+
+`markdown-pdf-export` is one npm package with two front-ends, a **CLI** and an **MCP server**, so it is not tied to one editor:
+
+| Where | How | Guide |
+|---|---|---|
+| **Zed** | A task on the open file, or the AI assistant over MCP. No extension needed | [Setup](#setup) below |
+| **VS Code, JetBrains, Vim/Neovim** | An editor task or command that runs the CLI on the current file | [Other editors](#4-other-editors-and-mcp-clients) |
+| **Claude Code, Claude Desktop, Cursor, any MCP client** | Register the stdio MCP server | [Other editors](#4-other-editors-and-mcp-clients) |
+| **Terminal, scripts, CI** | `npx -y markdown-pdf-export file.md` | [Command line](#3-command-line) |
+
+## Setup
+
+You need **Node.js 20 or newer** (it includes `npx`) and a **Chromium-based browser** such as Google
+Chrome or Microsoft Edge (see [Browser](#browser)).
+
+There is no install step. `npx -y markdown-pdf-export …` downloads the package into npm's cache on
+first use and reuses it afterwards, so the first run is slower and later runs start from the cache.
+
+Optional: install it once with `npm install -g markdown-pdf-export`, then use
+`"command": "markdown-pdf-export", "args": ["$ZED_FILE"]` in the task (and
+`"command": "markdown-pdf-export", "args": ["mcp"]` for MCP). It starts faster, works offline, and the
+version changes only when you run `npm update -g markdown-pdf-export`.
+
+### 1. Zed task (recommended)
+
+Add this to `~/.config/zed/tasks.json` (or to `.zed/tasks.json` in a project):
+
+```json
+[
+  {
+    "label": "Markdown: Export to PDF",
+    "command": "npx",
+    "args": ["-y", "markdown-pdf-export", "$ZED_FILE"],
+    "reveal": "no_focus",
+    "hide": "on_success"
+  }
+]
+```
+
+Then run **task: spawn** and choose *Markdown: Export to PDF*. The PDF is written next to the Markdown
+file. To bind it to a key, add this to `keymap.json`:
+
+```json
+[
+  {
+    "context": "Workspace",
+    "bindings": {
+      "cmd-alt-e": ["task::Spawn", { "task_name": "Markdown: Export to PDF" }]
+    }
+  }
+]
+```
+
+More: [Zed Task guide](https://matinfo.github.io/markdown-pdf-export/guide/zed-task) — fixed options, several presets, settings file.
+
+### 2. MCP: let the Zed agent (or any MCP client) export
+
+Add this to Zed's `settings.json`:
+
+```json
+{
+  "context_servers": {
+    "markdown-pdf": {
+      "command": "npx",
+      "args": ["-y", "markdown-pdf-export", "mcp"],
+      "env": { "MARKDOWN_PDF_SETTINGS": "{\"page_format\":\"A4\"}" }
+    }
+  }
+}
+```
+
+The server exposes two tools, `export_markdown_pdf` and `doctor_markdown_pdf`. Its MCP registry
+name is `io.github.matinfo/markdown-pdf-export`. More: [AI Assistant (MCP) guide](https://matinfo.github.io/markdown-pdf-export/guide/mcp).
+
+### 3. Command line
+
+```sh
+npx -y markdown-pdf-export README.md               # → README.pdf next to the file
+npx -y markdown-pdf-export doc.md -o out.pdf --math --toc --page-format Letter
+npx -y markdown-pdf-export doctor                  # check browser + settings
+npx -y markdown-pdf-export --help                  # all options
+```
+
+Flags mirror the MCP tool's options in kebab-case (`--page-format Letter`, `--math`, `--toc`,
+`--no-highlight`, `--margin 10mm` or `--margin '{"top":"10mm"}'`), plus `-o/--output` and
+`--settings <json|file.json>`. The CLI prints the PDF path on stdout and exits with `0` (ok), `1` (error)
+or `2` (usage error). More: [Command Line guide](https://matinfo.github.io/markdown-pdf-export/guide/cli) — every option.
+
+### 4. Other editors and MCP clients
+
+Anything that can run a command on the current file, or register a stdio MCP server, can use it.
+
+```jsonc
+// VS Code — .vscode/tasks.json
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Markdown: Export to PDF",
+      "type": "shell",
+      "command": "npx",
+      "args": ["-y", "markdown-pdf-export", "${file}"],
+      "problemMatcher": []
+    }
+  ]
+}
+```
+
+```sh
+# Vim / Neovim
+:!npx -y markdown-pdf-export %:S
+
+# Claude Code
+claude mcp add markdown-pdf -- npx -y markdown-pdf-export mcp
+```
+
+```jsonc
+// Claude Desktop (claude_desktop_config.json) and Cursor (.cursor/mcp.json)
+{
+  "mcpServers": {
+    "markdown-pdf": { "command": "npx", "args": ["-y", "markdown-pdf-export", "mcp"] }
+  }
+}
+```
+
+More, including JetBrains and VS Code MCP: [Other Editors & MCP Clients](https://matinfo.github.io/markdown-pdf-export/guide/other-editors).
+Zed is the editor this project is developed with; the snippets for other tools follow each tool's
+documented format and have not all been tested by the project.
+
+### Browser
+
+**Why Chromium, and not Firefox or Safari?** PDFs are produced by Chromium's print-to-PDF engine,
+driven through Playwright's `page.pdf()`. Playwright implements PDF generation only for Chromium: its
+Firefox and WebKit builds cannot produce PDFs, and Safari itself cannot be driven this way. The
+header/footer templates, page ranges, margins, scale and background printing documented here are
+options of that Chromium engine.
+
+So any Chromium-based browser works:
+
+- **Google Chrome** and **Microsoft Edge** are detected automatically, in that order.
+- Then **Playwright's own Chromium**, if you installed it. Nothing is downloaded unless you ask for it:
+
+  ```sh
+  npx -y markdown-pdf-export install-browser   # optional, ~150 MB
+  ```
+
+- **Other Chromium-based browsers** (Brave, Vivaldi, Chromium builds, …) can be used by setting
+  `MARKDOWN_PDF_BROWSER` to the path of the browser executable, for example
+  `/Applications/Brave Browser.app/Contents/MacOS/Brave Browser` on macOS. These are not tested by
+  the project.
+
+`MARKDOWN_PDF_BROWSER` accepts `chrome`, `msedge`, `chromium`, or an executable path. The Chrome and
+Edge channel variants `chrome-beta`, `chrome-dev`, `chrome-canary`, `msedge-beta`, `msedge-dev` and
+`msedge-canary` are also accepted.
+
+If you use Firefox or Safari, you only need one Chromium-based browser installed alongside, or the
+one-time `install-browser` download (~150 MB). Your default browser is not changed or used.
+More: [Browser guide](https://matinfo.github.io/markdown-pdf-export/guide/browser).
+
+### Why not a Zed extension?
+
+The Zed extension registry no longer accepts new MCP-server extensions (the official MCP registry
+replaces them), and the extension API has no command surface yet for running an exporter. Zed tasks
+cover this use case today. Zed is adding tasks support to the extension API, so a thin extension that
+contributes a Markdown task may follow.
+
+---
 
 ## Overview
 
-Markdown PDF adds a context server to Zed that lets the AI assistant export Markdown documents to PDF with:
+Markdown PDF exports Markdown documents to PDF with:
 
 - **Syntax highlighting** for fenced code blocks via highlight.js (80+ themes)
-- **[Math rendering](https://matinfo.github.io/zed-markdown-pdf/guide/math)** via KaTeX (`$inline$`, `$$display$$`) — fonts inlined, fully self-contained
-- **[Table of contents](https://matinfo.github.io/zed-markdown-pdf/guide/toc-and-anchors)** auto-generated from `[[toc]]` marker with clickable heading anchors
+- **[Math rendering](https://matinfo.github.io/markdown-pdf-export/guide/math)** via KaTeX (`$inline$`, `$$display$$`) — fonts inlined, fully self-contained
+- **[Table of contents](https://matinfo.github.io/markdown-pdf-export/guide/toc-and-anchors)** auto-generated from `[[toc]]` marker with clickable heading anchors
 - **Emoji shortcodes** rendered to Unicode via markdown-it-emoji
-- **[Structured header/footer](https://matinfo.github.io/zed-markdown-pdf/guide/header-footer)** with zones (left, center, right), custom variables, and date formatting
-- **[Per-document overrides](https://matinfo.github.io/zed-markdown-pdf/guide/front-matter)** via YAML front matter (`pdf:` block)
+- **[Structured header/footer](https://matinfo.github.io/markdown-pdf-export/guide/header-footer)** with zones (left, center, right), custom variables, and date formatting
+- **[Per-document overrides](https://matinfo.github.io/markdown-pdf-export/guide/front-matter)** via YAML front matter (`pdf:` block)
 - **Configurable page layout** — format, orientation, scale, margins, page ranges
-- **[Custom CSS](https://matinfo.github.io/zed-markdown-pdf/guide/custom-styling)** support appended after the built-in neutral stylesheet
-- **Automatic setup** — npm dependencies and Chromium install themselves on first use
+- **[Custom CSS](https://matinfo.github.io/markdown-pdf-export/guide/custom-styling)** support appended after the built-in neutral stylesheet
+- **No runtime installs** — dependencies come with the npm package; uses your installed Chrome or Edge
 
-📖 **Full documentation:** <https://matinfo.github.io/zed-markdown-pdf/> · [Settings reference](https://matinfo.github.io/zed-markdown-pdf/reference/settings) · [Getting started](https://matinfo.github.io/zed-markdown-pdf/guide/getting-started)
+📖 **Full documentation:** <https://matinfo.github.io/markdown-pdf-export/> · [Settings reference](https://matinfo.github.io/markdown-pdf-export/reference/settings) · [Getting started](https://matinfo.github.io/markdown-pdf-export/guide/getting-started)
 
 ---
 
 ## Features
 
-- Native Zed integration through a context server (MCP)
+- Zed integration through a task or a context server (MCP); standalone CLI
 - Markdown to PDF powered by Playwright / Chromium
 - Neutral, GitHub-style built-in stylesheet (or disable it and bring your own)
 - Syntax highlighting via highlight.js — 80+ themes to choose from
@@ -44,74 +211,28 @@ Markdown PDF adds a context server to Zed that lets the AI assistant export Mark
 - Page ranges (print only selected pages)
 - Per-export overrides for every PDF option
 - Automatic relative asset resolution (local images, fonts, …)
-- Built-in diagnostic tool (`doctor_markdown_pdf`)
+- Built-in diagnostic (`doctor` command / `doctor_markdown_pdf` tool)
 - Cross-platform: macOS, Linux, Windows
-
----
-
-## Requirements
-
-To install the extension from source (dev extension):
-
-- Rust with the `wasm32-wasip1` target
-- Node.js 18 or newer
-
-```bash
-rustup target add wasm32-wasip1
-node --version   # must be ≥ 18
-```
-
----
-
-## Installation
-
-### Install as a dev extension
-
-1. Open Zed
-2. Open the command palette (`Cmd+Shift+P` / `Ctrl+Shift+P`)
-3. Run `zed: install dev extension`
-4. Select the root folder of this repository
-
-Zed will compile and install the extension.
-
-### Enable the context server
-
-1. Open Zed Settings
-2. Go to **Agent → Context Servers**
-3. Enable **markdown-pdf**
-
----
-
-## First Run
-
-On the very first export the server installs itself:
-
-```
-Installing npm dependencies (first run)…
-Chromium not found, installing automatically…
-Chromium installed successfully.
-```
-
-Both steps happen only once. If automatic installation fails, run manually:
-
-```bash
-# macOS
-cd ~/Library/Application\ Support/Zed/extensions/installed/markdown-pdf/server
-
-# Linux
-cd ~/.local/share/zed/extensions/installed/markdown-pdf/server
-
-npm install
-node node_modules/playwright-core/cli.js install chromium
-```
 
 ---
 
 ## Usage
 
+### Task and command line
+
+Run the Zed task on the open Markdown file, or call the CLI. Options are flags (in a task, add them
+to `args`):
+
+```sh
+npx -y markdown-pdf-export doc.md                                   # PDF next to the file
+npx -y markdown-pdf-export doc.md -o build/report.pdf --highlight-style monokai.css
+npx -y markdown-pdf-export doc.md --orientation landscape --page-format A4 --display-header-footer
+npx -y markdown-pdf-export doctor                                   # browser status and settings
+```
+
 ### Natural-language prompts
 
-You can also open any Markdown file and describe what you want to the assistant:
+With the MCP server enabled, open any Markdown file and describe what you want to the assistant:
 
 | Prompt | What happens |
 |--------|-------------|
@@ -123,7 +244,7 @@ You can also open any Markdown file and describe what you want to the assistant:
 
 ### MCP tools
 
-The extension exposes two MCP tools directly callable by the AI:
+The MCP server exposes two tools directly callable by the AI:
 
 - **`export_markdown_pdf`** — convert a Markdown file to PDF
 - **`doctor_markdown_pdf`** — inspect Chromium availability and current settings
@@ -132,29 +253,35 @@ The extension exposes two MCP tools directly callable by the AI:
 
 ## Settings
 
-Place settings in your Zed `settings.json` under `context_servers.markdown-pdf.settings`.
+Settings are a plain JSON object. Keep it in a file, for example
+`~/.config/markdown-pdf/settings.json`, and reference it by absolute path (`~` is not expanded):
+
+- **Zed task** — add `"env": { "MARKDOWN_PDF_SETTINGS": "/Users/me/.config/markdown-pdf/settings.json" }`
+  to the task object in `tasks.json`.
+- **MCP** — use the same `"env"` in the `context_servers.markdown-pdf` entry, next to `command` and `args`.
+- **CLI** — pass `--settings /Users/me/.config/markdown-pdf/settings.json`.
+
+`MARKDOWN_PDF_SETTINGS` and `--settings` accept either a path to a JSON file or inline JSON.
+Precedence, highest first: front matter `pdf:` block, CLI flags / tool arguments, `--settings`,
+`MARKDOWN_PDF_SETTINGS`, built-in defaults.
+
+Example `settings.json`:
 
 ```json
 {
-  "context_servers": {
-    "markdown-pdf": {
-      "settings": {
-        "page_format": "A4",
-        "orientation": "portrait",
-        "print_background": true,
-        "highlight": true,
-        "highlight_style": "github.css",
-        "emoji": true,
-        "display_header_footer": false,
-        "open_after_export": false,
-        "margin": {
-          "top": "15mm",
-          "right": "15mm",
-          "bottom": "15mm",
-          "left": "15mm"
-        }
-      }
-    }
+  "page_format": "A4",
+  "orientation": "portrait",
+  "print_background": true,
+  "highlight": true,
+  "highlight_style": "github.css",
+  "emoji": true,
+  "display_header_footer": false,
+  "open_after_export": false,
+  "margin": {
+    "top": "15mm",
+    "right": "15mm",
+    "bottom": "15mm",
+    "left": "15mm"
   }
 }
 ```
@@ -333,8 +460,8 @@ For simple cases, use shorthand instead of full element definitions:
 
 ## Per-Export Overrides
 
-Every setting can also be passed directly in the tool call for a one-off override.
-Just describe what you want to the assistant:
+Every setting can also be passed for a one-off override: as a CLI flag (`--orientation landscape`)
+or directly in the tool call. With MCP, just describe what you want to the assistant:
 
 ```
 Export this to PDF in landscape, Letter format, with the monokai theme,
@@ -408,7 +535,7 @@ pdf:
 **Custom variables:** Any front matter field (like `company`, `version`) becomes
 available as a `{fieldname}` placeholder in headers and footers.
 
-**Priority order:** Front matter settings override global settings, which override defaults.
+**Priority order:** Front matter settings override per-export options and global settings, which override defaults.
 
 ---
 
@@ -428,6 +555,8 @@ h1 {
   border-bottom: 2px solid #3498db;
 }
 ```
+
+In your settings file:
 
 ```json
 {
@@ -455,102 +584,112 @@ Place it anywhere in your Markdown (HTML pass-through is enabled by default).
 
 ```
 .
-├── src/
-│   └── lib.rs                        # Rust Zed extension
-├── configuration/
-│   ├── installation_instructions.md  # Shown in Zed's context server UI
-│   ├── settings_schema.json          # JSON Schema for settings validation
-│   └── default_settings.json        # Default values
-├── server/
-│   ├── markdown_pdf_server.mjs       # MCP server (Node.js)
-│   ├── default.css                   # Built-in neutral stylesheet
-│   └── package.json
-├── test-fixtures/
-├── Cargo.toml
-└── extension.toml
+├── package.json                      # npm package `markdown-pdf-export`
+├── cli.mjs                           # CLI (`markdown-pdf-export` bin)
+├── export.mjs                        # Core: export, doctor, browser launch/install
+├── mcp.mjs                           # MCP stdio server
+├── tool-schemas.mjs                  # Tool schemas shared by CLI and MCP
+├── lib/                              # Rendering, front matter, header/footer helpers
+├── default.css                       # Built-in neutral stylesheet
+├── server.json                       # MCP registry metadata
+├── scripts/
+│   └── bundle-katex-css.mjs          # Generates vendor/ (inlined KaTeX CSS)
+├── vendor/                           # Generated
+├── docs/                             # Documentation site (VitePress)
+├── test-fixtures/                    # Sample documents and end-to-end test runner
+├── test-mcp-init.sh                  # MCP handshake smoke test for mcp.mjs
+└── README.md                         # This file (also the npm README)
 ```
 
 ---
 
 ## Development
 
-### Rust extension
+From the repository root:
 
 ```bash
-rustup target add wasm32-wasip1
-```
-
-### Server
-
-```bash
-cd server
 npm install
-npm run check    # syntax check
-npm test         # end-to-end export test
+npm run check          # syntax check
+npm test               # unit tests
+npm run test:export    # end-to-end export test
+node cli.mjs test-fixtures/sample.md -o /tmp/sample.pdf
+node cli.mjs doctor
+./test-mcp-init.sh     # MCP handshake smoke test
 ```
+
+### Publishing
+
+`.github/workflows/npm-publish.yml` publishes the package to npm and registers the server in the MCP
+Registry when a tag matching `npm-v*` is pushed. It uses npm trusted publishing (OIDC), so no token
+secret is needed.
+
+- **One-time setup:** on npmjs.com, open the package's **Settings → Trusted Publisher** and enter user
+  `matinfo`, repository `markdown-pdf-export`, workflow filename `npm-publish.yml`. The package must exist
+  first, so publish the very first version by hand with `npm publish`.
+- **Later releases:** bump `version` in `package.json`, then push
+  the tag `npm-v<version>`.
 
 ### Testing in Zed
 
-1. Install as a dev extension
-2. Enable `markdown-pdf` in Agent → Context Servers
-3. Open `test-fixtures/sample.md`
-4. Ask: `Export this file to PDF`
+Point a task or a `context_servers` entry (see [Setup](#setup)) at your checkout:
+
+- Task: `"command": "node", "args": ["/path/to/repo/cli.mjs", "$ZED_FILE"]`
+- MCP: `"command": "node", "args": ["/path/to/repo/mcp.mjs"]`
+
+Then open `test-fixtures/sample.md` and run the task, or ask the assistant: `Export this file to PDF`.
+See [TESTING.md](TESTING.md) for details.
 
 ---
 
 ## Troubleshooting
 
-### Dev extension fails to build
-
-Ensure Rust and the WASM target are installed:
-
-```bash
-rustup target add wasm32-wasip1
-```
-
-On macOS with multiple Rust installations, ensure `rustc`, `cargo`, and `rustup` all resolve from `~/.cargo/bin`.
-
 ### Context server does not start
 
-- Confirm `markdown-pdf` is enabled in **Agent → Context Servers**
+- Confirm the `markdown-pdf` entry is present and enabled in **Agent → Context Servers**
+- Check that `npx -y markdown-pdf-export --help` works in a terminal
 - Restart Zed
 - Check Zed logs (**Help → View Logs**)
-- Inspect the debug log at `/tmp/zed-markdown-pdf-debug.log` (macOS/Linux)
+- Set `MARKDOWN_PDF_DEBUG=1` (in the `env` of the `context_servers` entry) and inspect
+  `<tmpdir>/markdown-pdf-debug.log` — the OS temp directory, which on macOS is under `/var/folders/…/T/`,
+  not `/tmp`. Set `MARKDOWN_PDF_DEBUG=/some/file.log` to log to a path of your choice.
 
 ### PDF export fails
 
-Ask the assistant:
+Run the diagnostic, from a terminal or by asking the assistant:
 
 ```
+npx -y markdown-pdf-export doctor
 Run doctor_markdown_pdf
 ```
 
-This reports Chromium availability, active settings, and the server directory in one call.
+This reports browser availability (and which browser was picked, in `browser.launch_options`), the
+active settings, and the package directory in one call.
 
-### Chromium installation fails
+### No usable Chrome/Chromium browser found
+
+The exporter needs a Chromium-based browser (see [Browser](#browser)) and does not download one on its
+own. Install Google Chrome or Microsoft Edge, point `MARKDOWN_PDF_BROWSER` at a browser (`chrome`,
+`msedge`, `chromium` or an executable path), or download Playwright's Chromium (~150 MB):
 
 ```bash
-cd server
-npm install
-node node_modules/playwright-core/cli.js install chromium
+npx -y markdown-pdf-export install-browser
 ```
 
 ---
 
 ## Architecture
 
-### Rust Zed extension (`src/lib.rs`)
+The project is a single Node.js package at the repository root, published to npm as `markdown-pdf-export`:
 
-- Registers the extension with Zed
-- Exposes context server configuration and settings schema
-- Passes `MARKDOWN_PDF_SETTINGS` env var to the Node server
-
-### Node.js MCP server (`server/markdown_pdf_server.mjs`)
-
-- Handles MCP tool calls over stdio
-- Renders Markdown → HTML with `markdown-it`, `highlight.js`, `markdown-it-emoji`
-- Converts HTML → PDF with Playwright / Chromium
-- Self-installs npm dependencies and Chromium on first run
+- `export.mjs` — core: renders Markdown → HTML with `markdown-it`, `highlight.js`, `markdown-it-emoji`,
+  converts HTML → PDF with Playwright / Chromium, runs the diagnostic. No side effects at import.
+- `cli.mjs` — the `markdown-pdf-export` command (export, `doctor`, `install-browser`, `mcp`)
+- `mcp.mjs` — MCP stdio server exposing `export_markdown_pdf` and `doctor_markdown_pdf`
+- `tool-schemas.mjs` — input schemas shared by the CLI flags and the MCP tools
+- Settings: `MARKDOWN_PDF_SETTINGS` (file path or inline JSON) or `--settings`, merged with per-export
+  options and front matter
+- Browser lookup: Google Chrome → Microsoft Edge → Playwright's Chromium (if present); nothing is
+  installed at runtime
 
 ---
 
