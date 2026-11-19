@@ -1,11 +1,19 @@
 name: Publish npm package + MCP Registry
 
 # Release flow:
-#   1. bump "version" in server/package.json (and SERVER_VERSION in server/export.mjs)
+#   1. bump "version" in package.json (and SERVER_VERSION in export.mjs)
 #   2. git tag npm-v<version> && git push origin npm-v<version>
 # server.json versions are synced from the tag below.
 #
-# Requires repository secret NPM_TOKEN (npm automation token).
+# Authentication: npm trusted publishing (OIDC). No NPM_TOKEN secret.
+#   One-time setup on npmjs.com → package Settings → Trusted Publisher:
+#     Organization or user: matinfo
+#     Repository:           zed-markdown-pdf
+#     Workflow filename:    npm-publish.yml
+#   The package must already exist on npm, so publish the very first version
+#   by hand (`npm publish`). The publish step below is skipped when the tagged
+#   version is already on npm, so that first tag still registers the server
+#   in the MCP Registry.
 
 on:
   push:
@@ -13,7 +21,7 @@ on:
       - "npm-v*"
 
 permissions:
-  id-token: write # Required for MCP Registry OIDC authentication
+  id-token: write # OIDC for npm trusted publishing and the MCP Registry
   contents: read
 
 env:
@@ -22,17 +30,15 @@ env:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: server
     steps:
       - uses: actions/checkout@v7
 
       - name: Set up Node.js
         uses: actions/setup-node@v7
         with:
-          node-version: "lts/*"
+          node-version: "24" # trusted publishing needs Node >= 22.14 and npm >= 11.5.1
           registry-url: "https://registry.npmjs.org"
+          package-manager-cache: false # never use caching in release builds
 
       - name: Check tag matches package.json and SERVER_VERSION
         run: |
@@ -47,10 +53,16 @@ jobs:
       - run: npm ci
       - run: npm test
 
-      - name: Publish package to npm
-        run: npm publish # prepack builds vendor/katex-inline.css
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Publish package to npm (trusted publishing, provenance is automatic)
+        run: |
+          set -euo pipefail
+          NAME="$(node -p "require('./package.json').name")"
+          VERSION="$(node -p "require('./package.json').version")"
+          if [ "$(npm view "$NAME@$VERSION" version 2>/dev/null)" = "$VERSION" ]; then
+            echo "$NAME@$VERSION is already on npm — skipping npm publish."
+          else
+            npm publish # prepack builds vendor/katex-inline.css
+          fi
 
       - name: Install cosign
         uses: sigstore/cosign-installer@756fe2d284c7292c4e9b62c8a28f1e5629c59532 # v4.1.3
