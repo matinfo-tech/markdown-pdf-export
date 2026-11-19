@@ -5,6 +5,15 @@ other MCP client can export a Markdown file when you ask it to.
 
 ## Register the Server
 
+```sh
+npx -y markdown-pdf-export setup
+```
+
+`setup` prints the MCP entry for each editor it detects (Zed, VS Code, Cursor, Claude Code, Claude
+Desktop) with the file it goes in; name one (`setup claude-code`) or use `setup all` to see them all.
+`--write` creates files that do not exist yet and runs `claude mcp add` / `code --add-mcp`; existing files are never
+modified. To add the entry by hand, use the snippets below.
+
 `npx -y` downloads the package on first use and runs it from npm's cache afterwards (see
 [Installation](/guide/installation)).
 
@@ -55,7 +64,7 @@ The server speaks MCP over stdio, so any client that can launch a command works.
 
 - **command:** `npx`
 - **args:** `-y markdown-pdf-export mcp`
-- **env (optional):** `MARKDOWN_PDF_SETTINGS`, `MARKDOWN_PDF_BROWSER`, `MARKDOWN_PDF_DEBUG`
+- **env (optional):** `MARKDOWN_PDF_BROWSER`, `MARKDOWN_PDF_DEBUG`, `MARKDOWN_PDF_SETTINGS`
 
 Its name in the MCP Registry is `io.github.matinfo/markdown-pdf-export`.
 
@@ -104,44 +113,14 @@ settings.
 
 ## Settings
 
-Default settings are loaded from the `MARKDOWN_PDF_SETTINGS` environment variable. Point it at your
-[settings file](/guide/global-settings) with an absolute path.
+The server reads the same [settings files](/guide/global-settings) as the command line: the user file
+created by `npx -y markdown-pdf-export init`, then the nearest `.markdown-pdf.json` above the exported
+file. No `env` entry is needed. Tool arguments override these defaults, and a `pdf:` block in the
+document's [front matter](/guide/front-matter) overrides both.
 
-**VS Code** (`mcpServers` entry):
-
-```json
-{
-  "mcpServers": {
-    "markdown-pdf": {
-      "type": "stdio",
-      "command": "npx",
-      "args": ["-y", "markdown-pdf-export", "mcp"],
-      "env": { "MARKDOWN_PDF_SETTINGS": "/Users/me/.config/markdown-pdf/settings.json" }
-    }
-  }
-}
-```
-
-**Zed** (`context_servers` entry in `settings.json`):
-
-```json
-{
-  "context_servers": {
-    "markdown-pdf": {
-      "command": "npx",
-      "args": ["-y", "markdown-pdf-export", "mcp"],
-      "env": { "MARKDOWN_PDF_SETTINGS": "/Users/me/.config/markdown-pdf/settings.json" }
-    }
-  }
-}
-```
-
-`MARKDOWN_PDF_SETTINGS` also accepts inline JSON, for example `"{\"page_format\":\"A4\"}"`.
-Tool arguments override these defaults, and a `pdf:` block in the document's
-[front matter](/guide/front-matter) overrides both.
-
-The same `env` block can set [`MARKDOWN_PDF_BROWSER`](/guide/browser) and
-[`MARKDOWN_PDF_DEBUG`](/guide/cli#environment-variables).
+An `env` object in the entry can set [`MARKDOWN_PDF_BROWSER`](/guide/browser),
+[`MARKDOWN_PDF_DEBUG`](/guide/cli#environment-variables), or `MARKDOWN_PDF_SETTINGS` to use another
+settings file instead of the user file.
 
 ## Troubleshooting
 

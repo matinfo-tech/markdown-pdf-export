@@ -4,7 +4,15 @@ Copy-paste ready configurations for common use cases. Pick one and customize!
 
 ## Settings Templates
 
-Each template is a complete settings file (`settings.json`). See [Global Settings](/guide/global-settings#configuration-location) for how it is loaded:
+Each template is a complete settings file (`settings.json`). See [Global Settings](/guide/global-settings#where-settings-live) for how it is loaded.
+
+Five of them ship with the package — **Minimal**, **Simple Header & Footer**, **Company Logo Header**,
+**Two Logos** and **Academic Paper** — and can be installed as your user settings file in one command
+(add `--project` to write `./.markdown-pdf.json` instead):
+
+```sh
+npx -y markdown-pdf-export init --template minimal    # or simple, corporate, two-logo, academic
+```
 
 ---
 
@@ -129,7 +137,7 @@ Logo on left, title centered, date on right.
 
 ```json
 {
-  "assets_directory": "~/.config/markdown-pdf/assets",
+  "assets_directory": "assets",
   "margin": {
     "top": "25mm",
     "bottom": "20mm"
@@ -154,7 +162,9 @@ Logo on left, title centered, date on right.
 ```
 
 ::: tip Logo Setup
-Place your logo at `~/.config/markdown-pdf/assets/company-logo.svg`
+Install with `init --template corporate`, then place your logo at
+`~/.config/markdown-pdf-export/assets/company-logo.svg` (`"assets_directory": "assets"` is relative to
+the settings file).
 :::
 
 ---
@@ -177,7 +187,7 @@ Your logo on left, partner logo on right.
 
 ```json
 {
-  "assets_directory": "~/.config/markdown-pdf/assets",
+  "assets_directory": "assets",
   "margin": {
     "top": "28mm",
     "bottom": "22mm"
@@ -203,6 +213,11 @@ Your logo on left, partner logo on right.
   }
 }
 ```
+
+::: tip Logo Setup
+Install with `init --template two-logo`, then place `our-logo.svg` and `partner-logo.svg` in
+`~/.config/markdown-pdf-export/assets/`.
+:::
 
 ---
 
@@ -629,25 +644,18 @@ pdf:
 
 ## Global Assets Setup
 
-For logos and shared images:
-
-**1. Create the assets folder:**
+For logos and shared images, keep them next to your user settings file:
 
 ```bash
-mkdir -p ~/.config/markdown-pdf/assets
+mkdir -p ~/.config/markdown-pdf-export/assets
+cp company-logo.svg ~/.config/markdown-pdf-export/assets/
 ```
 
-**2. Copy your logos there:**
-
-```bash
-cp company-logo.svg ~/.config/markdown-pdf/assets/
-```
-
-**3. Reference with @/ prefix:**
+Then reference them with the `@/` prefix. `"assets"` is resolved against the settings file's folder:
 
 ```json
 {
-  "assets_directory": "~/.config/markdown-pdf/assets",
+  "assets_directory": "assets",
   "header": {
     "left_image": "@/company-logo.svg"
   }

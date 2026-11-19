@@ -43,6 +43,20 @@ Then use `markdown-pdf-export` as the command instead of `npx`:
 This starts faster, works offline, and the version changes only when you run
 `npm update -g markdown-pdf-export`.
 
+## Set Up in Two Commands
+
+```sh
+npx -y markdown-pdf-export init     # create your settings file from a template
+npx -y markdown-pdf-export setup    # print the task and MCP entries for your editors
+```
+
+`init` writes `~/.config/markdown-pdf-export/settings.json`, which every export reads automatically
+(see [Global Settings](/guide/global-settings)). `setup` detects Zed, VS Code, Cursor, Claude Code and
+Claude Desktop and shows each snippet with the file it goes in; `setup --write` creates the files that
+do not exist yet, and never modifies existing ones. It ends with a browser check.
+
+Both steps are optional: `npx -y markdown-pdf-export README.md` works without either.
+
 ## Choose How to Use It
 
 | | Setup | Guide |
@@ -52,7 +66,7 @@ This starts faster, works offline, and the version changes only when you run
 | **AI assistant** | One MCP entry in VS Code, Zed or another client | [AI Assistant (MCP)](/guide/mcp) |
 | **Command line** | Nothing to set up | [Command Line](/guide/cli) |
 
-You can set up more than one; they share the same [settings file](/guide/global-settings).
+You can set up more than one; they share the same [settings files](/guide/global-settings).
 
 ## Browser
 

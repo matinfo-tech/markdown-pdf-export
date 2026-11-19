@@ -9,6 +9,8 @@ this page also applies to a task's `args`.
 ```
 markdown-pdf-export <file.md> [options]
 markdown-pdf-export doctor [file.md]
+markdown-pdf-export init [--template <name>] [--project] [--force] [--list]
+markdown-pdf-export setup [zed|vscode|cursor|claude-code|claude-desktop|all] [--write]
 markdown-pdf-export install-browser
 markdown-pdf-export mcp
 ```
@@ -25,11 +27,35 @@ npx -y markdown-pdf-export doc.md -o out.pdf --math --toc --page-format Letter
 | Command | What it does |
 |---------|--------------|
 | `<file.md> [options]` | Export one Markdown file to PDF |
-| `doctor [file.md]` | Print browser status and the active settings as JSON. The optional file is used to resolve relative paths in settings. |
+| `doctor [file.md]` | Print browser status, the settings files that were loaded (`settings_sources`) and the active settings as JSON. With a file, its project settings file is included. |
+| `init` | Create the user settings file `~/.config/markdown-pdf-export/settings.json` from a template — see [below](#init) |
+| `setup [editor]` | Print the task and MCP entries for your editors — see [below](#setup) |
 | `install-browser` | Download Playwright's Chromium (~200 MB). Only needed if no Chromium-based browser is installed — see [Browser](/guide/browser). |
 | `mcp` | Start the MCP server on stdio — see [AI Assistant (MCP)](/guide/mcp) |
 
 `--help` (`-h`) prints the usage and all options; `--version` (`-v`) prints the version.
+
+### init
+
+```sh
+npx -y markdown-pdf-export init                        # choose a template interactively
+npx -y markdown-pdf-export init --template corporate   # minimal, simple, corporate, academic, two-logo
+npx -y markdown-pdf-export init --project              # write ./.markdown-pdf.json instead
+```
+
+`--list` prints the template names. An existing file is kept unless you add `--force`. See
+[Global Settings](/guide/global-settings) for where the files live.
+
+### setup
+
+```sh
+npx -y markdown-pdf-export setup           # editors found on this machine
+npx -y markdown-pdf-export setup zed       # or vscode, cursor, claude-code, claude-desktop, all
+```
+
+Prints each editor task and MCP entry with the file it belongs in, then checks the browser. `--write`
+creates the files that do not exist yet and runs `claude mcp add` for Claude Code; existing files are
+never modified, so merge those snippets by hand.
 
 ## Options
 
@@ -62,7 +88,8 @@ These apply to the export command. Each one corresponds to a setting of the same
 | `--display-header-footer` | boolean | Display header and footer on each page. Empty unless a `header` or `footer` is defined |
 | `--header <json>` | JSON | Structured header, same shape as the [`header` setting](/guide/header-footer). Enables the header |
 | `--footer <json>` | JSON | Structured footer, for example `'{"center_text":"Page {page} of {pages}"}'`. Enables the footer |
-| `--settings <json\|file.json>` | JSON or path | Default settings for this run |
+| `--settings <json\|file.json>` | JSON or path | Settings for this run, used instead of the user settings file |
+| `--watch` | | Re-export whenever the Markdown file or a loaded settings file changes |
 
 `--header` and `--footer` replace the header or footer from the settings file for this run; a `header` or
 `footer` in [front matter](/guide/front-matter) still overrides them. `output_directory` and
@@ -97,23 +124,36 @@ npx -y markdown-pdf-export doc.md --toc --toc-options '{"level":[1,2],"list_type
 
 Quote the JSON so the shell passes it as one argument.
 
-### Settings
-
-`--settings` takes inline JSON or the path to a JSON file containing a plain settings object:
+### Watch
 
 ```sh
-npx -y markdown-pdf-export doc.md --settings /Users/me/.config/markdown-pdf/settings.json
+npx -y markdown-pdf-export doc.md --watch
+```
+
+Exports once, then again on every change to the Markdown file or a settings file it loaded. With a
+PDF viewer that reloads on change, this is a live preview while you design a header or footer. Stop it
+with `Ctrl+C`.
+
+### Settings
+
+Settings files are found automatically (see [Global Settings](/guide/global-settings)).
+`--settings` takes inline JSON or the path to a JSON file and replaces the user settings file for this
+run:
+
+```sh
+npx -y markdown-pdf-export doc.md --settings ./print-settings.json
 npx -y markdown-pdf-export doc.md --settings '{"page_format":"Letter"}'
 ```
 
-Precedence, highest first: front matter `pdf:` block, flags, `--settings`, `MARKDOWN_PDF_SETTINGS`,
-built-in defaults. See [Global Settings](/guide/global-settings#priority-order).
+Precedence, highest first: front matter `pdf:` block, flags, project `.markdown-pdf.json`, user
+settings file (or `--settings` / `MARKDOWN_PDF_SETTINGS`), built-in defaults. See
+[Global Settings](/guide/global-settings#priority-order).
 
 ## Environment Variables
 
 | Variable | Value |
 |----------|-------|
-| `MARKDOWN_PDF_SETTINGS` | Default settings: inline JSON or the path to a JSON file. Overridden by `--settings`. |
+| `MARKDOWN_PDF_SETTINGS` | Inline JSON or the path to a JSON file, used instead of the user settings file. Overridden by `--settings`. |
 | `MARKDOWN_PDF_BROWSER` | `chrome`, `msedge`, `chromium`, or the path to a browser executable — see [Browser](/guide/browser) |
 | `MARKDOWN_PDF_DEBUG` | `1` writes a debug log to `markdown-pdf-debug.log` in the OS temp directory; a file path logs there instead. Off by default. |
 

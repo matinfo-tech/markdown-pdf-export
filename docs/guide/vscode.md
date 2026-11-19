@@ -6,6 +6,15 @@ bound to a key. No extension is needed. You can also let the AI assistant export
 
 Requirements: Node.js 20 or newer and a Chromium-based browser (see [Installation](/guide/installation)).
 
+## Quick Setup
+
+```sh
+npx -y markdown-pdf-export setup vscode
+```
+
+This prints the task (with the file it goes in) and a `code --add-mcp` command for the MCP server.
+Add `--write` to run that command; existing files are never modified. Use `setup cursor` for Cursor.
+
 ## Add the Task
 
 VS Code runs tasks only when a folder is open; they are not available when you edit a single loose
@@ -128,25 +137,12 @@ Define one task per preset; each gets its own entry in **Run Task**:
 
 ## Settings File
 
-Keep your defaults in a [settings file](/guide/global-settings) and point the task at it with
-`options.env`. `${userHome}` expands to your home folder:
+Defaults that are longer than a few flags (headers, footers, margins) go in a
+[settings file](/guide/global-settings), which the task finds on its own. Create one with
+`npx -y markdown-pdf-export init`.
 
-```json
-{
-  "label": "Markdown: Export to PDF",
-  "type": "shell",
-  "command": "npx",
-  "args": ["-y", "markdown-pdf-export", "${file}"],
-  "options": {
-    "env": { "MARKDOWN_PDF_SETTINGS": "${userHome}/.config/markdown-pdf/settings.json" }
-  },
-  "presentation": { "reveal": "silent" },
-  "problemMatcher": []
-}
-```
-
-The same `env` object takes `MARKDOWN_PDF_BROWSER` (see [Browser](/guide/browser)) and
-`MARKDOWN_PDF_DEBUG`.
+`options.env` in the task sets environment variables such as `MARKDOWN_PDF_BROWSER` (see
+[Browser](/guide/browser)) and `MARKDOWN_PDF_DEBUG`.
 
 ## Global Install Variant
 
@@ -226,8 +222,8 @@ VS Code asks you to trust the server the first time it starts. After that, ask i
 Export this file to PDF
 ```
 
-To load a settings file, add `"env": { "MARKDOWN_PDF_SETTINGS": "/absolute/path/settings.json" }` to
-the entry. Tools, prompts and troubleshooting are described in [AI Assistant (MCP)](/guide/mcp).
+The server uses the same [settings files](/guide/global-settings) as the task. Tools, prompts and
+troubleshooting are described in [AI Assistant (MCP)](/guide/mcp).
 
 ## Next Steps
 

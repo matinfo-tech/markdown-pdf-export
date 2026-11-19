@@ -4,8 +4,9 @@ Complete reference for all Markdown PDF settings.
 
 ## Configuration
 
-Settings are a plain JSON object. Keep it in a file, for example
-`~/.config/markdown-pdf/settings.json`:
+Settings are a plain JSON object, read automatically from the user settings file
+`~/.config/markdown-pdf-export/settings.json` (create it with `npx -y markdown-pdf-export init`) and
+from the nearest `.markdown-pdf.json` above the Markdown file:
 
 ```json
 {
@@ -14,88 +15,10 @@ Settings are a plain JSON object. Keep it in a file, for example
 }
 ```
 
-Then point Markdown PDF at that file. Use an absolute path (`~` is not expanded); in a VS Code task,
-`${userHome}` expands to your home folder.
-
-**VS Code task** — add `options.env` to the task in `tasks.json`:
-
-```json
-{
-  "version": "2.0.0",
-  "tasks": [
-    {
-      "label": "Markdown: Export to PDF",
-      "type": "shell",
-      "command": "npx",
-      "args": ["-y", "markdown-pdf-export", "${file}"],
-      "options": {
-        "env": { "MARKDOWN_PDF_SETTINGS": "${userHome}/.config/markdown-pdf/settings.json" }
-      },
-      "presentation": { "reveal": "silent" },
-      "problemMatcher": []
-    }
-  ]
-}
-```
-
-**Zed task** — add `env` to the task in `tasks.json`:
-
-```json
-[
-  {
-    "label": "Markdown: Export to PDF",
-    "command": "npx",
-    "args": ["-y", "markdown-pdf-export", "$ZED_FILE"],
-    "env": { "MARKDOWN_PDF_SETTINGS": "/Users/me/.config/markdown-pdf/settings.json" },
-    "reveal": "no_focus",
-    "hide": "on_success"
-  }
-]
-```
-
-**MCP server in VS Code** — add `env` to the `mcpServers` entry (see
-[VS Code](/guide/vscode#ai-assistant-mcp)). `${userHome}` is a tasks variable; write the full path
-here:
-
-```json
-{
-  "mcpServers": {
-    "markdown-pdf": {
-      "type": "stdio",
-      "command": "npx",
-      "args": ["-y", "markdown-pdf-export", "mcp"],
-      "env": { "MARKDOWN_PDF_SETTINGS": "/Users/me/.config/markdown-pdf/settings.json" }
-    }
-  }
-}
-```
-
-**MCP server in Zed** — add `env` to the `context_servers` entry in Zed's `settings.json`:
-
-```json
-{
-  "context_servers": {
-    "markdown-pdf": {
-      "command": "npx",
-      "args": ["-y", "markdown-pdf-export", "mcp"],
-      "env": { "MARKDOWN_PDF_SETTINGS": "/Users/me/.config/markdown-pdf/settings.json" }
-    }
-  }
-}
-```
-
-**Command line** — pass the file with `--settings`:
-
-```sh
-npx -y markdown-pdf-export doc.md --settings /Users/me/.config/markdown-pdf/settings.json
-```
-
-`MARKDOWN_PDF_SETTINGS` accepts either the path to a JSON file or inline JSON
-(`"{\"page_format\":\"A4\"}"`). `--settings` accepts the same two forms.
-
-The JSON examples below show the content of that settings file. See
+The JSON examples below show the content of a settings file. See
 [Priority Order](#priority-order) for how the sources combine, and
-[Global Settings](/guide/global-settings) for a walkthrough.
+[Global Settings](/guide/global-settings) for file locations, relative paths and the
+`MARKDOWN_PDF_SETTINGS` / `--settings` override.
 
 Most settings also have a command-line flag of the same name in kebab-case (`page_format` →
 `--page-format`); see [Command Line](/guide/cli#options). `header`, `footer`, `output_directory` and
@@ -212,7 +135,8 @@ Include the built-in neutral stylesheet.
 
 ### stylesheet_path
 
-Path to a custom CSS file (relative to Markdown file).
+Path to a custom CSS file (relative to the settings file that sets it; in front matter, to the
+Markdown file).
 
 | Type | Default |
 |------|---------|
@@ -462,8 +386,9 @@ Highest priority first:
 
 1. **Front matter** — the `pdf:` block of the document
 2. **Per-export options** — CLI flags (`--page-format Letter`) or MCP tool arguments (from the prompt)
-3. **`--settings <json|file.json>`** — CLI only
-4. **`MARKDOWN_PDF_SETTINGS`** — environment variable (file path or inline JSON)
+3. **Project file** — the nearest `.markdown-pdf.json`
+4. **User file** — `~/.config/markdown-pdf-export/settings.json`, or `--settings` /
+   `MARKDOWN_PDF_SETTINGS` when set
 5. **Built-in defaults**
 
 ## Minimal Example

@@ -6,7 +6,7 @@ links work in the resulting PDF.
 
 ## Enable
 
-In your settings file (see [Global Settings](/guide/global-settings#configuration-location) for how it is loaded):
+In your settings file (see [Global Settings](/guide/global-settings#where-settings-live) for how it is loaded):
 
 ```json
 {

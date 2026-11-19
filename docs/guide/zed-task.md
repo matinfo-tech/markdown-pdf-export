@@ -3,6 +3,15 @@
 In Zed, a task runs the exporter on the file you have open. It needs no extension and no AI assistant:
 you trigger it from the command palette or with a key.
 
+## Quick Setup
+
+```sh
+npx -y markdown-pdf-export setup zed
+```
+
+This prints the task and MCP entries with the file each one goes in. Add `--write` to create files
+that do not exist yet; existing files are never modified.
+
 ## Add the Task
 
 Add this to `~/.config/zed/tasks.json` to have it in every project, or to `.zed/tasks.json` in a
@@ -103,21 +112,9 @@ Define one task per preset and pick the one you need from **task: spawn**:
 
 ## Settings File
 
-For defaults that are longer than a few flags (headers, footers, margins), keep a
-[settings file](/guide/global-settings) and load it through `env`. Use an absolute path:
-
-```json
-[
-  {
-    "label": "Markdown: Export to PDF",
-    "command": "npx",
-    "args": ["-y", "markdown-pdf-export", "$ZED_FILE"],
-    "env": { "MARKDOWN_PDF_SETTINGS": "/Users/me/.config/markdown-pdf/settings.json" },
-    "reveal": "no_focus",
-    "hide": "on_success"
-  }
-]
-```
+Defaults that are longer than a few flags (headers, footers, margins) go in a
+[settings file](/guide/global-settings), which the task finds on its own. Create one with
+`npx -y markdown-pdf-export init`.
 
 Flags in `args` override the settings file, and a `pdf:` block in the document's
 [front matter](/guide/front-matter) overrides both.

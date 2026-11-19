@@ -47,7 +47,8 @@ Image paths can be resolved in several ways:
 
 ### Relative Paths (Default)
 
-Paths are resolved relative to the Markdown file:
+Paths are resolved relative to the Markdown file (header/footer images set in a settings file are
+resolved relative to that settings file):
 
 ```
 project/
@@ -85,18 +86,21 @@ On each platform, `~` expands to:
 
 For organization-wide branding, configure a global assets directory and reference files with the `@/` prefix:
 
-**Step 1: Configure the assets directory in your settings file (see [Global Settings](/guide/global-settings#configuration-location) for how it is loaded):**
+**Step 1: Configure the assets directory in your settings file (see [Global Settings](/guide/global-settings#where-settings-live) for how it is loaded):**
 
 ```json
 {
-  "assets_directory": "~/.config/markdown-pdf/assets"
+  "assets_directory": "assets"
 }
 ```
+
+A relative `assets_directory` is resolved against the settings file's folder, so in the user settings
+file this is `~/.config/markdown-pdf-export/assets`.
 
 **Step 2: Place your shared assets there:**
 
 ```
-~/.config/markdown-pdf/assets/
+~/.config/markdown-pdf-export/assets/
 ├── company-logo.svg
 ├── partner-logo.png
 └── watermark.svg
@@ -395,7 +399,8 @@ For teams and organizations, set up a shared assets directory:
 ### Recommended Structure
 
 ```
-~/.config/markdown-pdf/
+~/.config/markdown-pdf-export/
+├── settings.json
 └── assets/
     ├── logos/
     │   ├── company-logo.svg
@@ -412,7 +417,7 @@ Share this settings file with your team for consistent branding:
 
 ```json
 {
-  "assets_directory": "~/.config/markdown-pdf/assets",
+  "assets_directory": "assets",
   "header": {
     "height": "18mm",
     "padding": "0 15mm",
@@ -426,7 +431,7 @@ Share this settings file with your team for consistent branding:
 }
 ```
 
-Each team member places their copy of the logos in `~/.config/markdown-pdf/assets/logos/`.
+Each team member puts this file and the `assets/` folder in `~/.config/markdown-pdf-export/`.
 
 ## Next Steps
 

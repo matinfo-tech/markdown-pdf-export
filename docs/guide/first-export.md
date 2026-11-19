@@ -109,7 +109,7 @@ Or ask the assistant:
 Export to build/output.pdf
 ```
 
-Or configure a default output directory in your settings file (see [Global Settings](/guide/global-settings#configuration-location) for how it is loaded):
+Or configure a default output directory in your settings file (see [Global Settings](/guide/global-settings#where-settings-live) for how it is loaded):
 
 ```json
 {

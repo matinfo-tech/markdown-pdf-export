@@ -20,7 +20,7 @@ A professional corporate letterhead with company logo, document title, and compr
 
 ### Global Settings (settings.json)
 
-Settings file — see [Global Settings](/guide/global-settings#configuration-location) for how it is loaded:
+Settings file — see [Global Settings](/guide/global-settings#where-settings-live) for how it is loaded:
 
 ```json
 {
