@@ -66,7 +66,6 @@ const thumbs = new Map(); // image path → object URL of the file just uploaded
 const AREA_NAMES = { header: "Top", footer: "Bottom" };
 const SIZE_LABELS = { s: "Small", m: "Medium", l: "Large" };
 const MARGIN_LABELS = { narrow: "Narrow", normal: "Normal", wide: "Wide" };
-const FONT_LABELS = { sans: "Sans", serif: "Serif", mono: "Mono", system: "System" };
 const LOOK_LABELS = { clean: "Clean", report: "Report", academic: "Academic", compact: "Compact", technical: "Technical" };
 
 const currentSettings = () => draftToSettings(draft, raw, { looks: server.looks });
@@ -105,9 +104,21 @@ function build() {
     ),
   );
 
-  const fonts = Object.entries(server.fonts).map(([name, stack]) => [name, FONT_LABELS[name] ?? name, stack]);
-  if (draft.font === "custom") fonts.push(["custom", "From file"]);
-  segmented($("fonts"), fonts, () => draft.font, (v) => (draft.font = v));
+  // Two font choices: body text and titles. "From the page style" writes nothing.
+  for (const [id, key] of [["font", "font"], ["heading-font", "heading_font"]]) {
+    const names = Object.keys(server.fonts).filter((n) => n !== "system" || draft[key] === "system");
+    const options = [
+      el("option", { value: "look", text: "From the page style" }),
+      ...names.map((n) => {
+        const o = el("option", { value: n, text: server.fontLabels[n] ?? n });
+        o.style.fontFamily = server.fonts[n];
+        return o;
+      }),
+    ];
+    if (draft[key] === "custom") options.push(el("option", { value: "custom", text: "From your file" }));
+    $(id).replaceChildren(...options);
+    $(id).addEventListener("change", (e) => change(() => (draft[key] = e.target.value)));
+  }
 
   $("format").replaceChildren(...server.pageFormats.map((f) => el("option", { value: f, text: f })));
   $("format").addEventListener("change", (e) => change(() => (draft.page_format = e.target.value)));
@@ -341,7 +352,11 @@ function syncNotices() {
 
 function sync() {
   for (const b of $("looks").children) b.setAttribute("aria-checked", String(b.dataset.value === draft.look));
-  for (const id of ["fonts", "orientation", "margin", "size"]) $(id)._sync();
+  for (const id of ["orientation", "margin", "size"]) $(id)._sync();
+  for (const [id, key] of [["font", "font"], ["heading-font", "heading_font"]]) {
+    $(id).value = draft[key];
+    $(id).style.fontFamily = server.fonts[draft[key]] ?? ""; // the control shows its own choice
+  }
   $("format").value = draft.page_format;
   $("highlight").value = draft.highlight;
   // The diagram's side padding follows the margins, so text and rules sit where they will print.

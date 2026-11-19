@@ -178,6 +178,11 @@ export const EXPORT_INPUT_SCHEMA = {
       description:
       "CSS font-family value for the document body and header/footer. Overrides the default system font stack. Example: \"Georgia, 'Times New Roman', serif\".",
     },
+    heading_font_family: {
+      type: "string",
+      description:
+        "CSS font-family value for headings (h1-h6). Default: same as the body text.",
+    },
   },
 };
 

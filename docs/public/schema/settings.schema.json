@@ -253,6 +253,10 @@
       "type": "string",
       "description": "CSS font-family value for the document body and header/footer. Overrides the default system font stack. Example: \"Georgia, 'Times New Roman', serif\"."
     },
+    "heading_font_family": {
+      "type": "string",
+      "description": "CSS font-family value for headings (h1-h6). Default: same as the body text."
+    },
     "look": {
       "type": "string",
       "enum": [
@@ -269,10 +273,26 @@
       "enum": [
         "sans",
         "serif",
+        "book",
+        "humanist",
+        "geometric",
         "mono",
         "system"
       ],
-      "description": "Font preset (sans, serif, mono, system). Use font_family for a custom stack."
+      "description": "Font preset for the text. Use font_family for a custom stack."
+    },
+    "heading_font": {
+      "type": "string",
+      "enum": [
+        "sans",
+        "serif",
+        "book",
+        "humanist",
+        "geometric",
+        "mono",
+        "system"
+      ],
+      "description": "Font preset for titles (h1-h6). Use heading_font_family for a custom stack."
     },
     "template": {
       "type": "string",

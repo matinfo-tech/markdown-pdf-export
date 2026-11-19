@@ -4,8 +4,10 @@
  * browser and the unit tests share this file.
  *
  * Draft shape:
- *   { look, font, highlight, page_format, orientation, margin,
+ *   { look, font, heading_font, highlight, page_format, orientation, margin,
  *     header: Area, footer: Area, text_size, color }
+ *   font / heading_font = a preset name, "look" (whatever the page style
+ *   brings) or "custom" (a hand-written font_family kept from the file)
  *   Area = { left: Slot, center: Slot, right: Slot, line: boolean, custom: boolean }
  *   Slot = { kind: "none" | "text" | "image", text: string, image: string, size: number }
  *          size = logo size in percent (100 = 12 mm tall)
@@ -78,7 +80,8 @@ export const FIRST_LAYOUT = "titled";
 export function emptyDraft() {
   return {
     look: "clean",
-    font: "sans",
+    font: "look",
+    heading_font: "look",
     highlight: DEFAULT_HIGHLIGHT,
     page_format: "A4",
     orientation: "portrait",
@@ -164,6 +167,8 @@ export function settingsToDraft(raw, ctx = {}) {
   const defaults = lookDefaults(draft.look, looks);
   if (typeof raw.font === "string") draft.font = raw.font;
   else if (typeof raw.font_family === "string" && raw.font_family) draft.font = "custom";
+  if (typeof raw.heading_font === "string") draft.heading_font = raw.heading_font;
+  else if (typeof raw.heading_font_family === "string" && raw.heading_font_family) draft.heading_font = "custom";
   draft.highlight = typeof raw.highlight_style === "string" ? raw.highlight_style : defaults.highlight;
   if (typeof raw.page_format === "string") draft.page_format = raw.page_format;
   if (raw.orientation === "landscape") draft.orientation = "landscape";
@@ -236,10 +241,14 @@ export function draftToSettings(draft, raw = {}, ctx = {}) {
   if (draft.look === "clean") delete out.look;
   else out.look = draft.look;
 
-  if (draft.font !== "custom") {
-    delete out.font_family;
-    if (draft.font === "sans") delete out.font;
-    else out.font = draft.font;
+  for (const [choice, preset, stack] of [
+    [draft.font, "font", "font_family"],
+    [draft.heading_font, "heading_font", "heading_font_family"],
+  ]) {
+    if (choice === "custom") continue; // hand-written stack stays
+    delete out[stack];
+    if (choice === "look") delete out[preset];
+    else out[preset] = choice;
   }
 
   if (draft.highlight === defaults.highlight) delete out.highlight_style;

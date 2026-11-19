@@ -92,6 +92,7 @@ export const DEFAULT_SETTINGS = {
   margin: { top: "15mm", right: "15mm", bottom: "15mm", left: "15mm" },
   // content / rendering
   font_family: null,
+  heading_font_family: null,
   include_default_styles: true,
   highlight: true,
   highlight_style: "github.css",
@@ -339,6 +340,7 @@ export function normalizeSettings(raw) {
     ),
 
     font_family: normalizeNonEmptyString(safe.font_family),
+    heading_font_family: normalizeNonEmptyString(safe.heading_font_family),
 
     // Structured header/footer configs – pass through as-is for the
     // config-merger / html-generator pipeline to consume.
@@ -555,6 +557,8 @@ function buildEffectiveOptions(args = {}, settings) {
 
     font_family:
       normalizeNonEmptyString(args.font_family) ?? settings.font_family,
+    heading_font_family:
+      normalizeNonEmptyString(args.heading_font_family) ?? settings.heading_font_family,
   };
 }
 
@@ -887,6 +891,7 @@ export async function doctorMarkdownPdf(args) {
       emoji: doc.settings.emoji,
       display_header_footer: doc.settings.display_header_footer,
       font_family: doc.settings.font_family,
+      heading_font_family: doc.settings.heading_font_family,
       header: doc.settings.header,
       footer: doc.settings.footer,
     },
@@ -959,6 +964,7 @@ export async function exportMarkdownPdf(args) {
     print_background: options.print_background,
     margin: options.margin,
     font_family: options.font_family,
+    heading_font_family: options.heading_font_family,
     include_default_styles: options.include_default_styles,
     highlight: options.highlight,
     highlight_style: options.highlight_style,
@@ -991,6 +997,7 @@ export async function exportMarkdownPdf(args) {
     print_background: mergedConfig.print_background ?? options.print_background,
     margin: mergedConfig.margin ?? options.margin,
     font_family: mergedConfig.font_family ?? options.font_family,
+    heading_font_family: mergedConfig.heading_font_family ?? options.heading_font_family,
     include_default_styles:
       mergedConfig.include_default_styles ?? options.include_default_styles,
     highlight: mergedConfig.highlight ?? options.highlight,
@@ -1235,11 +1242,6 @@ async function renderMarkdownToHtmlWithBody(inputPath, body, title, options) {
     styleBlocks += `<style>${defaultCss}</style>\n    `;
   }
 
-  // Font family override (after default CSS so it wins over the root stack)
-  if (options.font_family) {
-    styleBlocks += `<style>:root { font-family: ${options.font_family}; }</style>\n    `;
-  }
-
   // KaTeX stylesheet (with inlined fonts when bundled, else read from node_modules)
   if (options.math) {
     try {
@@ -1284,6 +1286,15 @@ async function renderMarkdownToHtmlWithBody(inputPath, body, title, options) {
     } catch {
       debugLog(`Could not load stylesheet: ${stylesheetPath}`);
     }
+  }
+
+  // Font choices come last: an explicit font must win over the root stack of
+  // default.css and over a page style (look) that brings its own fonts.
+  if (options.font_family) {
+    styleBlocks += `<style>:root { font-family: ${options.font_family}; }</style>\n    `;
+  }
+  if (options.heading_font_family) {
+    styleBlocks += `<style>h1, h2, h3, h4, h5, h6 { font-family: ${options.heading_font_family}; }</style>\n    `;
   }
 
   const baseHref = `${pathToFileURL(path.dirname(inputPath)).href}/`;
