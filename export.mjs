@@ -28,6 +28,7 @@ import {
   readSettingsFile,
   userSettingsPath,
 } from "./lib/settings-loader.mjs";
+import { applyPresets } from "./lib/looks.mjs";
 import {
   createPlaceholderResolver,
   createRenderContext,
@@ -359,7 +360,8 @@ function loadBaseSettings() {
   if (env && env !== "{}") {
     if (env.startsWith("{")) {
       try {
-        const parsed = JSON.parse(env);
+        const { data: parsed, warnings } = applyPresets(JSON.parse(env));
+        for (const w of warnings) console.error(`[markdown-pdf] ⚠️  MARKDOWN_PDF_SETTINGS: ${w}`);
         return {
           raw: parsed,
           sources: [{ kind: "env", path: null, loaded: true, error: null }],

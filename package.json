@@ -22,6 +22,7 @@
     "default.css",
     "lib/*.mjs",
     "templates/",
+    "looks/",
     "schema/",
     "vendor/"
   ],

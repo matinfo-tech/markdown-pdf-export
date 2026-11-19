@@ -253,6 +253,38 @@
       "type": "string",
       "description": "CSS font-family value for the document body and header/footer. Overrides the default system font stack. Example: \"Georgia, 'Times New Roman', serif\"."
     },
+    "look": {
+      "type": "string",
+      "enum": [
+        "clean",
+        "report",
+        "academic",
+        "compact",
+        "dark-code"
+      ],
+      "description": "Page style preset: clean (Default. GitHub-style, neutral.) report (Serif headings, strong title rule. Business reports.) academic (Serif body, justified, minimal colour. Papers and theses.) compact (Dense and small. More text per page.) dark-code (Light page, dark code blocks.) Explicit keys in this file override it."
+    },
+    "font": {
+      "type": "string",
+      "enum": [
+        "sans",
+        "serif",
+        "mono",
+        "system"
+      ],
+      "description": "Font preset (sans, serif, mono, system). Use font_family for a custom stack."
+    },
+    "template": {
+      "type": "string",
+      "enum": [
+        "minimal",
+        "simple",
+        "corporate",
+        "academic",
+        "two-logo"
+      ],
+      "description": "Header/footer preset. Explicit header/footer keys in this file override it."
+    },
     "output_directory": {
       "type": "string",
       "description": "Folder for the PDFs, relative to each Markdown file. Default: next to it."
