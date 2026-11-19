@@ -578,7 +578,7 @@ secret is needed.
 - **One-time setup:** on npmjs.com, open the package's **Settings → Trusted Publisher** and enter user
   `matinfo`, repository `zed-markdown-pdf`, workflow filename `npm-publish.yml`. The package must exist
   first, so publish the very first version by hand with `npm publish`.
-- **Later releases:** bump `version` in `package.json` and `SERVER_VERSION` in `export.mjs`, then push
+- **Later releases:** bump `version` in `package.json`, then push
   the tag `npm-v<version>`.
 
 ### Testing in Zed

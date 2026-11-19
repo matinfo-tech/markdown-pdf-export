@@ -160,7 +160,17 @@ export const EXPORT_INPUT_SCHEMA = {
       type: "boolean",
       default: false,
       description:
-        "Display header and footer on each page. Defaults to false — omit this parameter to use the saved setting (which defaults to false if not configured).",
+        "Display header and footer on each page. Content comes from `header` / `footer` (here, in settings or in front matter); without them the header and footer are empty. Enabled automatically when `header` or `footer` is given.",
+    },
+    header: {
+      type: "object",
+      description:
+        "Structured page header as JSON. Shorthand keys: left_text, center_text, right_text, left_image, height. Placeholders: {title}, {date}, {page}, {pages}, {filename}, {author}. Example: {\"center_text\":\"{title}\",\"right_text\":\"{date}\"}. Replaces the header from settings; front matter still overrides it.",
+    },
+    footer: {
+      type: "object",
+      description:
+        "Structured page footer as JSON, same shape as `header`. Example for page numbers: {\"center_text\":\"Page {page} of {pages}\"}. Replaces the footer from settings; front matter still overrides it.",
     },
 
     font_family: {

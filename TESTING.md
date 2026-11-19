@@ -225,7 +225,7 @@ Use these to validate:
 ## Releasing
 
 Publishing is done by `.github/workflows/npm-publish.yml` with npm trusted publishing (OIDC); no token
-secret is involved. Bump `version` in `package.json` and `SERVER_VERSION` in `export.mjs`, then push
+secret is involved. Bump `version` in `package.json`, then push
 the tag `npm-v<version>`. The one-time Trusted Publisher setup and the manual first publish are
 described in the README's "Publishing" section.
 

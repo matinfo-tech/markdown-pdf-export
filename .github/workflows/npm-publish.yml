@@ -1,7 +1,7 @@
 name: Publish npm package + MCP Registry
 
 # Release flow:
-#   1. bump "version" in package.json (and SERVER_VERSION in export.mjs)
+#   1. bump "version" in package.json
 #   2. git tag npm-v<version> && git push origin npm-v<version>
 # server.json versions are synced from the tag below.
 #
@@ -40,15 +40,13 @@ jobs:
           registry-url: "https://registry.npmjs.org"
           package-manager-cache: false # never use caching in release builds
 
-      - name: Check tag matches package.json and SERVER_VERSION
+      - name: Check tag matches package.json
         run: |
           set -euo pipefail
           TAG_VERSION="${GITHUB_REF_NAME#npm-v}"
           PKG_VERSION="$(node -p "require('./package.json').version")"
-          SRC_VERSION="$(grep -oE 'SERVER_VERSION = "[^"]+"' export.mjs | grep -oE '[0-9][^"]*')"
-          echo "tag=$TAG_VERSION package.json=$PKG_VERSION export.mjs=$SRC_VERSION"
+          echo "tag=$TAG_VERSION package.json=$PKG_VERSION"
           test "$TAG_VERSION" = "$PKG_VERSION"
-          test "$TAG_VERSION" = "$SRC_VERSION"
 
       - run: npm ci
       - run: npm test

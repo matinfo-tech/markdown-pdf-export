@@ -18,7 +18,6 @@ import path from "node:path";
 import process from "node:process";
 
 import {
-  SERVER_NAME,
   SERVER_VERSION,
   doctorMarkdownPdf,
   exportMarkdownPdf,
@@ -52,7 +51,7 @@ function usage() {
               ? "<n>"
               : "<value>";
       const first = (def.description ?? "").split(/(?<=\.)\s/)[0];
-      return `  ${`${flag} ${kind}`.padEnd(34)}${first}`;
+      return `  ${`${flag} ${kind}`.padEnd(37)} ${first}`;
     });
 
   return `${BIN} ${SERVER_VERSION}
@@ -189,7 +188,7 @@ async function main(argv) {
     return first === undefined ? 2 : 0;
   }
   if (first === "-v" || first === "--version" || first === "version") {
-    process.stdout.write(`${SERVER_NAME} ${SERVER_VERSION}\n`);
+    process.stdout.write(`${BIN} ${SERVER_VERSION}\n`);
     return 0;
   }
 
@@ -215,7 +214,7 @@ async function main(argv) {
     return 0;
   }
   if (version) {
-    process.stdout.write(`${SERVER_NAME} ${SERVER_VERSION}\n`);
+    process.stdout.write(`${BIN} ${SERVER_VERSION}\n`);
     return 0;
   }
 

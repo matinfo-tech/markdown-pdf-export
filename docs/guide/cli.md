@@ -58,11 +58,14 @@ These apply to the export command. Each one corresponds to a setting of the same
 | `--heading-anchors` | boolean | Add `id` slugs to headings |
 | `--toc` | boolean | Render a `[[toc]]` marker as a table of contents (also enables heading anchors) |
 | `--toc-options <json>` | JSON | TOC options: `level` (heading levels), `list_type` (`ul` or `ol`) |
-| `--display-header-footer` | boolean | Display header and footer on each page |
+| `--display-header-footer` | boolean | Display header and footer on each page. Empty unless a `header` or `footer` is defined |
+| `--header <json>` | JSON | Structured header, same shape as the [`header` setting](/guide/header-footer). Enables the header |
+| `--footer <json>` | JSON | Structured footer, for example `'{"center_text":"Page {page} of {pages}"}'`. Enables the footer |
 | `--settings <json\|file.json>` | JSON or path | Default settings for this run |
 
-Structured `header` and `footer` definitions, `output_directory` and `assets_directory` have no flag:
-put them in a [settings file](/guide/global-settings) or in [front matter](/guide/front-matter).
+`--header` and `--footer` replace the header or footer from the settings file for this run; a `header` or
+`footer` in [front matter](/guide/front-matter) still overrides them. `output_directory` and
+`assets_directory` have no flag: put them in a [settings file](/guide/global-settings).
 
 ### Boolean Flags
 

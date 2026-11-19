@@ -66,8 +66,8 @@ Most settings can also be given for a single export without touching the setting
   [Command Line](/guide/cli#options) for the full list.
 - **AI assistant:** say it in the prompt, for example `Export this file to PDF in Letter format`.
 
-`header`, `footer`, `output_directory` and `assets_directory` have no flag; set them in the settings
-file or in front matter.
+`header` and `footer` take JSON (`--header '{"center_text":"{title}"}'`). `output_directory` and
+`assets_directory` have no flag; set them in the settings file.
 
 ## Complete Example
 

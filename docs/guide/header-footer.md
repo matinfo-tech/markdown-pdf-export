@@ -54,10 +54,11 @@ Apply to all exports, in your settings file (see [Global Settings](/guide/global
 }
 ```
 
-Structured `header` and `footer` objects are configured in the settings file or in front matter; they
-have no command-line flag, and they are shown automatically once configured. The
-`display_header_footer` setting does have one — CLI: `--display-header-footer`, or ask the assistant:
-`Export this file to PDF with header and footer`.
+Structured `header` and `footer` objects can live in the settings file or in front matter, and are
+shown automatically once configured. For a single export, pass them directly — CLI:
+`--footer '{"center_text":"Page {page} of {pages}"}'` (same for `--header`), or ask the assistant:
+`Export this file to PDF with a footer showing page numbers` (the `export_markdown_pdf` tool accepts
+`header` and `footer`). `--display-header-footer` alone shows only what is already configured.
 
 ### Per-Document (Front Matter)
 

@@ -54,7 +54,10 @@ export function debugLog(message) {
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 export const SERVER_NAME = "markdown-pdf";
-export const SERVER_VERSION = "0.2.0";
+// Single source of truth for the version: package.json.
+export const SERVER_VERSION = createRequire(import.meta.url)(
+  "./package.json",
+).version;
 const SERVER_DIR = path.dirname(fileURLToPath(import.meta.url));
 
 /**
@@ -465,6 +468,15 @@ function buildEffectiveOptions(args = {}) {
       typeof args.display_header_footer === "boolean"
         ? args.display_header_footer
         : settings.display_header_footer,
+    // Structured header/footer: a per-call object replaces the one from settings.
+    header:
+      args.header && typeof args.header === "object"
+        ? args.header
+        : settings.header,
+    footer:
+      args.footer && typeof args.footer === "object"
+        ? args.footer
+        : settings.footer,
 
     font_family:
       normalizeNonEmptyString(args.font_family) ?? settings.font_family,
@@ -864,9 +876,9 @@ export async function exportMarkdownPdf(args) {
     breaks: options.breaks,
     emoji: options.emoji,
     display_header_footer: options.display_header_footer,
-    // Include structured header/footer from settings if present
-    header: settings.header || null,
-    footer: settings.footer || null,
+    // Structured header/footer from the call arguments, else from settings
+    header: options.header || null,
+    footer: options.footer || null,
   };
 
   const { config: mergedConfig, hasHeaderFooter } = mergeConfig(

@@ -114,15 +114,16 @@ in a task, add it to `args`.
 | Custom output path | `Export to docs/report.pdf` | `-o docs/report.pdf` |
 | Dark code theme | `Export with the monokai theme` | `--highlight-style monokai.css` |
 | Landscape layout | `Export in landscape orientation` | `--orientation landscape` |
-| Header and footer | `Export with header and footer showing page numbers` | `--display-header-footer` |
+| Header and footer | `Export with a footer showing page numbers` | `--footer '{"center_text":"Page {page} of {pages}"}'` |
 | Check setup | `Run doctor_markdown_pdf` | `npx -y markdown-pdf-export doctor` |
 
 ```sh
 npx -y markdown-pdf-export report.md -o docs/report.pdf --highlight-style monokai.css --orientation landscape
 ```
 
-`--display-header-footer` turns the header and footer on; their content comes from your settings file
-or front matter (see sections 8 and 12).
+`--header` and `--footer` take the same JSON as the `header` / `footer` settings (section 8) and switch
+the header and footer on. `--display-header-footer` alone only shows what your settings file or front
+matter already defines; with nothing defined, the header and footer are empty.
 
 ---
 
