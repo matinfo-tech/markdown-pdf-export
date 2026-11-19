@@ -3,7 +3,7 @@
 # Test script to verify MCP server responds to initialize request
 # Uses newline-delimited JSON (NDJSON) framing as defined by the MCP spec.
 
-SERVER_PATH="$(dirname "$0")/server/mcp.mjs"
+SERVER_PATH="$(dirname "$0")/mcp.mjs"
 
 if [ ! -f "$SERVER_PATH" ]; then
     echo "Error: Server not found at: $SERVER_PATH"

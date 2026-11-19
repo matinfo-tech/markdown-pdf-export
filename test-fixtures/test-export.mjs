@@ -23,7 +23,6 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SERVER_SCRIPT = path.join(
   __dirname,
   "..",
-  "server",
   "mcp.mjs",
 );
 const SAMPLE_MD = path.join(__dirname, "sample.md");

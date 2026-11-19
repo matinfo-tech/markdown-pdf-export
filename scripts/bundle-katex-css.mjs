@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Build-time bundler: produces server/vendor/katex-inline.css with every
+// Build-time bundler: produces vendor/katex-inline.css with every
 // font file rewritten as a base64 data: URI. Ships in the release tarball
 // so KaTeX renders correctly without external font requests.
 

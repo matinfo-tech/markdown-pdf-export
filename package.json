@@ -29,7 +29,7 @@
     "build:katex-css": "node scripts/bundle-katex-css.mjs",
     "prepack": "npm run build",
     "test": "node --test lib/__tests__/*.test.mjs",
-    "test:export": "node ../test-fixtures/test-export.mjs",
+    "test:export": "node test-fixtures/test-export.mjs",
     "test:all": "npm run test && npm run test:export",
     "install-browser": "node cli.mjs install-browser"
   },
@@ -61,7 +61,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/matinfo/zed-markdown-pdf"
+    "url": "git+https://github.com/matinfo/zed-markdown-pdf.git"
+  },
+  "homepage": "https://matinfo.github.io/zed-markdown-pdf/",
+  "bugs": {
+    "url": "https://github.com/matinfo/zed-markdown-pdf/issues"
   },
   "packageManager": "npm@11.12.1"
 }
