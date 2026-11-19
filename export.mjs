@@ -877,6 +877,8 @@ export async function doctorMarkdownPdf(args) {
       emoji: doc.settings.emoji,
       display_header_footer: doc.settings.display_header_footer,
       font_family: doc.settings.font_family,
+      header: doc.settings.header,
+      footer: doc.settings.footer,
     },
     default_settings: DEFAULT_SETTINGS,
     server_dir: SERVER_DIR,

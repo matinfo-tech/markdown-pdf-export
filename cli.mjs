@@ -36,6 +36,8 @@ import {
   resolveSettingsPaths,
   userSettingsPath,
 } from "./lib/settings-loader.mjs";
+import { formatDoctor } from "./lib/doctor-report.mjs";
+import { LOOKS, FONTS } from "./lib/looks.mjs";
 import { EDITOR_IDS, buildEditorSetup, launchSpec } from "./lib/editor-setup.mjs";
 
 const BIN = "markdown-pdf-export";
@@ -72,8 +74,9 @@ function usage() {
 
 Usage:
   ${BIN} <file.md> [options]
-  ${BIN} doctor [file.md]
-  ${BIN} init [--template <name>] [--project] [--force] [--list]
+  ${BIN}                       (no arguments: guided menu)
+  ${BIN} doctor [file.md] [--json]
+  ${BIN} init [--look <n>] [--font <n>] [--template <n>] [--project] [--force] [--list]
   ${BIN} setup [${EDITOR_IDS.join("|")}|all] [--write]
   ${BIN} install-browser
   ${BIN} mcp
@@ -216,6 +219,9 @@ function loadSettingsArg(value) {
 async function main(argv) {
   const [first, ...rest] = argv;
 
+  if (first === undefined && process.stdin.isTTY && process.stderr.isTTY) {
+    return runMenu();
+  }
   if (first === undefined || first === "-h" || first === "--help" || first === "help") {
     process.stdout.write(usage());
     return first === undefined ? 2 : 0;
@@ -242,8 +248,9 @@ async function main(argv) {
   if (first === "setup") return runSetup(rest);
 
   const isDoctor = first === "doctor";
+  const asJson = isDoctor && rest.includes("--json");
   const { positional, options, settings, watch, help, version } = parseArgs(
-    isDoctor ? rest : argv,
+    isDoctor ? rest.filter((a) => a !== "--json") : argv,
   );
   if (help) {
     process.stdout.write(usage());
@@ -259,8 +266,13 @@ async function main(argv) {
 
   if (isDoctor) {
     const report = await doctorMarkdownPdf({ input_path: positional[0] });
-    process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
-    return report.browser.available ? 0 : 1;
+    if (asJson) {
+      process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
+      return report.browser.available ? 0 : 1;
+    }
+    const { text, ok } = formatDoctor(report, { bin: BIN });
+    process.stdout.write(text);
+    return ok ? 0 : 1;
   }
 
   if (positional.length !== 1) {
@@ -281,6 +293,34 @@ async function main(argv) {
   const result = await exportMarkdownPdf(args);
   process.stdout.write(`${result.output_path}\n`);
   return 0;
+}
+
+// ── menu (no arguments, interactive terminal) ───────────────────────────────
+
+async function runMenu() {
+  const rl = readline.createInterface({ input: process.stdin, output: process.stderr });
+  try {
+    process.stderr.write(
+      `\n${BIN} ${SERVER_VERSION} — Markdown to PDF\n\n` +
+        "  1) Set up my editor (VS Code, Zed, Cursor, Claude…)\n" +
+        "  2) Choose a page style and header/footer\n" +
+        "  3) Check that everything works\n" +
+        "  4) Show all commands\n\n",
+    );
+    const pick = (await rl.question("Choose 1-4: ")).trim();
+    rl.close();
+    if (pick === "1") return runSetup([]);
+    if (pick === "2") return runInit([]);
+    if (pick === "3") {
+      const { text, ok } = formatDoctor(await doctorMarkdownPdf({}), { bin: BIN });
+      process.stdout.write(text);
+      return ok ? 0 : 1;
+    }
+    process.stdout.write(usage());
+    return 0;
+  } finally {
+    rl.close();
+  }
 }
 
 // ── init ─────────────────────────────────────────────────────────────────────
@@ -329,15 +369,40 @@ function readTemplate(name) {
   return JSON.parse(fs.readFileSync(file, "utf8"));
 }
 
-/** Short interactive prompt (TTY only): template, page format, logo. */
+/** Ask for one item of a list by number or name. */
+async function choose(rl, title, names, describe, fallback) {
+  process.stderr.write(`\n${title}\n`);
+  names.forEach((n, i) => process.stderr.write(`  ${i + 1}) ${n.padEnd(10)} ${describe(n)}\n`));
+  const raw = (await rl.question(`Choose 1-${names.length} [${fallback}]: `)).trim();
+  if (!raw) return fallback;
+  const byNumber = names[Number(raw) - 1];
+  return byNumber ?? (names.includes(raw) ? raw : fallback);
+}
+
+const TEMPLATE_HINTS = {
+  minimal: "title and page number only",
+  simple: "title + date on top, page x of y at the bottom",
+  corporate: "logo, title, date, blue rule",
+  academic: "centred title, page numbers",
+  "two-logo": "two logos, confidential footer",
+};
+
+/** Short interactive prompt (TTY only): look, font, header/footer, page, logo. */
 async function promptInit(templates) {
   const rl = readline.createInterface({ input: process.stdin, output: process.stderr });
   try {
-    process.stderr.write(`Templates: ${templates.join(", ")}\n`);
-    const template = (await rl.question("Template [minimal]: ")).trim() || "minimal";
-    const pageFormat = (await rl.question("Page format (A4, Letter, …) [A4]: ")).trim();
+    const look = await choose(rl, "Page style", Object.keys(LOOKS), (n) => LOOKS[n].description, "clean");
+    const font = await choose(rl, "Font", Object.keys(FONTS), () => "", "sans");
+    const template = await choose(
+      rl,
+      "Header and footer",
+      templates,
+      (n) => TEMPLATE_HINTS[n] ?? "",
+      "minimal",
+    );
+    const pageFormat = (await rl.question("\nPage format (A4, Letter, …) [A4]: ")).trim();
     const logo = (await rl.question("Logo image for the header (path, optional): ")).trim();
-    return { template, pageFormat, logo };
+    return { template, look, font, pageFormat, logo };
   } finally {
     rl.close();
   }
@@ -346,13 +411,15 @@ async function promptInit(templates) {
 async function runInit(argv) {
   const flags = parseSubArgs(argv, {
     template: "string",
+    look: "string",
+    font: "string",
     project: "boolean",
     force: "boolean",
     list: "boolean",
   });
   if (flags.help) {
     process.stdout.write(
-      `Usage: ${BIN} init [--template <name>] [--project] [--force] [--list]\n\n` +
+      `Usage: ${BIN} init [--look <n>] [--font <n>] [--template <n>] [--project] [--force] [--list]\n\n` +
         `Creates ${userSettingsPath()}\n` +
         `(or ./${PROJECT_SETTINGS_FILENAME} with --project) from a template.\n`,
     );
@@ -375,15 +442,44 @@ async function runInit(argv) {
     return 1;
   }
 
+  if (flags.look && !LOOKS[flags.look]) {
+    throw new UsageError(`Unknown look "${flags.look}". Available: ${Object.keys(LOOKS).join(", ")}`);
+  }
+  if (flags.font && !FONTS[flags.font]) {
+    throw new UsageError(`Unknown font "${flags.font}". Available: ${Object.keys(FONTS).join(", ")}`);
+  }
+
   const interactive =
-    !flags.template && process.stdin.isTTY && process.stderr.isTTY;
+    !flags.template && !flags.look && !flags.font && process.stdin.isTTY && process.stderr.isTTY;
   const answers = interactive
     ? await promptInit(templates)
-    : { template: flags.template ?? "minimal", pageFormat: "", logo: "" };
+    : {
+        template: flags.template ?? "minimal",
+        look: flags.look,
+        font: flags.font,
+        pageFormat: "",
+        logo: "",
+      };
 
-  const data = readTemplate(answers.template);
+  // Short form when a look/font is chosen: the file stays 3 lines and readable.
+  const short = Boolean(answers.look || answers.font);
+  const data = short
+    ? {
+        $schema: readTemplate(answers.template).$schema,
+        ...(answers.look ? { look: answers.look } : {}),
+        ...(answers.font ? { font: answers.font } : {}),
+        template: answers.template,
+      }
+    : readTemplate(answers.template);
   if (answers.pageFormat) data.page_format = answers.pageFormat;
   if (answers.logo) {
+    // A logo needs the header spelled out, so expand the template in place.
+    if (short) {
+      const tpl = readTemplate(answers.template);
+      delete tpl.$schema;
+      delete data.template;
+      Object.assign(data, tpl);
+    }
     data.header = { height: "18mm", padding: "0 15mm", ...data.header };
     data.header.left_image = path.resolve(answers.logo);
     data.header.left_image_height ??= "12mm";
