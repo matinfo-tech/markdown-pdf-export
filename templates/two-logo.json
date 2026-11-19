@@ -1,0 +1,27 @@
+{
+  "$schema": "https://matinfo.github.io/markdown-pdf-export/schema/settings.schema.json",
+  "assets_directory": "assets",
+  "margin": {
+    "top": "28mm",
+    "bottom": "22mm"
+  },
+  "header": {
+    "height": "22mm",
+    "padding": "0 15mm",
+    "border_bottom": "1px solid #ddd",
+    "left_image": "@/our-logo.svg",
+    "left_image_height": "18mm",
+    "center_text": "{title}",
+    "right_image": "@/partner-logo.svg",
+    "right_image_height": "18mm"
+  },
+  "footer": {
+    "height": "12mm",
+    "padding": "0 15mm",
+    "font_size": "8px",
+    "color": "#666",
+    "left_text": "© {date:yyyy} Company Name",
+    "center_text": "Page {page} of {pages}",
+    "right_text": "Confidential"
+  }
+}

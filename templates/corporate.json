@@ -1,0 +1,24 @@
+{
+  "$schema": "https://matinfo.github.io/markdown-pdf-export/schema/settings.schema.json",
+  "assets_directory": "assets",
+  "margin": {
+    "top": "25mm",
+    "bottom": "20mm"
+  },
+  "header": {
+    "height": "18mm",
+    "padding": "0 15mm",
+    "border_bottom": "2px solid #0066cc",
+    "left_image": "@/company-logo.svg",
+    "left_image_height": "14mm",
+    "center_text": "{title}",
+    "right_text": "{date:MMMM d, yyyy}"
+  },
+  "footer": {
+    "height": "10mm",
+    "padding": "0 15mm",
+    "font_size": "8px",
+    "color": "#666",
+    "center_text": "Page {page} of {pages}"
+  }
+}

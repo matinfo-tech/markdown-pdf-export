@@ -1,0 +1,26 @@
+{
+  "$schema": "https://matinfo.github.io/markdown-pdf-export/schema/settings.schema.json",
+  "font_family": "Times New Roman, Georgia, serif",
+  "margin": {
+    "top": "25mm",
+    "right": "25mm",
+    "bottom": "25mm",
+    "left": "25mm"
+  },
+  "header": {
+    "height": "12mm",
+    "padding": "0 20mm",
+    "font_size": "10px",
+    "font_style": "italic",
+    "color": "#555",
+    "border_bottom": "0.5px solid #ccc",
+    "left_text": "{author}",
+    "right_text": "{title}"
+  },
+  "footer": {
+    "height": "12mm",
+    "padding": "0 20mm",
+    "font_size": "10px",
+    "center_text": "{page}"
+  }
+}

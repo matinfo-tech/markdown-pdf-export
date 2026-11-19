@@ -2,7 +2,9 @@
  * Markdown PDF MCP server (stdio).
  *
  * Thin transport around export.mjs: framing, JSON-RPC dispatch, two tools.
- * Settings come from the MARKDOWN_PDF_SETTINGS env var (JSON), if set.
+ * Settings: user file (~/.config/markdown-pdf-export/settings.json) or the
+ * MARKDOWN_PDF_SETTINGS env var, plus the nearest .markdown-pdf.json — see
+ * lib/settings-loader.mjs.
  */
 import process from "node:process";
 import { fileURLToPath } from "node:url";

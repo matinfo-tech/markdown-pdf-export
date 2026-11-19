@@ -71,6 +71,10 @@ function checkTarball(tarball) {
     "lib/html-generator.mjs",
     "lib/placeholder-resolver.mjs",
     "lib/schema-validator.mjs",
+    "lib/settings-loader.mjs",
+    "lib/editor-setup.mjs",
+    "templates/minimal.json",
+    "templates/corporate.json",
   ];
   const missing = required.filter((f) => !files.has(f));
   if (missing.length) fail(`tarball is missing: ${missing.join(", ")}`);
@@ -166,6 +170,26 @@ async function main() {
       fail(`MCP initialize returned no serverInfo: ${JSON.stringify(init)}`);
     }
     ok(`MCP initialize ok (${init.result.serverInfo.name})`);
+
+    // `init` writes the user settings file into an isolated HOME.
+    const home = path.join(work, "home");
+    const initEnv = {
+      ...process.env,
+      HOME: home,
+      USERPROFILE: home,
+      APPDATA: path.join(home, "AppData"),
+      XDG_CONFIG_HOME: "",
+      MARKDOWN_PDF_SETTINGS: "",
+    };
+    const written = run(process.execPath, [binPath, "init", "--template", "simple"], {
+      env: initEnv,
+    }).trim();
+    if (!fs.existsSync(written) || !written.startsWith(home)) {
+      fail(`init did not write the settings file under HOME (got "${written}")`);
+    }
+    const again = spawnSync(process.execPath, [binPath, "init"], { env: initEnv });
+    if (again.status === 0) fail("init overwrote an existing settings file");
+    ok(`init wrote ${path.relative(work, written)} and refused to overwrite`);
 
     if (SKIP_EXPORT) {
       ok("PDF export skipped (--no-export)");
