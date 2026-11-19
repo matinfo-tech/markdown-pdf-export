@@ -1,9 +1,38 @@
 # AI Assistant (MCP)
 
-The package includes an MCP server. Once it is registered, the AI assistant in Zed (or any other MCP
-client) can export a Markdown file when you ask it to.
+The package includes an MCP server. Once it is registered, the AI assistant in VS Code, Zed or any
+other MCP client can export a Markdown file when you ask it to.
 
-## Register the Server in Zed
+## Register the Server
+
+`npx -y` downloads the package on first use and runs it from npm's cache afterwards (see
+[Installation](/guide/installation)).
+
+### VS Code
+
+1. Run **MCP: Add Server** from the Command Palette
+2. Choose a local command (stdio) server
+3. Enter the command `npx -y markdown-pdf-export mcp` and name it `markdown-pdf`
+
+Or add it to the MCP configuration file yourself. Current VS Code releases read
+`~/.copilot/mcp-config.json`:
+
+```json
+{
+  "mcpServers": {
+    "markdown-pdf": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "markdown-pdf-export", "mcp"]
+    }
+  }
+}
+```
+
+VS Code asks you to trust the server the first time it starts. Older configuration formats are
+covered in [VS Code](/guide/vscode#ai-assistant-mcp).
+
+### Zed
 
 Add this to Zed's `settings.json`:
 
@@ -18,8 +47,22 @@ Add this to Zed's `settings.json`:
 }
 ```
 
-The entry appears under **Agent → Context Servers**. `npx -y` downloads the package on first use and
-runs it from npm's cache afterwards (see [Installation](/guide/installation)).
+The entry appears under **Agent → Context Servers**.
+
+### Other MCP Clients
+
+The server speaks MCP over stdio, so any client that can launch a command works. Configure it with:
+
+- **command:** `npx`
+- **args:** `-y markdown-pdf-export mcp`
+- **env (optional):** `MARKDOWN_PDF_SETTINGS`, `MARKDOWN_PDF_BROWSER`, `MARKDOWN_PDF_DEBUG`
+
+Its name in the MCP Registry is `io.github.matinfo/markdown-pdf-export`.
+
+Ready-made snippets for Claude Code, Claude Desktop and Cursor are in
+[Other Editors & MCP Clients](/guide/other-editors).
+
+### Global Install
 
 If you installed the package with `npm install -g markdown-pdf-export`, use
 `"command": "markdown-pdf-export", "args": ["mcp"]` instead.
@@ -62,7 +105,24 @@ settings.
 ## Settings
 
 Default settings are loaded from the `MARKDOWN_PDF_SETTINGS` environment variable. Point it at your
-[settings file](/guide/global-settings) with an absolute path:
+[settings file](/guide/global-settings) with an absolute path.
+
+**VS Code** (`mcpServers` entry):
+
+```json
+{
+  "mcpServers": {
+    "markdown-pdf": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "markdown-pdf-export", "mcp"],
+      "env": { "MARKDOWN_PDF_SETTINGS": "/Users/me/.config/markdown-pdf/settings.json" }
+    }
+  }
+}
+```
+
+**Zed** (`context_servers` entry in `settings.json`):
 
 ```json
 {
@@ -83,32 +143,27 @@ Tool arguments override these defaults, and a `pdf:` block in the document's
 The same `env` block can set [`MARKDOWN_PDF_BROWSER`](/guide/browser) and
 [`MARKDOWN_PDF_DEBUG`](/guide/cli#environment-variables).
 
-## Other MCP Clients
-
-The server speaks MCP over stdio, so any client that can launch a command works. Configure it with:
-
-- **command:** `npx`
-- **args:** `-y markdown-pdf-export mcp`
-- **env (optional):** `MARKDOWN_PDF_SETTINGS`, `MARKDOWN_PDF_BROWSER`, `MARKDOWN_PDF_DEBUG`
-
-Its name in the MCP Registry is `io.github.matinfo/markdown-pdf-export`.
-
-Ready-made snippets for Claude Code, Claude Desktop, Cursor and VS Code are in
-[Other Editors & MCP Clients](/guide/other-editors).
-
 ## Troubleshooting
 
-If the tools do not appear in the assistant:
+If the tools do not appear in the assistant, first check that `npx -y markdown-pdf-export --help`
+works in a terminal. Then check the client.
 
-1. Check that `npx -y markdown-pdf-export --help` works in a terminal
-2. Confirm the `markdown-pdf` entry is present and enabled in **Agent → Context Servers**
-3. Restart Zed
-4. Check Zed logs: **Help → View Logs**
+**VS Code**
+
+1. Run **MCP: List Servers** from the Command Palette and confirm `markdown-pdf` is listed
+2. Select it and restart the server; accept the trust prompt if VS Code shows one
+3. If the entry is missing, run **MCP: Add Server** again
+
+**Zed**
+
+1. Confirm the `markdown-pdf` entry is present and enabled in **Agent → Context Servers**
+2. Restart Zed
+3. Check Zed logs: **Help → View Logs**
 
 If an export fails with `No usable Chrome/Chromium browser found.`, see [Browser](/guide/browser).
 
 ## Next Steps
 
-- [Zed Task](/guide/zed-task) — export with a key, without the assistant
+- [VS Code](/guide/vscode) or [Zed](/guide/zed-task) task — export with a key, without the assistant
 - [Global Settings](/guide/global-settings) — the settings file
 - [Settings Reference](/reference/settings) — every option

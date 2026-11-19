@@ -1,7 +1,8 @@
 # Command Line
 
-`markdown-pdf-export` is a regular command-line tool. The [Zed task](/guide/zed-task) is this command
-with the current file as its argument, so everything on this page also applies to a task's `args`.
+`markdown-pdf-export` is a regular command-line tool. The [VS Code](/guide/vscode) or
+[Zed](/guide/zed-task) task is this command with the current file as its argument, so everything on
+this page also applies to a task's `args`.
 
 ## Usage
 
@@ -159,6 +160,7 @@ markdown-pdf-export README.md -o dist/README.pdf
 
 ## Next Steps
 
-- [Zed Task](/guide/zed-task) — run this command from Zed
+- [VS Code](/guide/vscode) — run this command from VS Code
+- [Zed](/guide/zed-task) — run this command from Zed
 - [Browser](/guide/browser) — which browsers work and why
 - [Settings Reference](/reference/settings) — every setting

@@ -1,13 +1,14 @@
 # Installation
 
 Markdown PDF ships as the npm package `markdown-pdf-export`: a command-line tool and an MCP server.
-No Zed extension is needed.
+No editor extension is needed.
 
 ## Requirements
 
 - **Node.js 20 or newer** — it includes `npx`
 - **A Chromium-based browser** — Google Chrome or Microsoft Edge (see [Browser](#browser))
-- **Zed** — only if you want the task or the AI assistant; the command line works on its own
+- **An editor is optional** — VS Code or Zed if you want the task or the AI assistant; the command
+  line works on its own
 
 ```bash
 node --version   # Must be ≥ 20
@@ -35,6 +36,7 @@ npm install -g markdown-pdf-export
 
 Then use `markdown-pdf-export` as the command instead of `npx`:
 
+- VS Code task: `"command": "markdown-pdf-export", "args": ["${file}"]`
 - Zed task: `"command": "markdown-pdf-export", "args": ["$ZED_FILE"]`
 - MCP: `"command": "markdown-pdf-export", "args": ["mcp"]`
 
@@ -45,8 +47,9 @@ This starts faster, works offline, and the version changes only when you run
 
 | | Setup | Guide |
 |---|---|---|
-| **Zed task** | One entry in `tasks.json`, optional key binding | [Zed Task](/guide/zed-task) |
-| **AI assistant** | One `context_servers` entry in Zed's `settings.json` | [AI Assistant (MCP)](/guide/mcp) |
+| **VS Code task** | One entry in `tasks.json`, optional key binding | [VS Code](/guide/vscode) |
+| **Zed task** | One entry in `tasks.json`, optional key binding | [Zed](/guide/zed-task) |
+| **AI assistant** | One MCP entry in VS Code, Zed or another client | [AI Assistant (MCP)](/guide/mcp) |
 | **Command line** | Nothing to set up | [Command Line](/guide/cli) |
 
 You can set up more than one; they share the same [settings file](/guide/global-settings).
@@ -107,19 +110,20 @@ node --version   # Should be ≥ 20
 
 See [Browser](/guide/browser#troubleshooting-no-usable-chrome-chromium-browser-found).
 
-### Context server doesn't start
+### MCP server doesn't start
 
 See [AI Assistant (MCP)](/guide/mcp#troubleshooting).
 
 ### Debug log
 
-Set `MARKDOWN_PDF_DEBUG=1` (in a terminal, or in the `env` of the task or `context_servers` entry). The
+Set `MARKDOWN_PDF_DEBUG=1` (in a terminal, or in the `env` of the task or MCP entry). The
 log is written to `markdown-pdf-debug.log` in the OS temp directory — on macOS under
 `/var/folders/…/T/`, not `/tmp`. Set `MARKDOWN_PDF_DEBUG=/some/file.log` to choose the path.
 
 ## Next Steps
 
-- [Zed Task](/guide/zed-task) — export with a key
+- [VS Code](/guide/vscode) — export with a task or a key
+- [Zed](/guide/zed-task) — export with a key
 - [AI Assistant (MCP)](/guide/mcp) — export by asking
 - [Command Line](/guide/cli) — every option
 - [First Export](/guide/first-export) — create your first PDF

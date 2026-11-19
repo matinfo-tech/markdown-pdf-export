@@ -4,14 +4,19 @@ This guide walks you through creating your first PDF export with Markdown PDF.
 
 ## Basic Export
 
-Pick the way you set up. All three produce the same PDF, next to your source file.
+Pick the way you set up. All of them produce the same PDF, next to your source file.
 
-**1. Zed task** ([setup](/guide/zed-task))
+**1. VS Code task** ([setup](/guide/vscode))
+
+1. Open any Markdown file in VS Code (with its folder open)
+2. Run **Tasks: Run Task** and choose *Markdown: Export to PDF* (or press your key binding)
+
+**2. Zed task** ([setup](/guide/zed-task))
 
 1. Open any Markdown file in Zed
 2. Run **task: spawn** and choose *Markdown: Export to PDF* (or press your key binding)
 
-**2. Command line** ([reference](/guide/cli))
+**3. Command line** ([reference](/guide/cli))
 
 ```sh
 npx -y markdown-pdf-export report.md
@@ -19,10 +24,10 @@ npx -y markdown-pdf-export report.md
 
 The command prints the path of the PDF.
 
-**3. AI assistant** ([setup](/guide/mcp))
+**4. AI assistant** ([setup](/guide/mcp))
 
-1. Open any Markdown file in Zed
-2. Open the assistant panel (`Cmd+Enter` / `Ctrl+Enter`)
+1. Open any Markdown file in VS Code or Zed
+2. Open the assistant — the chat in VS Code, the assistant panel in Zed (`Cmd+Enter` / `Ctrl+Enter`)
 3. Type:
 
    ```
@@ -34,7 +39,7 @@ Edge, or run `npx -y markdown-pdf-export install-browser` once (see [Browser](/g
 
 ## Export with Options
 
-On the command line, options are flags. In a Zed task, add the same flags to `args`:
+On the command line, options are flags. In a VS Code or Zed task, add the same flags to `args`:
 
 ```sh
 npx -y markdown-pdf-export report.md --orientation landscape
@@ -80,7 +85,7 @@ Content goes here...
 ```
 
 Then export normally, with the task, the command line or the prompt `Export this file to PDF`. Front
-matter applies to all three.
+matter applies to all of them.
 
 ## Output Location
 

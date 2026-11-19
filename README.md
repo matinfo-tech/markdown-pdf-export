@@ -13,10 +13,11 @@ Export Markdown files to high-quality PDFs — from your editor, from an AI assi
 
 | Where | How | Guide |
 |---|---|---|
+| **VS Code** | A task on the open file, or the AI assistant over MCP. No extension needed | [Setup](#setup) below |
 | **Zed** | A task on the open file, or the AI assistant over MCP. No extension needed | [Setup](#setup) below |
-| **VS Code, JetBrains, Vim/Neovim** | An editor task or command that runs the CLI on the current file | [Other editors](#4-other-editors-and-mcp-clients) |
-| **Claude Code, Claude Desktop, Cursor, any MCP client** | Register the stdio MCP server | [Other editors](#4-other-editors-and-mcp-clients) |
-| **Terminal, scripts, CI** | `npx -y markdown-pdf-export file.md` | [Command line](#3-command-line) |
+| **JetBrains, Vim/Neovim** | An editor command that runs the CLI on the current file | [Other editors](#5-other-editors-and-mcp-clients) |
+| **Claude Code, Claude Desktop, Cursor, any MCP client** | Register the stdio MCP server | [Other editors](#5-other-editors-and-mcp-clients) |
+| **Terminal, scripts, CI** | `npx -y markdown-pdf-export file.md` | [Command line](#4-command-line) |
 
 ## Setup
 
@@ -27,11 +28,50 @@ There is no install step. `npx -y markdown-pdf-export …` downloads the package
 first use and reuses it afterwards, so the first run is slower and later runs start from the cache.
 
 Optional: install it once with `npm install -g markdown-pdf-export`, then use
-`"command": "markdown-pdf-export", "args": ["$ZED_FILE"]` in the task (and
+`"command": "markdown-pdf-export", "args": ["${file}"]` in the VS Code task or
+`"command": "markdown-pdf-export", "args": ["$ZED_FILE"]` in the Zed task (and
 `"command": "markdown-pdf-export", "args": ["mcp"]` for MCP). It starts faster, works offline, and the
 version changes only when you run `npm update -g markdown-pdf-export`.
 
-### 1. Zed task (recommended)
+### 1. VS Code task (recommended)
+
+Run **Tasks: Open User Tasks** from the Command Palette to have the task in every project, or create
+`.vscode/tasks.json` in a project, and add:
+
+```json
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Markdown: Export to PDF",
+      "type": "shell",
+      "command": "npx",
+      "args": ["-y", "markdown-pdf-export", "${file}"],
+      "presentation": { "reveal": "silent" },
+      "problemMatcher": []
+    }
+  ]
+}
+```
+
+Then run **Tasks: Run Task** from the Command Palette (or **Terminal → Run Task…**) and choose
+*Markdown: Export to PDF*. The PDF is written next to the Markdown file. VS Code runs tasks only when a
+folder is open, not on a single loose file. To bind it to a key, add this to `keybindings.json`:
+
+```json
+[
+  {
+    "key": "ctrl+alt+e",
+    "command": "workbench.action.tasks.runTask",
+    "args": "Markdown: Export to PDF",
+    "when": "editorLangId == markdown"
+  }
+]
+```
+
+More: [VS Code guide](https://matinfo.github.io/markdown-pdf-export/guide/vscode) — build shortcut, several presets, settings file, MCP.
+
+### 2. Zed task
 
 Add this to `~/.config/zed/tasks.json` (or to `.zed/tasks.json` in a project):
 
@@ -61,11 +101,27 @@ file. To bind it to a key, add this to `keymap.json`:
 ]
 ```
 
-More: [Zed Task guide](https://matinfo.github.io/markdown-pdf-export/guide/zed-task) — fixed options, several presets, settings file.
+More: [Zed guide](https://matinfo.github.io/markdown-pdf-export/guide/zed-task) — fixed options, several presets, settings file.
 
-### 2. MCP: let the Zed agent (or any MCP client) export
+### 3. MCP: let the AI assistant export
 
-Add this to Zed's `settings.json`:
+**VS Code** — run **MCP: Add Server** from the Command Palette, choose a local command (stdio) server
+and enter `npx -y markdown-pdf-export mcp`. Or add the entry yourself; current VS Code releases read
+`~/.copilot/mcp-config.json`:
+
+```json
+{
+  "mcpServers": {
+    "markdown-pdf": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "markdown-pdf-export", "mcp"]
+    }
+  }
+}
+```
+
+**Zed** — add this to Zed's `settings.json`:
 
 ```json
 {
@@ -79,10 +135,12 @@ Add this to Zed's `settings.json`:
 }
 ```
 
-The server exposes two tools, `export_markdown_pdf` and `doctor_markdown_pdf`. Its MCP registry
-name is `io.github.matinfo/markdown-pdf-export`. More: [AI Assistant (MCP) guide](https://matinfo.github.io/markdown-pdf-export/guide/mcp).
+The `env` line is optional and works in both entries (see [Settings](#settings)). The server exposes
+two tools, `export_markdown_pdf` and `doctor_markdown_pdf`. Its MCP registry name is
+`io.github.matinfo/markdown-pdf-export`. Any other MCP client works the same way (see
+[Other editors](#5-other-editors-and-mcp-clients)). More: [AI Assistant (MCP) guide](https://matinfo.github.io/markdown-pdf-export/guide/mcp).
 
-### 3. Command line
+### 4. Command line
 
 ```sh
 npx -y markdown-pdf-export README.md               # → README.pdf next to the file
@@ -96,25 +154,9 @@ Flags mirror the MCP tool's options in kebab-case (`--page-format Letter`, `--ma
 `--settings <json|file.json>`. The CLI prints the PDF path on stdout and exits with `0` (ok), `1` (error)
 or `2` (usage error). More: [Command Line guide](https://matinfo.github.io/markdown-pdf-export/guide/cli) — every option.
 
-### 4. Other editors and MCP clients
+### 5. Other editors and MCP clients
 
 Anything that can run a command on the current file, or register a stdio MCP server, can use it.
-
-```jsonc
-// VS Code — .vscode/tasks.json
-{
-  "version": "2.0.0",
-  "tasks": [
-    {
-      "label": "Markdown: Export to PDF",
-      "type": "shell",
-      "command": "npx",
-      "args": ["-y", "markdown-pdf-export", "${file}"],
-      "problemMatcher": []
-    }
-  ]
-}
-```
 
 ```sh
 # Vim / Neovim
@@ -133,9 +175,9 @@ claude mcp add markdown-pdf -- npx -y markdown-pdf-export mcp
 }
 ```
 
-More, including JetBrains and VS Code MCP: [Other Editors & MCP Clients](https://matinfo.github.io/markdown-pdf-export/guide/other-editors).
-Zed is the editor this project is developed with; the snippets for other tools follow each tool's
-documented format and have not all been tested by the project.
+More, including JetBrains: [Other Editors & MCP Clients](https://matinfo.github.io/markdown-pdf-export/guide/other-editors).
+The project is developed with Zed and documents VS Code as the main target; the snippets in this
+section follow each tool's documented format and have not all been tested.
 
 ### Browser
 
@@ -196,7 +238,7 @@ Markdown PDF exports Markdown documents to PDF with:
 
 ## Features
 
-- Zed integration through a task or a context server (MCP); standalone CLI
+- Editor integration — VS Code and Zed tasks, or any AI assistant over MCP; standalone CLI
 - Markdown to PDF powered by Playwright / Chromium
 - Neutral, GitHub-style built-in stylesheet (or disable it and bring your own)
 - Syntax highlighting via highlight.js — 80+ themes to choose from
@@ -220,7 +262,7 @@ Markdown PDF exports Markdown documents to PDF with:
 
 ### Task and command line
 
-Run the Zed task on the open Markdown file, or call the CLI. Options are flags (in a task, add them
+Run the editor task (VS Code or Zed) on the open Markdown file, or call the CLI. Options are flags (in a task, add them
 to `args`):
 
 ```sh
@@ -256,9 +298,13 @@ The MCP server exposes two tools directly callable by the AI:
 Settings are a plain JSON object. Keep it in a file, for example
 `~/.config/markdown-pdf/settings.json`, and reference it by absolute path (`~` is not expanded):
 
+- **VS Code task** — add
+  `"options": { "env": { "MARKDOWN_PDF_SETTINGS": "${userHome}/.config/markdown-pdf/settings.json" } }`
+  to the task object in `tasks.json` (`${userHome}` expands to your home folder).
 - **Zed task** — add `"env": { "MARKDOWN_PDF_SETTINGS": "/Users/me/.config/markdown-pdf/settings.json" }`
   to the task object in `tasks.json`.
-- **MCP** — use the same `"env"` in the `context_servers.markdown-pdf` entry, next to `command` and `args`.
+- **MCP** — add the same `"env"` as the Zed task, with the full path, to the `mcpServers.markdown-pdf`
+  entry (VS Code) or the `context_servers.markdown-pdf` entry (Zed), next to `command` and `args`.
 - **CLI** — pass `--settings /Users/me/.config/markdown-pdf/settings.json`.
 
 `MARKDOWN_PDF_SETTINGS` and `--settings` accept either a path to a JSON file or inline JSON.
@@ -629,12 +675,13 @@ secret is needed.
 - **Later releases:** bump `version` in `package.json`, then push
   the tag `npm-v<version>`.
 
-### Testing in Zed
+### Testing in an editor
 
-Point a task or a `context_servers` entry (see [Setup](#setup)) at your checkout:
+Point a task or an MCP entry (see [Setup](#setup)) at your checkout:
 
-- Task: `"command": "node", "args": ["/path/to/repo/cli.mjs", "$ZED_FILE"]`
-- MCP: `"command": "node", "args": ["/path/to/repo/mcp.mjs"]`
+- VS Code task: `"command": "node", "args": ["/path/to/repo/cli.mjs", "${file}"]`
+- Zed task: `"command": "node", "args": ["/path/to/repo/cli.mjs", "$ZED_FILE"]`
+- MCP (`mcpServers` in VS Code, `context_servers` in Zed): `"command": "node", "args": ["/path/to/repo/mcp.mjs"]`
 
 Then open `test-fixtures/sample.md` and run the task, or ask the assistant: `Export this file to PDF`.
 See [TESTING.md](TESTING.md) for details.
@@ -643,13 +690,14 @@ See [TESTING.md](TESTING.md) for details.
 
 ## Troubleshooting
 
-### Context server does not start
+### MCP server does not start
 
-- Confirm the `markdown-pdf` entry is present and enabled in **Agent → Context Servers**
 - Check that `npx -y markdown-pdf-export --help` works in a terminal
-- Restart Zed
-- Check Zed logs (**Help → View Logs**)
-- Set `MARKDOWN_PDF_DEBUG=1` (in the `env` of the `context_servers` entry) and inspect
+- **VS Code:** run **MCP: List Servers** from the Command Palette, confirm `markdown-pdf` is listed and
+  restart it; if it is missing, run **MCP: Add Server** again
+- **Zed:** confirm the `markdown-pdf` entry is present and enabled in **Agent → Context Servers**,
+  restart Zed, and check Zed logs (**Help → View Logs**)
+- Set `MARKDOWN_PDF_DEBUG=1` (in the `env` of the MCP entry) and inspect
   `<tmpdir>/markdown-pdf-debug.log` — the OS temp directory, which on macOS is under `/var/folders/…/T/`,
   not `/tmp`. Set `MARKDOWN_PDF_DEBUG=/some/file.log` to log to a path of your choice.
 

@@ -56,7 +56,13 @@ On the command line:
 MARKDOWN_PDF_BROWSER=msedge npx -y markdown-pdf-export doc.md
 ```
 
-In a [Zed task](/guide/zed-task) or the [MCP entry](/guide/mcp), add it to `env`:
+In a [VS Code](/guide/vscode) task, add it to `options.env`:
+
+```json
+"options": { "env": { "MARKDOWN_PDF_BROWSER": "msedge" } }
+```
+
+In a [Zed](/guide/zed-task) task or the [MCP entry](/guide/mcp), add it to `env`:
 
 ```json
 "env": { "MARKDOWN_PDF_BROWSER": "msedge" }

@@ -1,10 +1,10 @@
 # Markdown PDF — Quick Start
 
-Export any Markdown file to a polished PDF from Zed — with a task or through the AI assistant (MCP) —
-or from the command line.
+Export any Markdown file to a polished PDF from VS Code or Zed — with a task or through the AI
+assistant (MCP) — or from the command line.
 
-This quick start uses Zed. The same tool works from VS Code, JetBrains, Vim/Neovim, Claude Code, Claude
-Desktop, Cursor or any MCP client — see
+This quick start shows VS Code first and Zed second. The same tool works from JetBrains, Vim/Neovim,
+Claude Code, Claude Desktop, Cursor or any MCP client — see
 [Other Editors & MCP Clients](https://matinfo.github.io/markdown-pdf-export/guide/other-editors).
 
 ---
@@ -19,13 +19,54 @@ There is nothing to install first. The task and the MCP entry below run
 it afterwards. The first run is slower because of the download; later runs start from the cache.
 
 Optional: install it once with `npm install -g markdown-pdf-export`, then use
-`"command": "markdown-pdf-export", "args": ["$ZED_FILE"]` in the task (and
+`"command": "markdown-pdf-export", "args": ["${file}"]` in the VS Code task or
+`"command": "markdown-pdf-export", "args": ["$ZED_FILE"]` in the Zed task (and
 `"command": "markdown-pdf-export", "args": ["mcp"]` for MCP). It starts faster, works offline, and the
 version changes only when you run `npm update -g markdown-pdf-export`.
 
 ---
 
-## 2. Add a Zed Task
+## 2. Add an Editor Task
+
+### VS Code
+
+Run **Tasks: Open User Tasks** from the Command Palette (or create `.vscode/tasks.json` in a project)
+and add:
+
+```json
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Markdown: Export to PDF",
+      "type": "shell",
+      "command": "npx",
+      "args": ["-y", "markdown-pdf-export", "${file}"],
+      "presentation": { "reveal": "silent" },
+      "problemMatcher": []
+    }
+  ]
+}
+```
+
+Open a `.md` file, run **Tasks: Run Task** from the Command Palette (or **Terminal → Run Task…**) and
+choose *Markdown: Export to PDF*. The PDF is saved next to your Markdown file. VS Code runs tasks only
+when a folder is open, not on a single loose file. Optional key binding in `keybindings.json`:
+
+```json
+[
+  {
+    "key": "ctrl+alt+e",
+    "command": "workbench.action.tasks.runTask",
+    "args": "Markdown: Export to PDF",
+    "when": "editorLangId == markdown"
+  }
+]
+```
+
+More: [VS Code guide](https://matinfo.github.io/markdown-pdf-export/guide/vscode).
+
+### Zed
 
 Add this to `~/.config/zed/tasks.json` (or to `.zed/tasks.json` in a project):
 
@@ -55,11 +96,35 @@ your Markdown file. Optional key binding in `keymap.json`:
 ]
 ```
 
+More: [Zed guide](https://matinfo.github.io/markdown-pdf-export/guide/zed-task).
+
 ---
 
 ## 3. Enable the MCP Server (optional)
 
-To let the AI assistant export, add this to Zed's `settings.json`:
+To let the AI assistant export, register the MCP server.
+
+### VS Code
+
+Run **MCP: Add Server** from the Command Palette, choose a local command (stdio) server and enter
+`npx -y markdown-pdf-export mcp`. Or add the entry yourself; current VS Code releases read
+`~/.copilot/mcp-config.json`:
+
+```json
+{
+  "mcpServers": {
+    "markdown-pdf": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "markdown-pdf-export", "mcp"]
+    }
+  }
+}
+```
+
+### Zed
+
+Add this to Zed's `settings.json`:
 
 ```json
 {
@@ -73,7 +138,9 @@ To let the AI assistant export, add this to Zed's `settings.json`:
 }
 ```
 
-Then open any `.md` file and ask the assistant:
+### Ask the Assistant
+
+Open any `.md` file and ask the assistant:
 
 ```
 Export this file to PDF
@@ -157,9 +224,13 @@ Keep permanent defaults in a settings file, for example `~/.config/markdown-pdf/
 
 Load it by absolute path (`~` is not expanded):
 
-- **Task:** add `"env": { "MARKDOWN_PDF_SETTINGS": "/Users/me/.config/markdown-pdf/settings.json" }` to
-  the task in `tasks.json`
-- **MCP:** put the same `"env"` in the `context_servers.markdown-pdf` entry
+- **Task (VS Code):** add
+  `"options": { "env": { "MARKDOWN_PDF_SETTINGS": "${userHome}/.config/markdown-pdf/settings.json" } }`
+  to the task in `tasks.json` (`${userHome}` expands to your home folder)
+- **Task (Zed):** add `"env": { "MARKDOWN_PDF_SETTINGS": "/Users/me/.config/markdown-pdf/settings.json" }`
+  to the task in `tasks.json`
+- **MCP:** put the same `"env"` as the Zed task, with the full path, in the `mcpServers.markdown-pdf`
+  entry (VS Code) or the `context_servers.markdown-pdf` entry (Zed)
 - **CLI:** `--settings /Users/me/.config/markdown-pdf/settings.json`
 
 `MARKDOWN_PDF_SETTINGS` also accepts inline JSON. The JSON snippets in the sections below go in this
@@ -328,7 +399,7 @@ Or ask the assistant:
 Run doctor_markdown_pdf
 ```
 
-For a debug log, set `MARKDOWN_PDF_DEBUG=1` (for example in the `env` of the `context_servers` entry).
+For a debug log, set `MARKDOWN_PDF_DEBUG=1` (for example in the `env` of the MCP entry).
 The log is written to `markdown-pdf-debug.log` in the OS temp directory — on macOS that is under
 `/var/folders/…/T/`, not `/tmp`. Set `MARKDOWN_PDF_DEBUG=/some/file.log` to choose the path.
 

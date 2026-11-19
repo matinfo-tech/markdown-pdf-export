@@ -4,7 +4,7 @@ layout: home
 hero:
   name: Markdown PDF
   text: Editor, AI assistant or CLI
-  tagline: Export Markdown to polished PDFs from Zed, VS Code or any editor task, from any MCP client, or from the command line — with structured headers, footers, and custom styling
+  tagline: Export Markdown to polished PDFs from VS Code, Zed or any editor task, from any MCP client, or from the command line — with structured headers, footers, and custom styling
   image:
     src: /logo.png
     alt: Markdown PDF Export
@@ -22,7 +22,7 @@ hero:
 features:
   - icon: ⌨️
     title: Task, Assistant or CLI
-    details: One npm package, not tied to one editor — an editor task bound to a key (Zed, VS Code, JetBrains, Vim), any AI assistant that speaks MCP (Zed, Claude, Cursor), or the markdown-pdf-export command in a terminal or CI job. No extension to install.
+    details: One npm package, not tied to one editor — an editor task bound to a key (VS Code, Zed, JetBrains, Vim), any AI assistant that speaks MCP (VS Code, Zed, Claude, Cursor), or the markdown-pdf-export command in a terminal or CI job. No extension to install.
   - icon: 📄
     title: Structured Headers & Footers
     details: Declarative configuration with zones (left, center, right) and typed elements — no raw HTML required.
@@ -64,7 +64,7 @@ pdf:
 ---
 ```
 
-Then export it — run the Zed task, ask Zed's AI assistant, or use the command line:
+Then export it — run the editor task (VS Code or Zed), ask the AI assistant, or use the command line:
 
 ```sh
 npx -y markdown-pdf-export report.md
@@ -76,8 +76,8 @@ That's it! The PDF will have a professional header with your company name, docum
 
 ## Next Steps
 
-- [Getting Started](/guide/getting-started) — What it is and the three ways to use it
-- [Zed Task](/guide/zed-task) · [AI Assistant (MCP)](/guide/mcp) · [Command Line](/guide/cli) — Set up the one you want
+- [Getting Started](/guide/getting-started) — What it is and the ways to use it
+- [VS Code](/guide/vscode) · [Zed](/guide/zed-task) · [AI Assistant (MCP)](/guide/mcp) · [Command Line](/guide/cli) — Set up the one you want
 - [Quick Start Templates](/examples/quick-templates) — Copy-paste ready configurations
 - [Header & Footer Guide](/guide/header-footer) — Learn the structured configuration
 - [Reference](/reference/settings) — Complete settings documentation

@@ -24,8 +24,9 @@ pdf:
 ---
 ```
 
-For a single export — CLI: `--math` (add it to the `args` of a [Zed task](/guide/zed-task)), or ask the
-assistant: `Export this file to PDF with math rendering`. KaTeX options go in `--math-options '<json>'`.
+For a single export — CLI: `--math` (add it to the `args` of a [VS Code](/guide/vscode) or
+[Zed](/guide/zed-task) task), or ask the assistant: `Export this file to PDF with math rendering`.
+KaTeX options go in `--math-options '<json>'`.
 
 ## Syntax
 

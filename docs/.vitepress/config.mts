@@ -31,6 +31,7 @@ export default defineConfig({
             text: "GitHub",
             link: "https://github.com/matinfo/markdown-pdf-export",
           },
+          { text: "VS Code", link: "https://code.visualstudio.com" },
           { text: "Zed Editor", link: "https://zed.dev" },
         ],
       },
@@ -43,12 +44,18 @@ export default defineConfig({
           items: [
             { text: "Getting Started", link: "/guide/getting-started" },
             { text: "Installation", link: "/guide/installation" },
-            { text: "Zed Task", link: "/guide/zed-task" },
+            { text: "First Export", link: "/guide/first-export" },
+          ],
+        },
+        {
+          text: "Usage",
+          items: [
+            { text: "VS Code", link: "/guide/vscode" },
+            { text: "Zed", link: "/guide/zed-task" },
             { text: "AI Assistant (MCP)", link: "/guide/mcp" },
             { text: "Command Line", link: "/guide/cli" },
             { text: "Other Editors & MCP Clients", link: "/guide/other-editors" },
             { text: "Browser", link: "/guide/browser" },
-            { text: "First Export", link: "/guide/first-export" },
           ],
         },
         {
