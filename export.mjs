@@ -20,7 +20,7 @@ import {
   parseFrontMatter,
   ensureYamlLoaded,
 } from "./lib/frontmatter-parser.mjs";
-import { mergeConfig, detectMode } from "./lib/config-merger.mjs";
+import { mergeConfig } from "./lib/config-merger.mjs";
 import { createAssetResolver } from "./lib/asset-resolver.mjs";
 import {
   createPlaceholderResolver,
@@ -937,7 +937,7 @@ export async function exportMarkdownPdf(args) {
 
   const browser = await launchBrowser();
 
-  let displayHeaderFooterResult = false;
+  let displayHeaderFooterResult;
 
   try {
     const page = await browser.newPage();
@@ -1192,38 +1192,6 @@ async function renderMarkdownToHtmlWithBody(inputPath, body, title, options) {
   </body>
 </html>`,
     title,
-  };
-}
-
-/**
- * Original render function - reads file and parses front matter internally.
- * Kept for backward compatibility.
- */
-async function renderMarkdownToHtml(inputPath, options) {
-  const source = await fs.readFile(inputPath, "utf8");
-  const { body, title } = splitFrontmatter(source, inputPath);
-
-  return renderMarkdownToHtmlWithBody(inputPath, body, title, options);
-}
-
-function splitFrontmatter(source, inputPath) {
-  const stem = path.parse(inputPath).name;
-
-  if (!source.startsWith("---\n")) {
-    return { body: source, title: stem };
-  }
-
-  const end = source.indexOf("\n---\n", 4);
-  if (end === -1) {
-    return { body: source, title: stem };
-  }
-
-  const frontmatter = source.slice(4, end);
-  const titleMatch = frontmatter.match(/^title:\s*(.+)$/m);
-
-  return {
-    body: source.slice(end + 5),
-    title: titleMatch ? titleMatch[1].trim().replace(/^['"]|['"]$/g, "") : stem,
   };
 }
 

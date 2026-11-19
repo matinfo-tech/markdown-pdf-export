@@ -49,6 +49,7 @@ jobs:
           test "$TAG_VERSION" = "$PKG_VERSION"
 
       - run: npm ci
+      - run: npm run lint
       - run: npm test
 
       - name: Publish package to npm (trusted publishing, provenance is automatic)
