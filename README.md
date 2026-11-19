@@ -314,6 +314,10 @@ Settings are a plain JSON object, found automatically by the tasks, the MCP serv
 - **Project file** — the nearest `.markdown-pdf.json` above the Markdown file, merged over the user
   file (`init --project` creates one).
 
+Prefer a visual editor? The [online configurator](https://matinfo.github.io/markdown-pdf-export/configurator)
+designs the header, footer and page layout with a live preview and gives you the `settings.json` to
+save at the user-file path above.
+
 Relative `stylesheet_path`, `assets_directory` and header/footer image paths are resolved against the
 settings file that contains them. `npx -y markdown-pdf-export doctor doc.md` lists the files it loaded
 under `settings_sources`, and `npx -y markdown-pdf-export doc.md --watch` re-exports on every change

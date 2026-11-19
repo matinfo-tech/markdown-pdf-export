@@ -19,6 +19,10 @@ npx -y markdown-pdf-export init --template corporate
 An existing file is never overwritten unless you add `--force`. The templates are listed in
 [Quick Templates](/examples/quick-templates).
 
+Prefer a visual editor? The [online configurator](/configurator) lets you design the header,
+footer and page layout with a live preview, then copy or download the `settings.json` for this
+central location.
+
 ### Autocomplete and Validation
 
 Files written by `init` start with a `$schema` line. VS Code, Zed and other editors with a JSON

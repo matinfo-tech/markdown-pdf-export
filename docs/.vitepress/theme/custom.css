@@ -207,3 +207,10 @@
   height: 28px;
   width: auto;
 }
+
+/* Configurator page: use the full width (no sidebar, no aside) */
+.configurator-page .VPDoc:not(.has-sidebar) .container,
+.configurator-page .VPDoc:not(.has-sidebar) .content,
+.configurator-page .VPDoc .content-container {
+  max-width: 1200px;
+}

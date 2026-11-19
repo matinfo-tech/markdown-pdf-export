@@ -13,6 +13,9 @@ hero:
       text: Get Started
       link: /guide/getting-started
     - theme: alt
+      text: Configurator
+      link: /configurator
+    - theme: alt
       text: Quick Start Templates
       link: /examples/quick-templates
     - theme: alt
