@@ -27,7 +27,14 @@ Chrome or Microsoft Edge (see [Browser](#browser)).
 There is no install step. `npx -y markdown-pdf-export …` downloads the package into npm's cache on
 first use and reuses it afterwards, so the first run is slower and later runs start from the cache.
 
-Two commands set everything up:
+One command opens **Studio**, a page in your browser where you pick the page style, font, header and
+footer on a live preview of the real PDF, then add the tool to your editor:
+
+```sh
+npx -y markdown-pdf-export studio
+```
+
+Prefer the terminal? These two do the same without a browser:
 
 ```sh
 npx -y markdown-pdf-export init     # create ~/.config/markdown-pdf-export/settings.json from a template

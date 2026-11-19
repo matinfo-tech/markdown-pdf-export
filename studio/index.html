@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Studio: design your PDF pages</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="app" id="app">
+  <section class="rail" aria-label="Page design">
+    <header class="rail-head">
+      <h1>Design your pages</h1>
+      <p class="lede">Pick a look. The page on the right is the real PDF.</p>
+    </header>
+
+    <div class="rail-body">
+      <div id="notices"></div>
+
+      <section class="group">
+        <h2>Page style</h2>
+        <div class="looks" id="looks" role="radiogroup" aria-label="Page style"></div>
+      </section>
+
+      <section class="group">
+        <h2>Font and paper</h2>
+        <div class="seg" id="fonts" role="radiogroup" aria-label="Font"></div>
+        <div class="row">
+          <select id="format" aria-label="Paper size"></select>
+          <div class="seg" id="orientation" role="radiogroup" aria-label="Orientation"></div>
+        </div>
+        <div class="row">
+          <span class="label" id="margin-label">Margins</span>
+          <div class="seg" id="margin" role="radiogroup" aria-labelledby="margin-label"></div>
+        </div>
+      </section>
+
+      <section class="group">
+        <h2>Header and footer</h2>
+        <p class="hint">Pick a starting point, then click any spot on the page to change it.</p>
+        <div class="seg wrap" id="layouts" aria-label="Starting layout"></div>
+
+        <div class="sheet" id="sheet">
+          <div class="band" id="band-header"></div>
+          <div class="sheet-body" aria-hidden="true">
+            <i class="ln t"></i><i class="ln"></i><i class="ln"></i><i class="ln s"></i>
+            <i class="fold"></i>
+            <i class="ln"></i><i class="ln s"></i>
+          </div>
+          <div class="band" id="band-footer"></div>
+        </div>
+
+        <div class="slot-editor" id="slot-editor"></div>
+
+        <div class="row">
+          <label class="check"><input type="checkbox" id="line-header"> Line under the header</label>
+          <label class="check"><input type="checkbox" id="line-footer"> Line above the footer</label>
+        </div>
+        <div class="row">
+          <span class="label" id="size-label">Text size</span>
+          <div class="seg" id="size" role="radiogroup" aria-labelledby="size-label"></div>
+          <label class="color"><span class="label">Colour</span><input type="color" id="color"></label>
+        </div>
+      </section>
+    </div>
+
+    <footer class="rail-foot">
+      <div class="where">
+        <span id="save-state">Not saved yet</span>
+        <code id="save-path"></code>
+      </div>
+      <div class="actions">
+        <button type="button" class="btn" id="editors-open">Add to my editor</button>
+        <button type="button" class="btn primary" id="save">Save</button>
+      </div>
+    </footer>
+  </section>
+
+  <section class="desk" aria-label="Preview">
+    <div class="frames">
+      <iframe id="frame-a" title="PDF preview"></iframe>
+      <iframe id="frame-b" class="back" title="PDF preview, loading" tabindex="-1"></iframe>
+    </div>
+    <div class="problem" id="problem" hidden></div>
+    <p class="status" id="status" role="status">Drawing the first page…</p>
+  </section>
+</div>
+
+<dialog id="editors">
+  <div class="dialog-head">
+    <h2>Add to my editor</h2>
+    <button type="button" class="btn quiet" id="editors-close">Close</button>
+  </div>
+  <p class="hint">Do this once per editor. After that, exporting a Markdown file uses the layout you saved here.</p>
+  <div id="editors-list"></div>
+</dialog>
+
+<script type="module" src="/app.mjs"></script>
+</body>
+</html>

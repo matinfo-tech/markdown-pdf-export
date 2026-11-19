@@ -76,6 +76,14 @@ function checkTarball(tarball) {
     "templates/minimal.json",
     "templates/corporate.json",
     "schema/settings.schema.json",
+    "lib/looks.mjs",
+    "lib/studio-server.mjs",
+    "looks/report.css",
+    "studio/index.html",
+    "studio/app.mjs",
+    "studio/model.mjs",
+    "studio/style.css",
+    "studio/sample.md",
   ];
   const missing = required.filter((f) => !files.has(f));
   if (missing.length) fail(`tarball is missing: ${missing.join(", ")}`);

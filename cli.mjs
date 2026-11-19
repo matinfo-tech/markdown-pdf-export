@@ -3,6 +3,7 @@
  * markdown-pdf-export — CLI front-end for the Markdown → PDF core.
  *
  *   markdown-pdf-export <file.md> [options]   export a file
+ *   markdown-pdf-export studio                design pages in the browser (live preview)
  *   markdown-pdf-export doctor [file.md]      check browser + settings
  *   markdown-pdf-export init [--template t]   create the settings file
  *   markdown-pdf-export setup [editor]        print editor task + MCP snippets
@@ -15,7 +16,7 @@
  * Exit codes: 0 success · 1 runtime error · 2 usage error.
  * On success the output PDF path is printed on stdout (everything else → stderr).
  */
-import { spawnSync } from "node:child_process";
+import { spawn } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
@@ -38,7 +39,7 @@ import {
 } from "./lib/settings-loader.mjs";
 import { formatDoctor } from "./lib/doctor-report.mjs";
 import { LOOKS, FONTS } from "./lib/looks.mjs";
-import { EDITOR_IDS, buildEditorSetup, launchSpec } from "./lib/editor-setup.mjs";
+import { EDITOR_IDS, applySetupItem, buildEditorSetup, launchSpec } from "./lib/editor-setup.mjs";
 
 const BIN = "markdown-pdf-export";
 const CLI_PATH = fileURLToPath(import.meta.url);
@@ -75,6 +76,7 @@ function usage() {
 Usage:
   ${BIN} <file.md> [options]
   ${BIN}                       (no arguments: guided menu)
+  ${BIN} studio [--project] [--file <doc.md>]   design pages in the browser
   ${BIN} doctor [file.md] [--json]
   ${BIN} init [--look <n>] [--font <n>] [--template <n>] [--project] [--force] [--list]
   ${BIN} setup [${EDITOR_IDS.join("|")}|all] [--write]
@@ -244,6 +246,7 @@ async function main(argv) {
     return 0;
   }
 
+  if (first === "studio") return runStudio(rest);
   if (first === "init") return runInit(rest);
   if (first === "setup") return runSetup(rest);
 
@@ -303,14 +306,14 @@ async function runMenu() {
     process.stderr.write(
       `\n${BIN} ${SERVER_VERSION} — Markdown to PDF\n\n` +
         "  1) Set up my editor (VS Code, Zed, Cursor, Claude…)\n" +
-        "  2) Choose a page style and header/footer\n" +
+        "  2) Design my pages: style, font, header and footer (opens Studio)\n" +
         "  3) Check that everything works\n" +
         "  4) Show all commands\n\n",
     );
     const pick = (await rl.question("Choose 1-4: ")).trim();
     rl.close();
     if (pick === "1") return runSetup([]);
-    if (pick === "2") return runInit([]);
+    if (pick === "2") return runStudio([]);
     if (pick === "3") {
       const { text, ok } = formatDoctor(await doctorMarkdownPdf({}), { bin: BIN });
       process.stdout.write(text);
@@ -321,6 +324,74 @@ async function runMenu() {
   } finally {
     rl.close();
   }
+}
+
+// ── studio ───────────────────────────────────────────────────────────────────
+
+function openInBrowser(url) {
+  const [cmd, args] =
+    process.platform === "darwin"
+      ? ["open", [url]]
+      : process.platform === "win32"
+        ? ["cmd", ["/C", "start", "", url]]
+        : ["xdg-open", [url]];
+  try {
+    const child = spawn(cmd, args, { detached: true, stdio: "ignore" });
+    child.on("error", () => {});
+    child.unref();
+  } catch {
+    // the link is printed below either way
+  }
+}
+
+async function runStudio(argv) {
+  const flags = parseSubArgs(argv, {
+    project: "boolean",
+    file: "string",
+    port: "string",
+    "no-open": "boolean",
+  });
+  if (flags.help) {
+    process.stdout.write(
+      `Usage: ${BIN} studio [--project] [--file <doc.md>] [--port <n>] [--no-open]\n\n` +
+        "Opens a page in your browser to choose the page style, font, header and\n" +
+        "footer, with a live preview of the real PDF. Saves to\n" +
+        `  ${userSettingsPath()}\n` +
+        `or, with --project, to ./${PROJECT_SETTINGS_FILENAME} for this folder only.\n` +
+        "--file previews one of your own documents instead of the sample.\n",
+    );
+    return 0;
+  }
+  const port = flags.port === undefined ? 0 : Number(flags.port);
+  if (!Number.isInteger(port) || port < 0 || port > 65535) {
+    throw new UsageError(`--port needs a number between 0 and 65535, got "${flags.port}"`);
+  }
+  const { startStudio } = await import("./lib/studio-server.mjs");
+  let studio = null;
+  const stop = async (message) => {
+    if (message) process.stderr.write(`${message}\n`);
+    await studio?.close();
+    process.exit(0);
+  };
+  studio = await startStudio({
+    scope: flags.project ? "project" : "user",
+    file: flags.file ?? flags._[0],
+    port,
+    onIdle: () => void stop("Studio page closed. Stopping."),
+  });
+  process.on("SIGINT", () => void stop(""));
+  process.on("SIGTERM", () => void stop(""));
+
+  process.stderr.write(
+    `\nStudio is running. It edits this settings file:\n  ${studio.settingsPath}\n\n` +
+      (flags["no-open"]
+        ? "Open this private link in your browser:\n"
+        : "Your browser should open now. If it does not, use this private link:\n"),
+  );
+  process.stdout.write(`${studio.url}\n`);
+  process.stderr.write("\nPress Ctrl+C here when you are done.\n");
+  if (!flags["no-open"]) openInBrowser(studio.url);
+  return null;
 }
 
 // ── init ─────────────────────────────────────────────────────────────────────
@@ -537,25 +608,8 @@ async function runSetup(argv) {
       out.write(`${item.snippet}\n`);
       if (!flags.write) continue;
 
-      if (item.write === "create") {
-        fs.mkdirSync(path.dirname(item.file), { recursive: true });
-        fs.writeFileSync(item.file, `${item.snippet}\n`, { flag: "wx" });
-        out.write(`  ✓ created ${item.file}\n`);
-      } else if (item.write === "command") {
-        // Windows: code/claude are .cmd shims, which need the shell; pass one
-        // pre-quoted command line so JSON arguments survive cmd.exe.
-        const result =
-          process.platform === "win32"
-            ? spawnSync(item.snippet, { stdio: "inherit", shell: true })
-            : spawnSync(item.run.cmd, item.run.args, { stdio: "inherit" });
-        out.write(
-          result.status === 0
-            ? `  ✓ ran: ${item.snippet}\n`
-            : `  ✗ could not run "${item.run.cmd}" — run the command above yourself\n`,
-        );
-      } else {
-        out.write("  → existing file: paste the snippet above yourself\n");
-      }
+      const { done, message } = applySetupItem(item);
+      out.write(`  ${done ? "✓" : item.write === "print" ? "→" : "✗"} ${message}\n`);
     }
   }
 

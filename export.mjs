@@ -450,9 +450,19 @@ debugLog(
  * Effective settings for one document: base layer deep-merged with the
  * nearest .markdown-pdf.json found walking up from the document.
  */
+let projectDiscovery = true;
+
+/**
+ * Turn the .markdown-pdf.json lookup on or off. Studio turns it off: it builds
+ * the settings stack itself so an unsaved draft is what gets rendered.
+ */
+export function setProjectDiscovery(enabled) {
+  projectDiscovery = Boolean(enabled);
+}
+
 function resolveDocumentSettings(inputDir) {
   const sources = [...baseSources];
-  const projectFile = findProjectSettingsFile(inputDir);
+  const projectFile = projectDiscovery ? findProjectSettingsFile(inputDir) : null;
   if (!projectFile) return { settings, sources };
 
   const file = readSettingsFile(projectFile);

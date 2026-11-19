@@ -1,0 +1,269 @@
+/**
+ * Studio model: converts between a settings file and the handful of choices
+ * the Studio screen offers. Pure functions, no DOM and no Node APIs, so the
+ * browser and the unit tests share this file.
+ *
+ * Draft shape:
+ *   { look, font, page_format, orientation, margin,
+ *     header: Area, footer: Area, text_size, color }
+ *   Area = { left: Slot, center: Slot, right: Slot, line: boolean, custom: boolean }
+ *   Slot = { kind: "none" | "text" | "image", text: string, image: string }
+ */
+
+export const ZONES = ["left", "center", "right"];
+export const MARGINS = { narrow: 10, normal: 15, wide: 25 };
+export const TEXT_SIZES = { s: "8px", m: "10px", l: "12px" };
+export const LINE = "1px solid #c9d1d9";
+export const DEFAULT_COLOR = "#5b6773";
+
+export const CHIPS = [
+  { label: "Title", insert: "{title}" },
+  { label: "Page number", insert: "{page}" },
+  { label: "Page 1 of 9", insert: "Page {page} of {pages}" },
+  { label: "Date", insert: "{date}" },
+  { label: "Author", insert: "{author}" },
+  { label: "File name", insert: "{filename}" },
+];
+
+const slot = (text = "") =>
+  text ? { kind: "text", text, image: "" } : { kind: "none", text: "", image: "" };
+const logo = () => ({ kind: "image", text: "", image: "" });
+const area = (left, center, right, line = false) => ({
+  left: typeof left === "object" ? left : slot(left),
+  center: typeof center === "object" ? center : slot(center),
+  right: typeof right === "object" ? right : slot(right),
+  line,
+  custom: false,
+});
+
+/** Starting points offered above the page diagram. */
+export const LAYOUTS = [
+  {
+    id: "none",
+    label: "None",
+    header: () => area(),
+    footer: () => area(),
+  },
+  {
+    id: "numbers",
+    label: "Page numbers",
+    header: () => area(),
+    footer: () => area("", "{page} / {pages}", ""),
+  },
+  {
+    id: "titled",
+    label: "Title and date",
+    header: () => area("{title}", "", "{date}", true),
+    footer: () => area("", "Page {page} of {pages}", ""),
+  },
+  {
+    id: "report",
+    label: "Report",
+    header: () => area("{title}", "", "{author}", true),
+    footer: () => area("{date}", "", "Page {page} of {pages}", true),
+  },
+  {
+    id: "letterhead",
+    label: "Logo",
+    header: () => area(logo(), "", "{title}", true),
+    footer: () => area("", "Page {page} of {pages}", ""),
+  },
+];
+
+export function emptyDraft() {
+  return {
+    look: "clean",
+    font: "sans",
+    page_format: "A4",
+    orientation: "portrait",
+    margin: "auto",
+    header: area(),
+    footer: area(),
+    text_size: "m",
+    color: DEFAULT_COLOR,
+  };
+}
+
+const isPlain = (v) => v !== null && typeof v === "object" && !Array.isArray(v);
+const mm = (value) => {
+  const m = /^\s*([\d.]+)\s*mm\s*$/.exec(String(value ?? ""));
+  return m ? Number(m[1]) : null;
+};
+
+/** One zone of a settings header/footer → Slot, or null when Studio cannot show it. */
+function readZone(cfg, zone) {
+  const structured = cfg[zone];
+  if (structured !== undefined && structured !== null) {
+    if (isPlain(structured) && structured.type === "text" && typeof structured.content === "string") {
+      return slot(structured.content);
+    }
+    if (isPlain(structured) && structured.type === "image" && typeof structured.src === "string") {
+      return { kind: "image", text: "", image: structured.src };
+    }
+    return null;
+  }
+  const image = cfg[`${zone}_image`];
+  if (typeof image === "string" && image) return { kind: "image", text: "", image };
+  const text = cfg[`${zone}_text`];
+  return slot(typeof text === "string" ? text : "");
+}
+
+function readArea(cfg, lineKey) {
+  const out = area();
+  if (!isPlain(cfg)) return out;
+  for (const zone of ZONES) {
+    const s = readZone(cfg, zone);
+    if (s === null) return { ...area(), custom: true };
+    out[zone] = s;
+  }
+  out.line = Boolean(cfg[lineKey]);
+  return out;
+}
+
+/**
+ * Settings file content → draft.
+ * @param {object} raw        parsed settings file (not expanded)
+ * @param {{looks?: object, templates?: object}} [ctx]  preset data from the server
+ */
+export function settingsToDraft(raw, ctx = {}) {
+  const draft = emptyDraft();
+  if (!isPlain(raw)) return draft;
+  const looks = ctx.looks ?? {};
+  const template = isPlain(ctx.templates?.[raw.template]) ? ctx.templates[raw.template] : {};
+
+  if (typeof raw.look === "string" && looks[raw.look]) draft.look = raw.look;
+  if (typeof raw.font === "string") draft.font = raw.font;
+  else if (typeof raw.font_family === "string" && raw.font_family) draft.font = "custom";
+  if (typeof raw.page_format === "string") draft.page_format = raw.page_format;
+  if (raw.orientation === "landscape") draft.orientation = "landscape";
+
+  const header = raw.header ?? template.header;
+  const footer = raw.footer ?? template.footer;
+  draft.header = readArea(header, "border_bottom");
+  draft.footer = readArea(footer, "border_top");
+
+  const size = (isPlain(header) && header.font_size) || (isPlain(footer) && footer.font_size);
+  draft.text_size = size === TEXT_SIZES.s ? "s" : size === TEXT_SIZES.l ? "l" : "m";
+  const color = (isPlain(header) && header.color) || (isPlain(footer) && footer.color);
+  if (typeof color === "string" && /^#[0-9a-f]{3,8}$/i.test(color)) draft.color = color;
+
+  const margin = raw.margin ?? template.margin;
+  if (isPlain(margin)) {
+    const side = mm(margin.left ?? margin.right);
+    const base = mm(looks[draft.look]?.margin?.left) ?? MARGINS.normal;
+    const named = Object.entries(MARGINS).find(([, v]) => v === side)?.[0];
+    draft.margin = side === null || side === base ? "auto" : (named ?? "custom");
+  }
+  return draft;
+}
+
+const hasContent = (a) =>
+  ZONES.some((z) => (a[z].kind === "text" && a[z].text.trim()) || (a[z].kind === "image" && a[z].image));
+const hasImage = (a) => ZONES.some((z) => a[z].kind === "image" && a[z].image);
+
+const AREA_KEYS = [
+  "height", "padding", "font_size", "color", "border_bottom", "border_top",
+  ...ZONES.flatMap((z) => [z, `${z}_text`, `${z}_image`, `${z}_image_height`]),
+];
+
+function writeArea(a, previous, { lineKey, side, size, color }) {
+  if (!hasContent(a)) return null;
+  const out = isPlain(previous) ? { ...previous } : {};
+  for (const key of AREA_KEYS) delete out[key];
+  const height = hasImage(a) ? 18 : 12;
+  out.height = `${height}mm`;
+  out.padding = `0 ${side}mm`;
+  out.font_size = size;
+  out.color = color;
+  if (a.line) out[lineKey] = LINE;
+  for (const zone of ZONES) {
+    const s = a[zone];
+    if (s.kind === "text" && s.text.trim()) out[`${zone}_text`] = s.text;
+    if (s.kind === "image" && s.image) {
+      out[`${zone}_image`] = s.image;
+      out[`${zone}_image_height`] = `${height - 6}mm`;
+    }
+  }
+  return { cfg: out, height };
+}
+
+/**
+ * Draft → settings file content. Keys Studio does not manage are kept as-is.
+ * @param {object} draft
+ * @param {object} [raw]   current file content
+ * @param {{looks?: object, fonts?: object}} [ctx]
+ */
+export function draftToSettings(draft, raw = {}, ctx = {}) {
+  const out = isPlain(raw) ? { ...raw } : {};
+  delete out.template; // expanded into header/footer below
+  const looks = ctx.looks ?? {};
+
+  if (draft.look === "clean") delete out.look;
+  else out.look = draft.look;
+
+  if (draft.font !== "custom") {
+    delete out.font_family;
+    if (draft.font === "sans") delete out.font;
+    else out.font = draft.font;
+  }
+
+  if (draft.page_format === "A4") delete out.page_format;
+  else out.page_format = draft.page_format;
+  if (draft.orientation === "landscape") out.orientation = "landscape";
+  else delete out.orientation;
+
+  const base =
+    draft.margin === "custom"
+      ? (mm(raw?.margin?.left) ?? MARGINS.normal)
+      : (MARGINS[draft.margin] ?? mm(looks[draft.look]?.margin?.left) ?? MARGINS.normal);
+  const style = { side: base, size: TEXT_SIZES[draft.text_size] ?? TEXT_SIZES.m, color: draft.color };
+
+  // Header and footer are drawn inside the page margin: grow it to make room.
+  let top = base;
+  let bottom = base;
+  if (!draft.header.custom) {
+    const h = writeArea(draft.header, raw?.header, { ...style, lineKey: "border_bottom" });
+    if (h) {
+      out.header = h.cfg;
+      top = Math.max(base, h.height + 8);
+    } else delete out.header;
+  }
+  if (!draft.footer.custom) {
+    const f = writeArea(draft.footer, raw?.footer, { ...style, lineKey: "border_top" });
+    if (f) {
+      out.footer = f.cfg;
+      bottom = Math.max(base, f.height + 8);
+    } else delete out.footer;
+  }
+
+  if (draft.margin !== "custom") {
+    const plain = draft.margin === "auto" && top === base && bottom === base;
+    if (plain) delete out.margin;
+    else out.margin = { top: `${top}mm`, right: `${base}mm`, bottom: `${bottom}mm`, left: `${base}mm` };
+  }
+  return out;
+}
+
+/** Which starting layout a draft matches, if any (for highlighting the picker). */
+export function matchLayout(draft) {
+  const key = (a) => ZONES.map((z) => `${a[z].kind}:${a[z].kind === "text" ? a[z].text : ""}`).join("|") + a.line;
+  for (const l of LAYOUTS) {
+    if (key(l.header()) === key(draft.header) && key(l.footer()) === key(draft.footer)) return l.id;
+  }
+  return null;
+}
+
+/** Human rendering of a slot text for the page diagram ("{page}" → "1"). */
+export function renderText(text, sample = {}) {
+  const values = {
+    page: "1",
+    pages: String(sample.pages ?? 2),
+    title: sample.title ?? "Document title",
+    author: sample.author ?? "Author",
+    filename: sample.filename ?? "document.md",
+    date: sample.date ?? new Date().toISOString().slice(0, 10),
+    time: "09:30",
+    datetime: `${sample.date ?? new Date().toISOString().slice(0, 10)} 09:30`,
+  };
+  return String(text).replace(/\{(\w+)(?::[^}]*)?\}/g, (all, name) => values[name] ?? all);
+}

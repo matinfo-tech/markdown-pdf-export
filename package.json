@@ -23,6 +23,7 @@
     "lib/*.mjs",
     "templates/",
     "looks/",
+    "studio/",
     "schema/",
     "vendor/"
   ],
