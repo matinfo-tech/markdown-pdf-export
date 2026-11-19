@@ -33,3 +33,6 @@ desktop.ini
 
 # ── Debug logs ─────────────────────────────────────────────────────────────────
 markdown-pdf-debug.log
+
+# npm pack output
+*.tgz

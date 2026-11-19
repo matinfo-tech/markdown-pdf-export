@@ -4,7 +4,7 @@ Customize the appearance of your PDFs with CSS stylesheets. You can append style
 
 ## Adding a Custom Stylesheet
 
-Create a CSS file and reference it in your settings file (see [Global Settings](/guide/global-settings#configuration-location) for how it is loaded):
+Create a CSS file and reference it in your settings file (see [Global Settings](/guide/global-settings#where-settings-live) for how it is loaded):
 
 ```json
 {
@@ -21,7 +21,8 @@ pdf:
 ---
 ```
 
-The path is resolved relative to the Markdown file.
+In a settings file the path is resolved relative to that settings file; in front matter or a flag,
+relative to the Markdown file.
 
 For a single export — CLI: `--stylesheet-path ./custom.css` (add `--no-include-default-styles` to drop
 the built-in stylesheet), or ask the assistant: `Export this file to PDF with the stylesheet custom.css`.
@@ -366,7 +367,8 @@ Export to PDF and inspect the result. If something looks wrong:
 
 ### CSS Not Applied
 
-- Verify `stylesheet_path` is relative to the Markdown file
+- Verify `stylesheet_path` is relative to the settings file that sets it (or to the Markdown file, in
+  front matter)
 - Check the file exists and is readable
 - Ensure valid CSS syntax
 

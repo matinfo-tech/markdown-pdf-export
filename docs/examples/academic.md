@@ -19,7 +19,7 @@ A header/footer configuration suitable for academic papers, theses, and disserta
 
 ## Global Settings
 
-Configure in your settings file (see [Global Settings](/guide/global-settings#configuration-location) for how it is loaded):
+Configure in your settings file (see [Global Settings](/guide/global-settings#where-settings-live) for how it is loaded):
 
 ```json
 {

@@ -18,6 +18,17 @@ There is nothing to install first. The task and the MCP entry below run
 `npx -y markdown-pdf-export …`, which downloads the package into npm's cache on first use and reuses
 it afterwards. The first run is slower because of the download; later runs start from the cache.
 
+The fastest path is two commands:
+
+```sh
+npx -y markdown-pdf-export init     # create your settings file from a template
+npx -y markdown-pdf-export setup    # print the task and MCP entries for your editors
+```
+
+`setup` shows each snippet below with the file it goes in (`--write` creates files that do not exist
+yet, never modifying existing ones) and checks the browser. Steps 2 and 3 are the same snippets for
+manual setup.
+
 Optional: install it once with `npm install -g markdown-pdf-export`, then use
 `"command": "markdown-pdf-export", "args": ["${file}"]` in the VS Code task or
 `"command": "markdown-pdf-export", "args": ["$ZED_FILE"]` in the Zed task (and
@@ -131,8 +142,7 @@ Add this to Zed's `settings.json`:
   "context_servers": {
     "markdown-pdf": {
       "command": "npx",
-      "args": ["-y", "markdown-pdf-export", "mcp"],
-      "env": { "MARKDOWN_PDF_SETTINGS": "{\"page_format\":\"A4\"}" }
+      "args": ["-y", "markdown-pdf-export", "mcp"]
     }
   }
 }
@@ -200,7 +210,8 @@ matter already defines; with nothing defined, the header and footer are empty.
 
 ## 6. Settings
 
-Keep permanent defaults in a settings file, for example `~/.config/markdown-pdf/settings.json`:
+Keep permanent defaults in the user settings file `~/.config/markdown-pdf-export/settings.json`.
+`npx -y markdown-pdf-export init` creates it from a template (`--template minimal|simple|corporate|academic|two-logo`):
 
 ```json
 {
@@ -222,19 +233,15 @@ Keep permanent defaults in a settings file, for example `~/.config/markdown-pdf/
 }
 ```
 
-Load it by absolute path (`~` is not expanded):
+The task, the MCP server and the CLI all read it automatically. A `.markdown-pdf.json` in a project
+folder (`init --project`) is merged on top for the documents below it. Relative logo and stylesheet
+paths are resolved against the settings file that contains them, and
+`npx -y markdown-pdf-export doc.md --watch` re-exports on every change while you tune a header or
+footer.
 
-- **Task (VS Code):** add
-  `"options": { "env": { "MARKDOWN_PDF_SETTINGS": "${userHome}/.config/markdown-pdf/settings.json" } }`
-  to the task in `tasks.json` (`${userHome}` expands to your home folder)
-- **Task (Zed):** add `"env": { "MARKDOWN_PDF_SETTINGS": "/Users/me/.config/markdown-pdf/settings.json" }`
-  to the task in `tasks.json`
-- **MCP:** put the same `"env"` as the Zed task, with the full path, in the `mcpServers.markdown-pdf`
-  entry (VS Code) or the `context_servers.markdown-pdf` entry (Zed)
-- **CLI:** `--settings /Users/me/.config/markdown-pdf/settings.json`
-
-`MARKDOWN_PDF_SETTINGS` also accepts inline JSON. The JSON snippets in the sections below go in this
-settings file. Full details: [Global Settings](https://matinfo.github.io/markdown-pdf-export/guide/global-settings).
+The JSON snippets in the sections below go in a settings file. Full details, including the
+`MARKDOWN_PDF_SETTINGS` / `--settings` override:
+[Global Settings](https://matinfo.github.io/markdown-pdf-export/guide/global-settings).
 
 ---
 

@@ -27,6 +27,17 @@ Chrome or Microsoft Edge (see [Browser](#browser)).
 There is no install step. `npx -y markdown-pdf-export …` downloads the package into npm's cache on
 first use and reuses it afterwards, so the first run is slower and later runs start from the cache.
 
+Two commands set everything up:
+
+```sh
+npx -y markdown-pdf-export init     # create ~/.config/markdown-pdf-export/settings.json from a template
+npx -y markdown-pdf-export setup    # print the task and MCP entries for the editors it detects
+```
+
+`setup` shows each snippet with the file it goes in (`setup --write` creates files that do not exist
+yet; existing files are never modified) and checks the browser. The sections below show the same
+snippets for manual setup.
+
 Optional: install it once with `npm install -g markdown-pdf-export`, then use
 `"command": "markdown-pdf-export", "args": ["${file}"]` in the VS Code task or
 `"command": "markdown-pdf-export", "args": ["$ZED_FILE"]` in the Zed task (and
@@ -128,14 +139,13 @@ and enter `npx -y markdown-pdf-export mcp`. Or add the entry yourself; current V
   "context_servers": {
     "markdown-pdf": {
       "command": "npx",
-      "args": ["-y", "markdown-pdf-export", "mcp"],
-      "env": { "MARKDOWN_PDF_SETTINGS": "{\"page_format\":\"A4\"}" }
+      "args": ["-y", "markdown-pdf-export", "mcp"]
     }
   }
 }
 ```
 
-The `env` line is optional and works in both entries (see [Settings](#settings)). The server exposes
+The server reads the same [settings files](#settings) as the CLI and the tasks. It exposes
 two tools, `export_markdown_pdf` and `doctor_markdown_pdf`. Its MCP registry name is
 `io.github.matinfo/markdown-pdf-export`. Any other MCP client works the same way (see
 [Other editors](#5-other-editors-and-mcp-clients)). More: [AI Assistant (MCP) guide](https://matinfo.github.io/markdown-pdf-export/guide/mcp).
@@ -145,6 +155,7 @@ two tools, `export_markdown_pdf` and `doctor_markdown_pdf`. Its MCP registry nam
 ```sh
 npx -y markdown-pdf-export README.md               # → README.pdf next to the file
 npx -y markdown-pdf-export doc.md -o out.pdf --math --toc --page-format Letter
+npx -y markdown-pdf-export doc.md --watch         # re-export on every change
 npx -y markdown-pdf-export doctor                  # check browser + settings
 npx -y markdown-pdf-export --help                  # all options
 ```
@@ -295,21 +306,22 @@ The MCP server exposes two tools directly callable by the AI:
 
 ## Settings
 
-Settings are a plain JSON object. Keep it in a file, for example
-`~/.config/markdown-pdf/settings.json`, and reference it by absolute path (`~` is not expanded):
+Settings are a plain JSON object, found automatically by the tasks, the MCP server and the CLI:
 
-- **VS Code task** — add
-  `"options": { "env": { "MARKDOWN_PDF_SETTINGS": "${userHome}/.config/markdown-pdf/settings.json" } }`
-  to the task object in `tasks.json` (`${userHome}` expands to your home folder).
-- **Zed task** — add `"env": { "MARKDOWN_PDF_SETTINGS": "/Users/me/.config/markdown-pdf/settings.json" }`
-  to the task object in `tasks.json`.
-- **MCP** — add the same `"env"` as the Zed task, with the full path, to the `mcpServers.markdown-pdf`
-  entry (VS Code) or the `context_servers.markdown-pdf` entry (Zed), next to `command` and `args`.
-- **CLI** — pass `--settings /Users/me/.config/markdown-pdf/settings.json`.
+- **User file** — `~/.config/markdown-pdf-export/settings.json` (`$XDG_CONFIG_HOME` if set,
+  `%APPDATA%\markdown-pdf-export\settings.json` on Windows). Create it with
+  `npx -y markdown-pdf-export init` (`--template minimal|simple|corporate|academic|two-logo`).
+- **Project file** — the nearest `.markdown-pdf.json` above the Markdown file, merged over the user
+  file (`init --project` creates one).
 
-`MARKDOWN_PDF_SETTINGS` and `--settings` accept either a path to a JSON file or inline JSON.
-Precedence, highest first: front matter `pdf:` block, CLI flags / tool arguments, `--settings`,
-`MARKDOWN_PDF_SETTINGS`, built-in defaults.
+Relative `stylesheet_path`, `assets_directory` and header/footer image paths are resolved against the
+settings file that contains them. `npx -y markdown-pdf-export doctor doc.md` lists the files it loaded
+under `settings_sources`, and `npx -y markdown-pdf-export doc.md --watch` re-exports on every change
+while you tune a header or footer.
+
+Precedence, highest first: front matter `pdf:` block, CLI flags / tool arguments, project file, user
+file, built-in defaults. `MARKDOWN_PDF_SETTINGS` (environment) or `--settings` (CLI), each a JSON file
+path or inline JSON, replace the user file.
 
 Example `settings.json`:
 
@@ -731,11 +743,11 @@ The project is a single Node.js package at the repository root, published to npm
 
 - `export.mjs` — core: renders Markdown → HTML with `markdown-it`, `highlight.js`, `markdown-it-emoji`,
   converts HTML → PDF with Playwright / Chromium, runs the diagnostic. No side effects at import.
-- `cli.mjs` — the `markdown-pdf-export` command (export, `doctor`, `install-browser`, `mcp`)
+- `cli.mjs` — the `markdown-pdf-export` command (export, `doctor`, `init`, `setup`, `install-browser`, `mcp`)
 - `mcp.mjs` — MCP stdio server exposing `export_markdown_pdf` and `doctor_markdown_pdf`
 - `tool-schemas.mjs` — input schemas shared by the CLI flags and the MCP tools
-- Settings: `MARKDOWN_PDF_SETTINGS` (file path or inline JSON) or `--settings`, merged with per-export
-  options and front matter
+- Settings: user file (`~/.config/markdown-pdf-export/settings.json`, or `MARKDOWN_PDF_SETTINGS` /
+  `--settings`), then the nearest `.markdown-pdf.json`, merged with per-export options and front matter
 - Browser lookup: Google Chrome → Microsoft Edge → Playwright's Chromium (if present); nothing is
   installed at runtime
 

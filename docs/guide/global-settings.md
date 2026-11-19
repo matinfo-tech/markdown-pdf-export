@@ -2,10 +2,32 @@
 
 Configure default options for all PDF exports.
 
-## Configuration Location
+## Create a Settings File
 
-Settings are a plain JSON object. Keep it in a file, for example
-`~/.config/markdown-pdf/settings.json`:
+```sh
+npx -y markdown-pdf-export init
+```
+
+`init` writes a user settings file from a starter template (in a terminal it asks which one). Pick one
+directly with `--template`:
+
+```sh
+npx -y markdown-pdf-export init --list                  # minimal, simple, corporate, academic, two-logo
+npx -y markdown-pdf-export init --template corporate
+```
+
+An existing file is never overwritten unless you add `--force`. The templates are listed in
+[Quick Templates](/examples/quick-templates).
+
+## Where Settings Live
+
+Settings are a plain JSON object. They are found automatically, so editor tasks and MCP entries need
+no extra configuration:
+
+| File | Location | Applies to |
+|------|----------|------------|
+| **User file** | `~/.config/markdown-pdf-export/settings.json` (`$XDG_CONFIG_HOME` if set; `%APPDATA%\markdown-pdf-export\settings.json` on Windows) | Every export |
+| **Project file** | `.markdown-pdf.json`, the nearest one found walking up from the Markdown file | Documents in that folder tree |
 
 ```json
 {
@@ -14,87 +36,75 @@ Settings are a plain JSON object. Keep it in a file, for example
 }
 ```
 
-Then point Markdown PDF at that file. Use an absolute path (`~` is not expanded); in a VS Code task,
-`${userHome}` expands to your home folder.
-
-**VS Code task** — add `options.env` to the task in `tasks.json`:
+Create a project file with `init --project` (writes `./.markdown-pdf.json`). It is deep-merged over
+the user file, so it only needs the keys that differ:
 
 ```json
 {
-  "version": "2.0.0",
-  "tasks": [
-    {
-      "label": "Markdown: Export to PDF",
-      "type": "shell",
-      "command": "npx",
-      "args": ["-y", "markdown-pdf-export", "${file}"],
-      "options": {
-        "env": { "MARKDOWN_PDF_SETTINGS": "${userHome}/.config/markdown-pdf/settings.json" }
-      },
-      "presentation": { "reveal": "silent" },
-      "problemMatcher": []
-    }
+  "footer": { "right_text": "Project Apollo" }
+}
+```
+
+The JSON examples on this site show the content of a settings file.
+
+### Relative Paths
+
+Relative `stylesheet_path`, `assets_directory` and header/footer image paths (`left_image`,
+`center_image`, `right_image`, `{ "type": "image", "src": … }`) are resolved against the directory
+of **the settings file that contains them**. A logo next to the user file therefore works for every
+document:
+
+```json
+{
+  "assets_directory": "assets",
+  "header": { "left_image": "@/company-logo.svg" }
+}
+```
+
+Here the logo is `~/.config/markdown-pdf-export/assets/company-logo.svg`. Absolute paths, `~`, `@/`
+and URLs are used as written.
+
+### Check What Was Loaded
+
+```sh
+npx -y markdown-pdf-export doctor doc.md
+```
+
+`settings_sources` lists each file that was considered, in order:
+
+```json
+{
+  "settings_sources": [
+    { "kind": "user", "path": "/Users/me/.config/markdown-pdf-export/settings.json", "loaded": true, "error": null },
+    { "kind": "project", "path": "/Users/me/docs/.markdown-pdf.json", "loaded": true, "error": null }
   ]
 }
 ```
 
-**Zed task** — add `env` to the task in `tasks.json`:
+`kind` is `user`, `env`, `cli` or `project`. A file with invalid JSON shows `"loaded": false` and the
+reason in `error`. After an export, the result's `settings_files` lists the files that were used.
 
-```json
-[
-  {
-    "label": "Markdown: Export to PDF",
-    "command": "npx",
-    "args": ["-y", "markdown-pdf-export", "$ZED_FILE"],
-    "env": { "MARKDOWN_PDF_SETTINGS": "/Users/me/.config/markdown-pdf/settings.json" },
-    "reveal": "no_focus",
-    "hide": "on_success"
-  }
-]
-```
+### Live Preview
 
-**MCP server in VS Code** — add `env` to the `mcpServers` entry (see
-[VS Code](/guide/vscode#ai-assistant-mcp)). `${userHome}` is a tasks variable; write the full path
-here:
-
-```json
-{
-  "mcpServers": {
-    "markdown-pdf": {
-      "type": "stdio",
-      "command": "npx",
-      "args": ["-y", "markdown-pdf-export", "mcp"],
-      "env": { "MARKDOWN_PDF_SETTINGS": "/Users/me/.config/markdown-pdf/settings.json" }
-    }
-  }
-}
-```
-
-**MCP server in Zed** — add `env` to the `context_servers` entry in Zed's `settings.json`:
-
-```json
-{
-  "context_servers": {
-    "markdown-pdf": {
-      "command": "npx",
-      "args": ["-y", "markdown-pdf-export", "mcp"],
-      "env": { "MARKDOWN_PDF_SETTINGS": "/Users/me/.config/markdown-pdf/settings.json" }
-    }
-  }
-}
-```
-
-**Command line** — pass the file with `--settings`:
+While designing a header or footer, keep the export running:
 
 ```sh
-npx -y markdown-pdf-export doc.md --settings /Users/me/.config/markdown-pdf/settings.json
+npx -y markdown-pdf-export doc.md --watch
 ```
 
-`MARKDOWN_PDF_SETTINGS` accepts either the path to a JSON file or inline JSON
-(`"{\"page_format\":\"A4\"}"`). `--settings` accepts the same two forms.
+The PDF is re-exported whenever the Markdown file or a loaded settings file changes. Open the PDF in a
+viewer that reloads on change to see each edit.
 
-The JSON examples on this site show the content of that settings file. See
-[Priority Order](#priority-order) for how the sources combine.
+### Override: `MARKDOWN_PDF_SETTINGS` and `--settings`
+
+To use another settings source, set the `MARKDOWN_PDF_SETTINGS` environment variable (in a terminal,
+or in the `env` of a task or MCP entry) or pass `--settings` on the command line. Both accept a path
+to a JSON file or inline JSON (`'{"page_format":"A4"}'`) and **replace** the user file; a project
+file still applies on top.
+
+```sh
+npx -y markdown-pdf-export doc.md --settings ./print-settings.json
+```
 
 ## One-Off Overrides
 
@@ -264,7 +274,9 @@ Path to a custom CSS file.
 { "stylesheet_path": "./styles/custom.css" }
 ```
 
-Relative paths are resolved from the Markdown file's directory.
+Relative paths are resolved from the directory of the settings file that sets them (see
+[Relative Paths](#relative-paths)); given as a flag or in front matter, from the Markdown file's
+directory.
 
 ### breaks
 
@@ -386,20 +398,21 @@ For simple headers/footers:
 
 ### assets_directory
 
-Global directory for shared assets (images, logos). Supports `~` for home directory.
+Directory for shared assets (images, logos). Supports `~` for the home directory; a relative path is
+resolved against the settings file's directory.
 
 - **Type**: `string | null`
 - **Default**: `null`
 
 ```json
-{ "assets_directory": "~/.config/markdown-pdf/assets" }
+{ "assets_directory": "assets" }
 ```
 
 Paths starting with `@/` in image sources are resolved relative to this directory:
 
 ```json
 {
-  "assets_directory": "~/.config/markdown-pdf/assets",
+  "assets_directory": "assets",
   "header": {
     "left_image": "@/company-logo.svg"
   }
@@ -438,8 +451,9 @@ Highest priority first:
 
 1. **Front matter** — the `pdf:` block of the document
 2. **Per-export options** — CLI flags (`--page-format Letter`) or MCP tool arguments (from the prompt)
-3. **`--settings <json|file.json>`** — CLI only
-4. **`MARKDOWN_PDF_SETTINGS`** — environment variable (file path or inline JSON)
+3. **Project file** — the nearest `.markdown-pdf.json`
+4. **User file** — `~/.config/markdown-pdf-export/settings.json`, or `--settings` /
+   `MARKDOWN_PDF_SETTINGS` when set
 5. **Built-in defaults**
 
 ## Minimal Configuration
@@ -464,7 +478,7 @@ For consistent branding across all documents, use the global assets directory:
 
 ```json
 {
-  "assets_directory": "~/.config/markdown-pdf/assets",
+  "assets_directory": "assets",
   "font_family": "Helvetica, Arial, sans-serif",
   "header": {
     "height": "20mm",
@@ -486,10 +500,10 @@ For consistent branding across all documents, use the global assets directory:
 }
 ```
 
-Each team member places their copy of the brand assets in the configured `assets_directory`.
-
 ::: tip Team Setup
-Share a ZIP of your brand assets with team members. They extract it to `~/.config/markdown-pdf/assets/` and the same settings work for everyone.
+Share this `settings.json` and a ZIP of the brand assets. Each team member puts them in
+`~/.config/markdown-pdf-export/` (logos in `assets/logos/`) and the same settings work for everyone.
+Alternatively, commit a `.markdown-pdf.json` and the assets to the project repository.
 :::
 
 ## Next Steps

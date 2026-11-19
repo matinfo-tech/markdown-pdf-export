@@ -1,0 +1,12 @@
+{
+  "$schema": "https://matinfo.github.io/markdown-pdf-export/schema/settings.schema.json",
+  "header": {
+    "height": "15mm",
+    "left_text": "{title}",
+    "right_text": "{date:yyyy-MM-dd}"
+  },
+  "footer": {
+    "height": "10mm",
+    "center_text": "Page {page} of {pages}"
+  }
+}

@@ -21,6 +21,7 @@
     "tool-schemas.mjs",
     "default.css",
     "lib/*.mjs",
+    "templates/",
     "vendor/"
   ],
   "scripts": {

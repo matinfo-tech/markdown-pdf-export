@@ -42,7 +42,7 @@ This creates:
 
 ### Global Settings (settings.json)
 
-Apply to all exports, in your settings file (see [Global Settings](/guide/global-settings#configuration-location) for how it is loaded):
+Apply to all exports, in your settings file (see [Global Settings](/guide/global-settings#where-settings-live) for how it is loaded):
 
 ```json
 {

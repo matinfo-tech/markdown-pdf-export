@@ -23,6 +23,12 @@ import {
 import { mergeConfig } from "./lib/config-merger.mjs";
 import { createAssetResolver } from "./lib/asset-resolver.mjs";
 import {
+  deepMerge,
+  findProjectSettingsFile,
+  readSettingsFile,
+  userSettingsPath,
+} from "./lib/settings-loader.mjs";
+import {
   createPlaceholderResolver,
   createRenderContext,
   ensureDateFnsLoaded,
@@ -341,75 +347,132 @@ export function normalizeSettings(raw) {
 }
 
 /**
- * Default settings come from MARKDOWN_PDF_SETTINGS: either inline JSON
- * ('{"page_format":"Letter"}') or the path to a JSON file.
+ * Base settings layer (user level). Resolution:
+ *   MARKDOWN_PDF_SETTINGS (inline JSON or a file path) when set,
+ *   otherwise the user settings file if it exists.
+ * Returns the raw (un-normalized) settings plus the sources that were consulted.
  */
-function loadSettings() {
-  let raw = process.env.MARKDOWN_PDF_SETTINGS ?? "{}";
-  debugLog(`MARKDOWN_PDF_SETTINGS env: ${raw}`);
+function loadBaseSettings() {
+  const env = (process.env.MARKDOWN_PDF_SETTINGS ?? "").trim();
+  debugLog(`MARKDOWN_PDF_SETTINGS env: ${env}`);
 
-  // Empty or missing env — use defaults silently
-  if (!raw || raw.trim() === "" || raw.trim() === "{}") {
-    return normalizeSettings({});
-  }
-
-  let source = "the MARKDOWN_PDF_SETTINGS environment variable";
-  if (!raw.trim().startsWith("{")) {
-    const settingsPath = path.resolve(raw.trim());
-    source = settingsPath;
-    try {
-      raw = fsSync.readFileSync(settingsPath, "utf8");
-    } catch (error) {
-      const msg = error instanceof Error ? error.message : String(error);
-      console.error(
-        `[markdown-pdf] ⚠️  Could not read settings file — falling back to defaults.\n` +
-          `  Reason : ${msg}`,
-      );
-      return normalizeSettings({});
+  if (env && env !== "{}") {
+    if (env.startsWith("{")) {
+      try {
+        const parsed = JSON.parse(env);
+        return {
+          raw: parsed,
+          sources: [{ kind: "env", path: null, loaded: true, error: null }],
+        };
+      } catch (error) {
+        const msg = error instanceof Error ? error.message : String(error);
+        console.error(
+          `[markdown-pdf] ⚠️  Could not parse MARKDOWN_PDF_SETTINGS — falling back to defaults.\n` +
+            `  Reason : ${msg}`,
+        );
+        return {
+          raw: {},
+          sources: [{ kind: "env", path: null, loaded: false, error: msg }],
+        };
+      }
     }
+    const file = readSettingsFile(env);
+    if (file.error) {
+      console.error(
+        `[markdown-pdf] ⚠️  Could not load settings file ${file.path} — falling back to defaults.\n` +
+          `  Reason : ${file.error}`,
+      );
+    }
+    return {
+      raw: file.data ?? {},
+      sources: [
+        { kind: "env", path: file.path, loaded: !file.error, error: file.error },
+      ],
+    };
   }
 
-  let parsed;
-  try {
-    parsed = JSON.parse(raw);
-  } catch (error) {
-    const msg = error instanceof Error ? error.message : String(error);
-    console.error(
-      `[markdown-pdf] ⚠️  Could not parse settings — falling back to defaults.\n` +
-        `  Reason : ${msg}\n` +
-        `  Fix    : Check ${source} for JSON syntax errors.`,
-    );
-    debugLog(`raw settings that failed to parse: ${raw}`);
-    return normalizeSettings({});
+  const userFile = userSettingsPath();
+  if (!fsSync.existsSync(userFile)) {
+    return {
+      raw: {},
+      sources: [{ kind: "user", path: userFile, loaded: false, error: null }],
+    };
   }
-
-  try {
-    const normalized = normalizeSettings(parsed);
-    debugLog(
-      `normalized settings.display_header_footer: ${normalized.display_header_footer}`,
-    );
-    return normalized;
-  } catch (error) {
-    const msg = error instanceof Error ? error.message : String(error);
+  const file = readSettingsFile(userFile);
+  if (file.error) {
     console.error(
-      `[markdown-pdf] ⚠️  Settings parsed but failed to normalize — falling back to defaults.\n` +
-        `  Reason : ${msg}`,
+      `[markdown-pdf] ⚠️  Could not load ${file.path} — falling back to defaults.\n` +
+        `  Reason : ${file.error}`,
     );
-    return normalizeSettings({});
   }
+  return {
+    raw: file.data ?? {},
+    sources: [{ kind: "user", path: file.path, loaded: !file.error, error: file.error }],
+  };
 }
 
-let settings = loadSettings();
+const baseLoad = loadBaseSettings();
+let baseRaw = baseLoad.raw;
+let baseSources = baseLoad.sources;
+let settings = normalizeSettings(baseRaw);
 
-/** Replace the active settings (used by the CLI for --settings / config files). */
-export function setSettings(raw) {
-  settings = normalizeSettings(raw ?? {});
+/** Re-read the base settings layer (env var / user file) — used by --watch. */
+export function reloadSettings() {
+  const load = loadBaseSettings();
+  baseRaw = load.raw;
+  baseSources = load.sources;
+  settings = normalizeSettings(baseRaw);
+}
+
+/**
+ * Replace the base settings layer (used by the CLI for --settings).
+ * `sourcePath` (optional) records the file the settings came from.
+ */
+export function setSettings(raw, sourcePath = null) {
+  baseRaw = raw && typeof raw === "object" ? raw : {};
+  settings = normalizeSettings(baseRaw);
+  baseSources = [
+    {
+      kind: "cli",
+      path: sourcePath,
+      loaded: true,
+      error: null,
+    },
+  ];
 }
 debugLog(
   `final loaded settings.display_header_footer: ${settings.display_header_footer}`,
 );
 
-function buildEffectiveOptions(args = {}) {
+/**
+ * Effective settings for one document: base layer deep-merged with the
+ * nearest .markdown-pdf.json found walking up from the document.
+ */
+function resolveDocumentSettings(inputDir) {
+  const sources = [...baseSources];
+  const projectFile = findProjectSettingsFile(inputDir);
+  if (!projectFile) return { settings, sources };
+
+  const file = readSettingsFile(projectFile);
+  sources.push({
+    kind: "project",
+    path: file.path,
+    loaded: !file.error,
+    error: file.error,
+  });
+  if (file.error) {
+    console.error(
+      `[markdown-pdf] ⚠️  Could not load ${file.path} — ignoring it.\n  Reason : ${file.error}`,
+    );
+    return { settings, sources };
+  }
+  return {
+    settings: normalizeSettings(deepMerge(baseRaw, file.data)),
+    sources,
+  };
+}
+
+function buildEffectiveOptions(args = {}, settings) {
   return {
     stylesheet_path:
       normalizeNonEmptyString(args.stylesheet_path) ?? settings.stylesheet_path,
@@ -787,26 +850,31 @@ export async function doctorMarkdownPdf(args) {
     };
   }
 
+  const doc = resolveDocumentSettings(
+    inputPath ? path.dirname(inputPath) : process.cwd(),
+  );
+
   return {
     browser: browserInfo,
+    settings_sources: doc.sources,
     settings: {
-      stylesheet_path: settings.stylesheet_path,
-      output_directory: settings.output_directory,
-      assets_directory: settings.assets_directory,
-      open_after_export: settings.open_after_export,
-      page_format: settings.page_format,
-      orientation: settings.orientation,
-      scale: settings.scale,
-      page_ranges: settings.page_ranges,
-      print_background: settings.print_background,
-      margin: settings.margin,
-      include_default_styles: settings.include_default_styles,
-      highlight: settings.highlight,
-      highlight_style: settings.highlight_style,
-      breaks: settings.breaks,
-      emoji: settings.emoji,
-      display_header_footer: settings.display_header_footer,
-      font_family: settings.font_family,
+      stylesheet_path: doc.settings.stylesheet_path,
+      output_directory: doc.settings.output_directory,
+      assets_directory: doc.settings.assets_directory,
+      open_after_export: doc.settings.open_after_export,
+      page_format: doc.settings.page_format,
+      orientation: doc.settings.orientation,
+      scale: doc.settings.scale,
+      page_ranges: doc.settings.page_ranges,
+      print_background: doc.settings.print_background,
+      margin: doc.settings.margin,
+      include_default_styles: doc.settings.include_default_styles,
+      highlight: doc.settings.highlight,
+      highlight_style: doc.settings.highlight_style,
+      breaks: doc.settings.breaks,
+      emoji: doc.settings.emoji,
+      display_header_footer: doc.settings.display_header_footer,
+      font_family: doc.settings.font_family,
     },
     default_settings: DEFAULT_SETTINGS,
     server_dir: SERVER_DIR,
@@ -859,7 +927,10 @@ export async function exportMarkdownPdf(args) {
   );
 
   // ── Step 2: Build effective options from args (tool call params) ──────────
-  const options = buildEffectiveOptions(args);
+  const { settings: docSettings, sources: settingsSources } =
+    resolveDocumentSettings(path.dirname(inputPath));
+  debugLog(`settings sources: ${JSON.stringify(settingsSources)}`);
+  const options = buildEffectiveOptions(args, docSettings);
   debugLog(
     `exportMarkdownPdf options.display_header_footer: ${options.display_header_footer}`,
   );
@@ -925,7 +996,11 @@ export async function exportMarkdownPdf(args) {
       options.display_header_footer,
   };
 
-  const outputPath = await resolveOutputPath(inputPath, options.output_path);
+  const outputPath = await resolveOutputPath(
+    inputPath,
+    options.output_path,
+    docSettings,
+  );
 
   // ── Step 4: Render Markdown to HTML ───────────────────────────────────────
   const { html } = await renderMarkdownToHtmlWithBody(
@@ -995,7 +1070,7 @@ export async function exportMarkdownPdf(args) {
       const placeholderResolver = createPlaceholderResolver(renderContext);
       const assetResolver = createAssetResolver({
         basePath: inputPath,
-        assetsDirectory: settings.assets_directory,
+        assetsDirectory: docSettings.assets_directory,
       });
 
       // Create HTML generator
@@ -1073,6 +1148,9 @@ export async function exportMarkdownPdf(args) {
     margin: effectiveOptions.margin,
     open_after_export: effectiveOptions.open_after_export,
     display_header_footer: displayHeaderFooterResult,
+    settings_files: settingsSources
+      .filter((source) => source.loaded && source.path)
+      .map((source) => source.path),
   };
 }
 
@@ -1087,7 +1165,7 @@ async function resolveInputPath(inputPath) {
   return absolutePath;
 }
 
-async function resolveOutputPath(inputPath, outputPath) {
+async function resolveOutputPath(inputPath, outputPath, settings) {
   if (typeof outputPath === "string" && outputPath.trim() !== "") {
     const resolved = path.resolve(path.dirname(inputPath), outputPath);
     await fs.mkdir(path.dirname(resolved), { recursive: true });

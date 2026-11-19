@@ -43,6 +43,9 @@ npx -y markdown-pdf-export README.md
 
 ## Use It from an AI Assistant (MCP)
 
+`npx -y markdown-pdf-export setup` prints the entry for Claude Code, Claude Desktop and Cursor (and
+Zed, VS Code) when it detects them; `--write` creates missing files or runs `claude mcp add`.
+
 The MCP server is started with:
 
 ```sh
@@ -80,9 +83,9 @@ Register a stdio server with command `npx` and arguments `-y markdown-pdf-export
 
 ## Settings and Paths
 
-- **Settings** work the same in every client: set the `MARKDOWN_PDF_SETTINGS` environment variable to
-  the absolute path of a settings file (see [Global Settings](/guide/global-settings)). Most clients
-  accept an `env` object next to `command` and `args`.
+- **Settings** work the same in every client: the user settings file (`npx -y markdown-pdf-export
+  init`) and the nearest `.markdown-pdf.json` are found automatically (see
+  [Global Settings](/guide/global-settings)).
 - **Paths:** a relative `input_path` is resolved against the folder the client starts the server in,
   which is not always your project. If an export reports that the file was not found, ask the
   assistant to use the absolute path.
