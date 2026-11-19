@@ -22,7 +22,10 @@ const check = process.argv.includes("--check");
 
 let stale = 0;
 for (const file of TARGETS) {
-  const current = fs.existsSync(file) ? fs.readFileSync(file, "utf8") : null;
+  // Normalize CRLF: Windows checkouts may convert line endings.
+  const current = fs.existsSync(file)
+    ? fs.readFileSync(file, "utf8").replaceAll("\r\n", "\n")
+    : null;
   if (current === text) continue;
   if (check) {
     console.error(`✗ ${path.relative(ROOT, file)} is out of date — run: npm run build:schema`);
