@@ -92,6 +92,7 @@ export const DEFAULT_SETTINGS = {
   margin: { top: "15mm", right: "15mm", bottom: "15mm", left: "15mm" },
   // content / rendering
   font_family: null,
+  heading_font_family: null,
   include_default_styles: true,
   highlight: true,
   highlight_style: "github.css",
@@ -339,6 +340,7 @@ export function normalizeSettings(raw) {
     ),
 
     font_family: normalizeNonEmptyString(safe.font_family),
+    heading_font_family: normalizeNonEmptyString(safe.heading_font_family),
 
     // Structured header/footer configs – pass through as-is for the
     // config-merger / html-generator pipeline to consume.
@@ -450,9 +452,19 @@ debugLog(
  * Effective settings for one document: base layer deep-merged with the
  * nearest .markdown-pdf.json found walking up from the document.
  */
+let projectDiscovery = true;
+
+/**
+ * Turn the .markdown-pdf.json lookup on or off. Studio turns it off: it builds
+ * the settings stack itself so an unsaved draft is what gets rendered.
+ */
+export function setProjectDiscovery(enabled) {
+  projectDiscovery = Boolean(enabled);
+}
+
 function resolveDocumentSettings(inputDir) {
   const sources = [...baseSources];
-  const projectFile = findProjectSettingsFile(inputDir);
+  const projectFile = projectDiscovery ? findProjectSettingsFile(inputDir) : null;
   if (!projectFile) return { settings, sources };
 
   const file = readSettingsFile(projectFile);
@@ -545,6 +557,8 @@ function buildEffectiveOptions(args = {}, settings) {
 
     font_family:
       normalizeNonEmptyString(args.font_family) ?? settings.font_family,
+    heading_font_family:
+      normalizeNonEmptyString(args.heading_font_family) ?? settings.heading_font_family,
   };
 }
 
@@ -877,6 +891,7 @@ export async function doctorMarkdownPdf(args) {
       emoji: doc.settings.emoji,
       display_header_footer: doc.settings.display_header_footer,
       font_family: doc.settings.font_family,
+      heading_font_family: doc.settings.heading_font_family,
       header: doc.settings.header,
       footer: doc.settings.footer,
     },
@@ -949,6 +964,7 @@ export async function exportMarkdownPdf(args) {
     print_background: options.print_background,
     margin: options.margin,
     font_family: options.font_family,
+    heading_font_family: options.heading_font_family,
     include_default_styles: options.include_default_styles,
     highlight: options.highlight,
     highlight_style: options.highlight_style,
@@ -981,6 +997,7 @@ export async function exportMarkdownPdf(args) {
     print_background: mergedConfig.print_background ?? options.print_background,
     margin: mergedConfig.margin ?? options.margin,
     font_family: mergedConfig.font_family ?? options.font_family,
+    heading_font_family: mergedConfig.heading_font_family ?? options.heading_font_family,
     include_default_styles:
       mergedConfig.include_default_styles ?? options.include_default_styles,
     highlight: mergedConfig.highlight ?? options.highlight,
@@ -1184,6 +1201,23 @@ async function resolveOutputPath(inputPath, outputPath, settings) {
   return path.join(baseDirectory, `${path.parse(inputPath).name}.pdf`);
 }
 
+/**
+ * Background colour a highlight.js theme gives code blocks, or null when it
+ * is plain white (then the default light grey box is kept) or not a hex colour.
+ * @param {string} css
+ * @returns {string|null}
+ */
+export function codeThemeBackground(css) {
+  // Only the bare ".hljs" rule counts ("pre code.hljs" is layout, not colour).
+  for (const rule of String(css).matchAll(/(?:^|[},\s/])\.hljs\s*\{([^}]*)\}/g)) {
+    const m = /background(?:-color)?\s*:\s*(#[0-9a-f]{3,8})\b/i.exec(rule[1]);
+    if (!m) continue;
+    const hex = m[1].toLowerCase();
+    return hex === "#fff" || hex === "#ffffff" ? null : hex;
+  }
+  return null;
+}
+
 function resolveStylesheetPath(baseDirectory, stylesheetPath) {
   if (!stylesheetPath) return null;
   return path.resolve(baseDirectory, stylesheetPath);
@@ -1206,11 +1240,6 @@ async function renderMarkdownToHtmlWithBody(inputPath, body, title, options) {
   if (options.include_default_styles) {
     const defaultCss = await fs.readFile(DEFAULT_CSS_PATH, "utf8");
     styleBlocks += `<style>${defaultCss}</style>\n    `;
-  }
-
-  // Font family override (after default CSS so it wins over the root stack)
-  if (options.font_family) {
-    styleBlocks += `<style>:root { font-family: ${options.font_family}; }</style>\n    `;
   }
 
   // KaTeX stylesheet (with inlined fonts when bundled, else read from node_modules)
@@ -1236,6 +1265,10 @@ async function renderMarkdownToHtmlWithBody(inputPath, body, title, options) {
       const hljsCssPath = path.join(hljsStylesDir, options.highlight_style);
       const hljsCss = await fs.readFile(hljsCssPath, "utf8");
       styleBlocks += `<style>${hljsCss}</style>\n    `;
+      // default.css paints code blocks light grey. A theme with its own
+      // (dark or tinted) background must win, or light text lands on grey.
+      const themeBg = codeThemeBackground(hljsCss);
+      if (themeBg) styleBlocks += `<style>pre.hljs{background:${themeBg}}</style>\n    `;
     } catch {
       debugLog(`Could not load highlight style: ${options.highlight_style}`);
     }
@@ -1253,6 +1286,15 @@ async function renderMarkdownToHtmlWithBody(inputPath, body, title, options) {
     } catch {
       debugLog(`Could not load stylesheet: ${stylesheetPath}`);
     }
+  }
+
+  // Font choices come last: an explicit font must win over the root stack of
+  // default.css and over a page style (look) that brings its own fonts.
+  if (options.font_family) {
+    styleBlocks += `<style>:root { font-family: ${options.font_family}; }</style>\n    `;
+  }
+  if (options.heading_font_family) {
+    styleBlocks += `<style>h1, h2, h3, h4, h5, h6 { font-family: ${options.heading_font_family}; }</style>\n    `;
   }
 
   const baseHref = `${pathToFileURL(path.dirname(inputPath)).href}/`;

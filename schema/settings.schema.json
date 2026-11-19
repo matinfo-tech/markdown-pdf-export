@@ -253,6 +253,10 @@
       "type": "string",
       "description": "CSS font-family value for the document body and header/footer. Overrides the default system font stack. Example: \"Georgia, 'Times New Roman', serif\"."
     },
+    "heading_font_family": {
+      "type": "string",
+      "description": "CSS font-family value for headings (h1-h6). Default: same as the body text."
+    },
     "look": {
       "type": "string",
       "enum": [
@@ -260,19 +264,35 @@
         "report",
         "academic",
         "compact",
-        "dark-code"
+        "technical"
       ],
-      "description": "Page style preset: clean (Default. GitHub-style, neutral.) report (Serif headings, strong title rule. Business reports.) academic (Serif body, justified, minimal colour. Papers and theses.) compact (Dense and small. More text per page.) dark-code (Light page, dark code blocks.) Explicit keys in this file override it."
+      "description": "Page style preset: clean (Default. GitHub-style, neutral.) report (Serif headings, strong title rule. Business reports.) academic (Serif body, justified, minimal colour. Papers and theses.) compact (Dense and small. More text per page.) technical (For documents with code: framed code blocks, blue accents.) Explicit keys in this file override it."
     },
     "font": {
       "type": "string",
       "enum": [
         "sans",
         "serif",
+        "book",
+        "humanist",
+        "geometric",
         "mono",
         "system"
       ],
-      "description": "Font preset (sans, serif, mono, system). Use font_family for a custom stack."
+      "description": "Font preset for the text. Use font_family for a custom stack."
+    },
+    "heading_font": {
+      "type": "string",
+      "enum": [
+        "sans",
+        "serif",
+        "book",
+        "humanist",
+        "geometric",
+        "mono",
+        "system"
+      ],
+      "description": "Font preset for titles (h1-h6). Use heading_font_family for a custom stack."
     },
     "template": {
       "type": "string",

@@ -46,6 +46,7 @@ export default defineConfig({
             { text: "Getting Started", link: "/guide/getting-started" },
             { text: "Installation", link: "/guide/installation" },
             { text: "First Export", link: "/guide/first-export" },
+            { text: "Design Your Pages (Studio)", link: "/guide/studio" },
           ],
         },
         {

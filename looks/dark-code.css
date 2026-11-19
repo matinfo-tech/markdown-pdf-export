@@ -1,4 +1,0 @@
-/* Look: dark-code — light page, dark code blocks (pairs with a dark highlight theme). */
-pre { background: #0d1117; border-radius: 6px; }
-pre code { color: #e6edf3; background: transparent; }
-:not(pre) > code { background: #eff1f3; }

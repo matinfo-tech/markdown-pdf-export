@@ -1,0 +1,11 @@
+/* Look: technical — for documents with code: framed code blocks, blue accents. */
+:root { font-size: 13px; }
+h1 { border-bottom: 3px solid #0969da; }
+h2 { border-bottom: none; color: #0550ae; }
+pre.hljs, pre:not(.hljs) {
+  border: 1px solid #d0d7de;
+  border-left: 3px solid #0969da;
+  border-radius: 4px;
+}
+:not(pre) > code { color: #0550ae; background: #eef4fb; }
+th { background: #eef4fb; }
