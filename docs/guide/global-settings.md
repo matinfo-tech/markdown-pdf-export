@@ -4,66 +4,91 @@ Configure default options for all PDF exports.
 
 ## Configuration Location
 
-Settings are a JSON object. Where it goes depends on how you run Markdown PDF:
+Settings are a plain JSON object. Keep it in a file, for example
+`~/.config/markdown-pdf/settings.json`:
 
-- **Zed task, CLI or MCP server (npx):** pass the object as JSON in the `MARKDOWN_PDF_SETTINGS`
-  environment variable (for example in the `env` of the `context_servers` entry), or with the CLI's
-  `--settings <json|file>`. CLI flags override these defaults.
-- **Legacy dev extension:** put the object under `context_servers.markdown-pdf.settings` in Zed's
-  `settings.json`. The examples on this site use this form; the inner object is the same everywhere.
+```json
+{
+  "page_format": "A4",
+  "highlight_style": "github.css"
+}
+```
 
-A `pdf:` block in a document's [front matter](/guide/front-matter) overrides both for that document.
+Then point Markdown PDF at that file. Use an absolute path (`~` is not expanded).
 
-Legacy dev extension form:
+**Zed task** — add `env` to the task in `tasks.json`:
+
+```json
+[
+  {
+    "label": "Markdown: Export to PDF",
+    "command": "npx",
+    "args": ["-y", "markdown-pdf-export", "$ZED_FILE"],
+    "env": { "MARKDOWN_PDF_SETTINGS": "/Users/me/.config/markdown-pdf/settings.json" },
+    "reveal": "no_focus",
+    "hide": "on_success"
+  }
+]
+```
+
+**MCP server** — add `env` to the `context_servers` entry in Zed's `settings.json`:
 
 ```json
 {
   "context_servers": {
     "markdown-pdf": {
-      "settings": {
-        // Your settings here
-      }
+      "command": "npx",
+      "args": ["-y", "markdown-pdf-export", "mcp"],
+      "env": { "MARKDOWN_PDF_SETTINGS": "/Users/me/.config/markdown-pdf/settings.json" }
     }
   }
 }
 ```
 
+**Command line** — pass the file with `--settings`:
+
+```sh
+npx -y markdown-pdf-export doc.md --settings /Users/me/.config/markdown-pdf/settings.json
+```
+
+`MARKDOWN_PDF_SETTINGS` accepts either the path to a JSON file or inline JSON
+(`"{\"page_format\":\"A4\"}"`). `--settings` accepts the same two forms.
+
+The JSON examples on this site show the content of that settings file. See
+[Priority Order](#priority-order) for how the sources combine.
+
 ## Complete Example
+
+`settings.json`:
 
 ```json
 {
-  "context_servers": {
-    "markdown-pdf": {
-      "settings": {
-        "page_format": "A4",
-        "orientation": "portrait",
-        "scale": 1,
-        "print_background": true,
-        "margin": {
-          "top": "20mm",
-          "right": "15mm",
-          "bottom": "20mm",
-          "left": "15mm"
-        },
-        "font_family": "Georgia, serif",
-        "include_default_styles": true,
-        "highlight": true,
-        "highlight_style": "github.css",
-        "emoji": true,
-        "open_after_export": false,
-        "header": {
-          "height": "15mm",
-          "left_image": "./logo.svg",
-          "left_image_height": "12mm",
-          "center_text": "{title}",
-          "right_text": "{date:MMMM d, yyyy}"
-        },
-        "footer": {
-          "height": "10mm",
-          "center_text": "Page {page} of {pages}"
-        }
-      }
-    }
+  "page_format": "A4",
+  "orientation": "portrait",
+  "scale": 1,
+  "print_background": true,
+  "margin": {
+    "top": "20mm",
+    "right": "15mm",
+    "bottom": "20mm",
+    "left": "15mm"
+  },
+  "font_family": "Georgia, serif",
+  "include_default_styles": true,
+  "highlight": true,
+  "highlight_style": "github.css",
+  "emoji": true,
+  "open_after_export": false,
+  "header": {
+    "height": "15mm",
+    "left_image": "./logo.svg",
+    "left_image_height": "12mm",
+    "center_text": "{title}",
+    "right_text": "{date:MMMM d, yyyy}"
+  },
+  "footer": {
+    "height": "10mm",
+    "center_text": "Page {page} of {pages}"
   }
 }
 ```
@@ -358,12 +383,13 @@ Open the PDF in the default viewer after export.
 
 ## Priority Order
 
-Settings are applied in this order (later overrides earlier):
+Highest priority first:
 
-1. **Extension defaults** — Built-in sensible defaults
-2. **Global settings** — Your `settings.json` configuration
-3. **Front matter** — Per-document `pdf:` block
-4. **Tool arguments** — Options passed in the prompt
+1. **Front matter** — the `pdf:` block of the document
+2. **Per-export options** — CLI flags (`--page-format Letter`) or MCP tool arguments (from the prompt)
+3. **`--settings <json|file.json>`** — CLI only
+4. **`MARKDOWN_PDF_SETTINGS`** — environment variable (file path or inline JSON)
+5. **Built-in defaults**
 
 ## Minimal Configuration
 
@@ -371,18 +397,12 @@ A minimal setup with header and footer:
 
 ```json
 {
-  "context_servers": {
-    "markdown-pdf": {
-      "settings": {
-        "header": {
-          "center_text": "{title}",
-          "right_text": "{date:yyyy-MM-dd}"
-        },
-        "footer": {
-          "center_text": "Page {page} of {pages}"
-        }
-      }
-    }
+  "header": {
+    "center_text": "{title}",
+    "right_text": "{date:yyyy-MM-dd}"
+  },
+  "footer": {
+    "center_text": "Page {page} of {pages}"
   }
 }
 ```
@@ -393,30 +413,24 @@ For consistent branding across all documents, use the global assets directory:
 
 ```json
 {
-  "context_servers": {
-    "markdown-pdf": {
-      "settings": {
-        "assets_directory": "~/.config/zed-markdown-pdf/assets",
-        "font_family": "Helvetica, Arial, sans-serif",
-        "header": {
-          "height": "20mm",
-          "padding": "0 15mm",
-          "border_bottom": "2px solid #0066cc",
-          "left_image": "@/logos/company-logo.svg",
-          "left_image_height": "15mm",
-          "right_text": "{date:MMMM d, yyyy}"
-        },
-        "footer": {
-          "height": "12mm",
-          "padding": "0 15mm",
-          "font_size": "8px",
-          "color": "#666",
-          "left_text": "© 2025 Company Name",
-          "center_text": "Page {page} of {pages}",
-          "right_text": "Confidential"
-        }
-      }
-    }
+  "assets_directory": "~/.config/zed-markdown-pdf/assets",
+  "font_family": "Helvetica, Arial, sans-serif",
+  "header": {
+    "height": "20mm",
+    "padding": "0 15mm",
+    "border_bottom": "2px solid #0066cc",
+    "left_image": "@/logos/company-logo.svg",
+    "left_image_height": "15mm",
+    "right_text": "{date:MMMM d, yyyy}"
+  },
+  "footer": {
+    "height": "12mm",
+    "padding": "0 15mm",
+    "font_size": "8px",
+    "color": "#666",
+    "left_text": "© 2025 Company Name",
+    "center_text": "Page {page} of {pages}",
+    "right_text": "Confidential"
   }
 }
 ```

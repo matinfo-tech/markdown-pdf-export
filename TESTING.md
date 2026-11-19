@@ -1,11 +1,10 @@
 # Testing Markdown PDF
 
-This guide covers local testing of the exporter as a CLI, as a standalone MCP server, from Zed, and as
-the legacy dev extension.
+This guide covers local testing of the exporter as a CLI, as a standalone MCP server, and from Zed.
 
 ## Prerequisites
 
-1. **Node.js** version 18 or higher
+1. **Node.js** version 20 or higher
 2. **A browser:** Google Chrome or Microsoft Edge, or Playwright's Chromium. Nothing is downloaded
    automatically. To install Chromium (~150 MB):
    ```sh
@@ -13,7 +12,6 @@ the legacy dev extension.
    node cli.mjs install-browser
    ```
    To force a browser, set `MARKDOWN_PDF_BROWSER` to `chrome`, `msedge`, `chromium` or an executable path.
-3. **Rust toolchain** — only for the legacy dev extension
 
 Install the server's dependencies once:
 
@@ -39,7 +37,12 @@ for example:
 node server/cli.mjs test-fixtures/sample.md -o /tmp/x.pdf --page-format Letter --toc --no-highlight
 node server/cli.mjs test-fixtures/sample.md -o /tmp/x.pdf --margin '{"top":"10mm"}'
 node server/cli.mjs test-fixtures/sample.md -o /tmp/x.pdf --settings '{"orientation":"landscape"}'
+node server/cli.mjs test-fixtures/sample.md -o /tmp/x.pdf --settings /path/to/settings.json
+MARKDOWN_PDF_SETTINGS=/path/to/settings.json node server/cli.mjs test-fixtures/sample.md -o /tmp/x.pdf
 ```
+
+Settings precedence, highest first: front matter `pdf:` block, CLI flags, `--settings`,
+`MARKDOWN_PDF_SETTINGS` (file path or inline JSON), built-in defaults.
 
 ## Automated Tests
 
@@ -51,7 +54,7 @@ npm run test:export    # end-to-end: runs the MCP server against test-fixtures/
 npm run test:all       # both
 ```
 
-`test:export` starts the MCP server once, runs `doctor_markdown_pdf`, then a set of
+`test:export` starts the MCP server (`server/mcp.mjs`) once, runs `doctor_markdown_pdf`, then a set of
 `export_markdown_pdf` scenarios, and prints a pass/fail summary. Options (run the script directly):
 
 ```sh
@@ -92,7 +95,10 @@ Add a `context_servers` entry in Zed's `settings.json` that runs your checkout:
     "markdown-pdf": {
       "command": "node",
       "args": ["/path/to/zed-markdown-pdf/server/mcp.mjs"],
-      "env": { "MARKDOWN_PDF_SETTINGS": "{\"page_format\":\"A4\"}", "MARKDOWN_PDF_DEBUG": "1" }
+      "env": {
+        "MARKDOWN_PDF_SETTINGS": "/path/to/settings.json",
+        "MARKDOWN_PDF_DEBUG": "1"
+      }
     }
   }
 }
@@ -101,15 +107,11 @@ Add a `context_servers` entry in Zed's `settings.json` that runs your checkout:
 Then open `test-fixtures/sample.md` and ask the assistant: "Export this Markdown file to PDF". The AI
 uses the `export_markdown_pdf` tool and writes `sample.pdf` next to the source file.
 
-### As the legacy dev extension
+`MARKDOWN_PDF_SETTINGS` is optional. It takes the absolute path of a JSON file containing the plain
+settings object, or inline JSON. The same `env` works in the task above.
 
-1. `cargo check` in the repository root
-2. In Zed, run `zed: install dev extension` and select the repository folder
-3. Enable `markdown-pdf` under **Agent → Context Servers**
-4. Open `test-fixtures/sample.md` and ask: "Export this Markdown file to PDF"
-
-The extension downloads the server archive built by `scripts/package-server.sh`. That archive bundles
-production `node_modules`, so nothing is installed at runtime; a browser is still required.
+To check the MCP handshake without Zed, run `./test-mcp-init.sh` from the repository root; it sends an
+`initialize` request to `server/mcp.mjs`.
 
 ## MCP Tools
 
@@ -172,13 +174,6 @@ MARKDOWN_PDF_DEBUG=/tmp/mdpdf.log node server/cli.mjs test-fixtures/sample.md -o
 4. View the MCP server logs in Zed (Agent panel → Server logs)
 5. Run `doctor_markdown_pdf` to check configuration
 
-### Dev extension not loading
-
-1. Check the Zed log (Help → View Logs)
-2. Verify `cargo check` passes
-3. Restart Zed
-4. Reinstall the extension
-
 ### PDF export fails
 
 **Symptom:** Export completes but no PDF is created
@@ -229,15 +224,6 @@ Use these to validate:
    ```sh
    cd server
    npm install
-   ```
-   For the legacy extension, rebuild the archive with `scripts/package-server.sh`.
-
-4. **Rust changes** (`src/lib.rs`, legacy extension):
-   ```sh
-   cargo check
-   cargo build --target wasm32-wasip1 --release
-   cp target/wasm32-wasip1/release/markdown_pdf.wasm extension.wasm
-   # Reinstall dev extension in Zed
    ```
 
 ## Feedback

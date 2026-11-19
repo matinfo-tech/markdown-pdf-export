@@ -6,15 +6,11 @@ links work in the resulting PDF.
 
 ## Enable
 
+In your settings file (see [Global Settings](/guide/global-settings#configuration-location) for how it is loaded):
+
 ```json
 {
-  "context_servers": {
-    "markdown-pdf": {
-      "settings": {
-        "toc": true
-      }
-    }
-  }
+  "toc": true
 }
 ```
 

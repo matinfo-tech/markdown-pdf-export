@@ -85,33 +85,21 @@ To specify a different location:
 Export to build/output.pdf
 ```
 
-Or configure a default output directory in settings:
+Or configure a default output directory in your settings file (see [Global Settings](/guide/global-settings#configuration-location) for how it is loaded):
 
 ```json
 {
-  "context_servers": {
-    "markdown-pdf": {
-      "settings": {
-        "output_directory": "./build"
-      }
-    }
-  }
+  "output_directory": "./build"
 }
 ```
 
 ## Open After Export
 
-To automatically open the PDF after export:
+To automatically open the PDF after export, add to your settings file:
 
 ```json
 {
-  "context_servers": {
-    "markdown-pdf": {
-      "settings": {
-        "open_after_export": true
-      }
-    }
-  }
+  "open_after_export": true
 }
 ```
 
@@ -129,17 +117,11 @@ Code blocks are automatically syntax-highlighted using the `github.css` theme. T
 Export with the atom-one-dark theme
 ```
 
-Or set a default in settings:
+Or set a default in your settings file:
 
 ```json
 {
-  "context_servers": {
-    "markdown-pdf": {
-      "settings": {
-        "highlight_style": "atom-one-dark.css"
-      }
-    }
-  }
+  "highlight_style": "atom-one-dark.css"
 }
 ```
 

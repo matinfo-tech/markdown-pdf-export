@@ -141,16 +141,15 @@ Key points:
 
 ## Manual testing in Zed
 
-1. Install the extension as a dev extension
-2. Enable `markdown-pdf` in **Agent → Context Servers**
-3. Open `test-fixtures/sample.md`
-4. Ask the assistant:
+1. Add a `context_servers` entry that runs `node /path/to/repo/server/mcp.mjs` (see `TESTING.md`)
+2. Open `test-fixtures/sample.md`
+3. Ask the assistant:
 
 ```
 Export this file to PDF
 ```
 
-5. Confirm that `sample.pdf` is created next to `sample.md`
+4. Confirm that `sample.pdf` is created next to `sample.md`
 
 To test a specific scenario interactively:
 

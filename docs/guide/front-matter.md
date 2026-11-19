@@ -184,15 +184,15 @@ Content goes here...
 Settings are merged with this priority (highest to lowest):
 
 1. **Front matter** (`pdf:` block)
-2. **Tool call arguments** (from AI assistant)
-3. **Global settings** (`settings.json`)
-4. **Extension defaults**
+2. **Per-export options** (CLI flags or tool call arguments from the AI assistant)
+3. **Global settings** (your settings file, see [Global Settings](/guide/global-settings))
+4. **Built-in defaults**
 
 ```yaml
 # This overrides any global settings:
 ---
 pdf:
-  page_format: Letter  # Takes priority over "A4" in settings.json
+  page_format: Letter  # Takes priority over "A4" in your settings file
 ---
 ```
 

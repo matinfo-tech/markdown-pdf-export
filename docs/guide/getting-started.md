@@ -13,6 +13,10 @@ Markdown PDF exports Markdown files to high-quality PDFs using Playwright and Ch
 - **Custom CSS** — bring your own stylesheet
 - **Per-document overrides** — configure via YAML front matter
 
+## Requirements
+
+Node.js 20 or newer, and Google Chrome or Microsoft Edge (see [Installation](/guide/installation)).
+
 ## How It Works
 
 1. You run the Zed task, the CLI, or ask the AI assistant to export a Markdown file

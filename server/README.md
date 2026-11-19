@@ -13,6 +13,8 @@ npx -y markdown-pdf-export doctor                  # check browser + settings
 npx -y markdown-pdf-export --help                  # all options
 ```
 
+Requires Node.js 20 or newer.
+
 ## Browser
 
 It uses an installed **Google Chrome** or **Microsoft Edge** first, then Playwright's Chromium.
@@ -75,9 +77,37 @@ The server exposes two tools, `export_markdown_pdf` and `doctor_markdown_pdf`.
 
 ## Settings
 
-Defaults come from `--settings <json|file>` or from the `MARKDOWN_PDF_SETTINGS` environment variable
-(JSON). Command-line flags override them, and a `pdf:` block in a document's front matter overrides
-everything for that document.
+Defaults come from `--settings <json|file.json>` or from the `MARKDOWN_PDF_SETTINGS` environment
+variable, which takes either inline JSON or the path to a JSON file. `--settings` overrides
+`MARKDOWN_PDF_SETTINGS`, command-line flags override both, and a `pdf:` block in a document's front
+matter overrides everything for that document.
+
+The simplest setup is a settings file, for example `~/.config/markdown-pdf/settings.json`:
+
+```json
+{
+  "page_format": "A4",
+  "highlight_style": "github.css"
+}
+```
+
+Reference it by absolute path (`~` is not expanded). In a Zed task, add `env` to the task object:
+
+```json
+[
+  {
+    "label": "Markdown: Export to PDF",
+    "command": "npx",
+    "args": ["-y", "markdown-pdf-export", "$ZED_FILE"],
+    "env": { "MARKDOWN_PDF_SETTINGS": "/Users/me/.config/markdown-pdf/settings.json" },
+    "reveal": "no_focus",
+    "hide": "on_success"
+  }
+]
+```
+
+The same `env` works in the `context_servers` entry for MCP; on the command line use
+`--settings /Users/me/.config/markdown-pdf/settings.json`.
 
 Set `MARKDOWN_PDF_DEBUG=1` to write a debug log to `<tmpdir>/markdown-pdf-debug.log`, or set it to a
 file path to log there instead.

@@ -2,7 +2,7 @@
 
 Export any Markdown file to a polished PDF from Zed — with a task or through the AI assistant (MCP).
 
-> **Requires:** Node.js ≥ 18 and Google Chrome or Microsoft Edge (or see step 3).
+> **Requires:** Node.js ≥ 20 and Google Chrome or Microsoft Edge (or see step 3).
 
 ---
 
@@ -93,9 +93,7 @@ To force a browser, set `MARKDOWN_PDF_BROWSER` to `chrome`, `msedge`, `chromium`
 
 ## 5. Settings
 
-Set permanent defaults as JSON in the `MARKDOWN_PDF_SETTINGS` environment variable (for example in the
-`env` of the `context_servers` entry) or pass `--settings <json|file>` to the CLI. A settings file
-could look like this:
+Keep permanent defaults in a settings file, for example `~/.config/markdown-pdf/settings.json`:
 
 ```json
 {
@@ -117,8 +115,15 @@ could look like this:
 }
 ```
 
-With the legacy dev extension, put the same object under `context_servers.markdown-pdf.settings` in
-Zed's `settings.json`.
+Load it by absolute path (`~` is not expanded):
+
+- **Task:** add `"env": { "MARKDOWN_PDF_SETTINGS": "/Users/me/.config/markdown-pdf/settings.json" }` to
+  the task in `tasks.json`
+- **MCP:** put the same `"env"` in the `context_servers.markdown-pdf` entry
+- **CLI:** `--settings /Users/me/.config/markdown-pdf/settings.json`
+
+`MARKDOWN_PDF_SETTINGS` also accepts inline JSON. The JSON snippets in the sections below go in this
+settings file. Full details: [Global Settings](https://matinfo.github.io/zed-markdown-pdf/guide/global-settings).
 
 ---
 

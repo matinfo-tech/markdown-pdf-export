@@ -19,61 +19,55 @@ A header/footer configuration suitable for academic papers, theses, and disserta
 
 ## Global Settings
 
-Configure in your Zed `settings.json`:
+Configure in your settings file (see [Global Settings](/guide/global-settings#configuration-location) for how it is loaded):
 
 ```json
 {
-  "context_servers": {
-    "markdown-pdf": {
-      "settings": {
-        "page_format": "Letter",
-        "margin": {
-          "top": "25mm",
-          "right": "25mm",
-          "bottom": "25mm",
-          "left": "25mm"
-        },
-        "font_family": "Georgia, 'Times New Roman', serif",
-        "header": {
-          "height": "20mm",
-          "padding": "0 25mm",
-          "font_size": "10px",
-          "border_bottom": "1px solid #333",
-          "center": [
-            {
-              "type": "title",
-              "font_weight": "bold",
-              "font_size": "12px"
-            },
-            {
-              "type": "text",
-              "content": "{department}",
-              "font_size": "9px",
-              "font_style": "italic",
-              "color": "#555"
-            }
-          ]
-        },
-        "footer": {
-          "height": "15mm",
-          "padding": "0 25mm",
-          "font_size": "9px",
-          "color": "#333",
-          "border_top": "1px solid #ccc",
-          "left": {
-            "type": "text",
-            "content": "{university}"
-          },
-          "center": {
-            "type": "text",
-            "content": "- {page} -"
-          },
-          "right": {
-            "type": "date",
-            "format": "MMMM yyyy"
-          }
-        }
+  "page_format": "Letter",
+  "margin": {
+    "top": "25mm",
+    "right": "25mm",
+    "bottom": "25mm",
+    "left": "25mm"
+  },
+  "font_family": "Georgia, 'Times New Roman', serif",
+  "header": {
+    "height": "20mm",
+    "padding": "0 25mm",
+    "font_size": "10px",
+    "border_bottom": "1px solid #333",
+    "center": [
+      {
+        "type": "title",
+        "font_weight": "bold",
+        "font_size": "12px"
+      },
+      {
+        "type": "text",
+        "content": "{department}",
+        "font_size": "9px",
+        "font_style": "italic",
+        "color": "#555"
       }
+    ]
+  },
+  "footer": {
+    "height": "15mm",
+    "padding": "0 25mm",
+    "font_size": "9px",
+    "color": "#333",
+    "border_top": "1px solid #ccc",
+    "left": {
+      "type": "text",
+      "content": "{university}"
+    },
+    "center": {
+      "type": "text",
+      "content": "- {page} -"
+    },
+    "right": {
+      "type": "date",
+      "format": "MMMM yyyy"
     }
   }
 }

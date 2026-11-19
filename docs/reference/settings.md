@@ -4,19 +4,59 @@ Complete reference for all Markdown PDF settings.
 
 ## Configuration
 
-Settings are placed in your Zed `settings.json`:
+Settings are a plain JSON object. Keep it in a file, for example
+`~/.config/markdown-pdf/settings.json`:
+
+```json
+{
+  "page_format": "A4",
+  "highlight_style": "github.css"
+}
+```
+
+Then point Markdown PDF at that file. Use an absolute path (`~` is not expanded).
+
+**Zed task** — add `env` to the task in `tasks.json`:
+
+```json
+[
+  {
+    "label": "Markdown: Export to PDF",
+    "command": "npx",
+    "args": ["-y", "markdown-pdf-export", "$ZED_FILE"],
+    "env": { "MARKDOWN_PDF_SETTINGS": "/Users/me/.config/markdown-pdf/settings.json" },
+    "reveal": "no_focus",
+    "hide": "on_success"
+  }
+]
+```
+
+**MCP server** — add `env` to the `context_servers` entry in Zed's `settings.json`:
 
 ```json
 {
   "context_servers": {
     "markdown-pdf": {
-      "settings": {
-        // Settings here
-      }
+      "command": "npx",
+      "args": ["-y", "markdown-pdf-export", "mcp"],
+      "env": { "MARKDOWN_PDF_SETTINGS": "/Users/me/.config/markdown-pdf/settings.json" }
     }
   }
 }
 ```
+
+**Command line** — pass the file with `--settings`:
+
+```sh
+npx -y markdown-pdf-export doc.md --settings /Users/me/.config/markdown-pdf/settings.json
+```
+
+`MARKDOWN_PDF_SETTINGS` accepts either the path to a JSON file or inline JSON
+(`"{\"page_format\":\"A4\"}"`). `--settings` accepts the same two forms.
+
+The JSON examples below show the content of that settings file. See
+[Priority Order](#priority-order) for how the sources combine, and
+[Global Settings](/guide/global-settings) for a walkthrough.
 
 ## Page Layout
 
@@ -375,30 +415,25 @@ Open PDF in default viewer after export.
 
 ## Priority Order
 
-Settings are applied in this order (later overrides earlier):
+Highest priority first:
 
-1. **Extension defaults**
-2. **Global settings** (`settings.json`)
-3. **Front matter** (`pdf:` block)
-4. **Tool arguments** (from prompt)
+1. **Front matter** — the `pdf:` block of the document
+2. **Per-export options** — CLI flags (`--page-format Letter`) or MCP tool arguments (from the prompt)
+3. **`--settings <json|file.json>`** — CLI only
+4. **`MARKDOWN_PDF_SETTINGS`** — environment variable (file path or inline JSON)
+5. **Built-in defaults**
 
 ## Minimal Example
 
 ```json
 {
-  "context_servers": {
-    "markdown-pdf": {
-      "settings": {
-        "page_format": "A4",
-        "header": {
-          "center_text": "{title}",
-          "right_text": "{date:yyyy-MM-dd}"
-        },
-        "footer": {
-          "center_text": "Page {page} of {pages}"
-        }
-      }
-    }
+  "page_format": "A4",
+  "header": {
+    "center_text": "{title}",
+    "right_text": "{date:yyyy-MM-dd}"
+  },
+  "footer": {
+    "center_text": "Page {page} of {pages}"
   }
 }
 ```
@@ -407,55 +442,49 @@ Settings are applied in this order (later overrides earlier):
 
 ```json
 {
-  "context_servers": {
-    "markdown-pdf": {
-      "settings": {
-        "page_format": "A4",
-        "orientation": "portrait",
-        "scale": 1,
-        "print_background": true,
-        "margin": {
-          "top": "20mm",
-          "right": "15mm",
-          "bottom": "20mm",
-          "left": "15mm"
-        },
-        "font_family": "Georgia, serif",
-        "include_default_styles": true,
-        "highlight": true,
-        "highlight_style": "github.css",
-        "emoji": true,
-        "open_after_export": false,
-        "header": {
-          "height": "18mm",
-          "padding": "0 15mm",
-          "font_size": "9px",
-          "border_bottom": "1px solid #ddd",
-          "left": {
-            "type": "image",
-            "src": "./logo.svg",
-            "height": "14mm"
-          },
-          "center": {
-            "type": "title",
-            "font_weight": "bold"
-          },
-          "right": {
-            "type": "date",
-            "format": "MMMM d, yyyy"
-          }
-        },
-        "footer": {
-          "height": "12mm",
-          "padding": "0 15mm",
-          "font_size": "8px",
-          "color": "#666",
-          "center": {
-            "type": "text",
-            "content": "Page {page} of {pages}"
-          }
-        }
-      }
+  "page_format": "A4",
+  "orientation": "portrait",
+  "scale": 1,
+  "print_background": true,
+  "margin": {
+    "top": "20mm",
+    "right": "15mm",
+    "bottom": "20mm",
+    "left": "15mm"
+  },
+  "font_family": "Georgia, serif",
+  "include_default_styles": true,
+  "highlight": true,
+  "highlight_style": "github.css",
+  "emoji": true,
+  "open_after_export": false,
+  "header": {
+    "height": "18mm",
+    "padding": "0 15mm",
+    "font_size": "9px",
+    "border_bottom": "1px solid #ddd",
+    "left": {
+      "type": "image",
+      "src": "./logo.svg",
+      "height": "14mm"
+    },
+    "center": {
+      "type": "title",
+      "font_weight": "bold"
+    },
+    "right": {
+      "type": "date",
+      "format": "MMMM d, yyyy"
+    }
+  },
+  "footer": {
+    "height": "12mm",
+    "padding": "0 15mm",
+    "font_size": "8px",
+    "color": "#666",
+    "center": {
+      "type": "text",
+      "content": "Page {page} of {pages}"
     }
   }
 }

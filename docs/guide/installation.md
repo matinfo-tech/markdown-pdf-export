@@ -7,11 +7,11 @@ needed.
 ## Prerequisites
 
 - **Zed Editor** — [Download from zed.dev](https://zed.dev)
-- **Node.js 18+** — provides `npx`
+- **Node.js 20+** — provides `npx`
 - **A browser** — Google Chrome or Microsoft Edge (see [Browser](#browser))
 
 ```bash
-node --version   # Must be ≥ 18
+node --version   # Must be ≥ 20
 ```
 
 ## Zed Task (Recommended)
@@ -54,16 +54,19 @@ Add this to Zed's `settings.json`:
     "markdown-pdf": {
       "command": "npx",
       "args": ["-y", "markdown-pdf-export", "mcp"],
-      "env": { "MARKDOWN_PDF_SETTINGS": "{\"page_format\":\"A4\"}" }
+      "env": { "MARKDOWN_PDF_SETTINGS": "/Users/me/.config/markdown-pdf/settings.json" }
     }
   }
 }
 ```
 
+`env` is optional: `MARKDOWN_PDF_SETTINGS` is the absolute path of your settings file (or inline JSON).
+
 The server exposes two tools, `export_markdown_pdf` and `doctor_markdown_pdf`. Its MCP registry name
 is `io.github.matinfo/markdown-pdf-export`.
 
-Default settings go in `MARKDOWN_PDF_SETTINGS` as JSON (see [Global Settings](/guide/global-settings)).
+The same `env` works in the task. See [Global Settings](/guide/global-settings#configuration-location)
+for the settings file and precedence.
 
 ## Command Line
 
@@ -95,22 +98,6 @@ npx -y markdown-pdf-export install-browser
 To pick a browser yourself, set `MARKDOWN_PDF_BROWSER` to `chrome`, `msedge`, `chromium` or the path
 to an executable.
 
-## Legacy: Dev Extension
-
-The original Zed extension is not in the Zed registry: the registry no longer accepts new MCP-server
-extensions, and the extension API has no command surface yet. It remains available as a dev extension:
-
-1. Install Rust with the WASM target: `rustup target add wasm32-wasip1`
-2. Clone the repository:
-   ```bash
-   git clone https://github.com/matinfo/zed-markdown-pdf.git
-   ```
-3. In Zed, run **zed: install dev extension** from the command palette and select the folder
-4. Enable **markdown-pdf** in **Agent → Context Servers**
-
-On first use the extension downloads the server archive from GitHub releases. The archive bundles its
-npm dependencies, so nothing is installed at runtime; it still needs a browser (see above).
-
 ## Verify Installation
 
 Run the diagnostic from a terminal:
@@ -138,20 +125,12 @@ You should see output like:
 ### Context server doesn't start
 
 1. Check that `npx -y markdown-pdf-export --help` works in a terminal
-2. Confirm `markdown-pdf` is enabled in **Agent → Context Servers**
+2. Confirm the `markdown-pdf` entry is present and enabled in **Agent → Context Servers**
 3. Restart Zed
 4. Check Zed logs: **Help → View Logs**
 5. Enable the debug log with `MARKDOWN_PDF_DEBUG=1` (in the `env` of the `context_servers` entry).
    It is written to `markdown-pdf-debug.log` in the OS temp directory — on macOS under
    `/var/folders/…/T/`, not `/tmp`. Set `MARKDOWN_PDF_DEBUG=/some/file.log` to choose the path.
-
-### Dev extension fails to build
-
-Ensure Rust and the WASM target are installed:
-
-```bash
-rustup target add wasm32-wasip1
-```
 
 ### Node.js not found
 
@@ -159,7 +138,7 @@ Ensure Node.js is in your PATH:
 
 ```bash
 which node   # Should return a path
-node --version   # Should be ≥ 18
+node --version   # Should be ≥ 20
 ```
 
 ## Next Steps

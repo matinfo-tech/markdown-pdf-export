@@ -6,17 +6,11 @@ output is fully self-contained.
 
 ## Enable
 
-In your Zed `settings.json`:
+In your settings file (see [Global Settings](/guide/global-settings#configuration-location) for how it is loaded):
 
 ```json
 {
-  "context_servers": {
-    "markdown-pdf": {
-      "settings": {
-        "math": true
-      }
-    }
-  }
+  "math": true
 }
 ```
 

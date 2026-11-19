@@ -2,9 +2,9 @@
 
 Copy-paste ready configurations for common use cases. Pick one and customize!
 
-## Zed Settings Templates
+## Settings Templates
 
-Add these to your Zed `settings.json` under `context_servers.markdown-pdf.settings`:
+Each template is a complete settings file (`settings.json`). See [Global Settings](/guide/global-settings#configuration-location) for how it is loaded:
 
 ---
 
@@ -26,14 +26,8 @@ The simplest setup. Adds page numbers at the bottom.
 
 ```json
 {
-  "context_servers": {
-    "markdown-pdf": {
-      "settings": {
-        "footer": {
-          "center_text": "Page {page} of {pages}"
-        }
-      }
-    }
+  "footer": {
+    "center_text": "Page {page} of {pages}"
   }
 }
 ```
@@ -58,20 +52,14 @@ Title and date in header, page numbers in footer.
 
 ```json
 {
-  "context_servers": {
-    "markdown-pdf": {
-      "settings": {
-        "header": {
-          "height": "15mm",
-          "left_text": "{title}",
-          "right_text": "{date:yyyy-MM-dd}"
-        },
-        "footer": {
-          "height": "10mm",
-          "center_text": "Page {page} of {pages}"
-        }
-      }
-    }
+  "header": {
+    "height": "15mm",
+    "left_text": "{title}",
+    "right_text": "{date:yyyy-MM-dd}"
+  },
+  "footer": {
+    "height": "10mm",
+    "center_text": "Page {page} of {pages}"
   }
 }
 ```
@@ -96,33 +84,27 @@ Clean look with borders and styling.
 
 ```json
 {
-  "context_servers": {
-    "markdown-pdf": {
-      "settings": {
-        "margin": {
-          "top": "25mm",
-          "bottom": "25mm"
-        },
-        "header": {
-          "height": "15mm",
-          "padding": "0 15mm",
-          "font_size": "9px",
-          "border_bottom": "1px solid #ddd",
-          "left_text": "{title}",
-          "right_text": "{date:MMMM d, yyyy}"
-        },
-        "footer": {
-          "height": "12mm",
-          "padding": "0 15mm",
-          "font_size": "8px",
-          "color": "#666",
-          "border_top": "1px solid #eee",
-          "left_text": "{author}",
-          "center_text": "Page {page} of {pages}",
-          "right_text": "{filename}"
-        }
-      }
-    }
+  "margin": {
+    "top": "25mm",
+    "bottom": "25mm"
+  },
+  "header": {
+    "height": "15mm",
+    "padding": "0 15mm",
+    "font_size": "9px",
+    "border_bottom": "1px solid #ddd",
+    "left_text": "{title}",
+    "right_text": "{date:MMMM d, yyyy}"
+  },
+  "footer": {
+    "height": "12mm",
+    "padding": "0 15mm",
+    "font_size": "8px",
+    "color": "#666",
+    "border_top": "1px solid #eee",
+    "left_text": "{author}",
+    "center_text": "Page {page} of {pages}",
+    "right_text": "{filename}"
   }
 }
 ```
@@ -147,32 +129,26 @@ Logo on left, title centered, date on right.
 
 ```json
 {
-  "context_servers": {
-    "markdown-pdf": {
-      "settings": {
-        "assets_directory": "~/.config/zed-markdown-pdf/assets",
-        "margin": {
-          "top": "25mm",
-          "bottom": "20mm"
-        },
-        "header": {
-          "height": "18mm",
-          "padding": "0 15mm",
-          "border_bottom": "2px solid #0066cc",
-          "left_image": "@/company-logo.svg",
-          "left_image_height": "14mm",
-          "center_text": "{title}",
-          "right_text": "{date:MMMM d, yyyy}"
-        },
-        "footer": {
-          "height": "10mm",
-          "padding": "0 15mm",
-          "font_size": "8px",
-          "color": "#666",
-          "center_text": "Page {page} of {pages}"
-        }
-      }
-    }
+  "assets_directory": "~/.config/zed-markdown-pdf/assets",
+  "margin": {
+    "top": "25mm",
+    "bottom": "20mm"
+  },
+  "header": {
+    "height": "18mm",
+    "padding": "0 15mm",
+    "border_bottom": "2px solid #0066cc",
+    "left_image": "@/company-logo.svg",
+    "left_image_height": "14mm",
+    "center_text": "{title}",
+    "right_text": "{date:MMMM d, yyyy}"
+  },
+  "footer": {
+    "height": "10mm",
+    "padding": "0 15mm",
+    "font_size": "8px",
+    "color": "#666",
+    "center_text": "Page {page} of {pages}"
   }
 }
 ```
@@ -201,35 +177,29 @@ Your logo on left, partner logo on right.
 
 ```json
 {
-  "context_servers": {
-    "markdown-pdf": {
-      "settings": {
-        "assets_directory": "~/.config/zed-markdown-pdf/assets",
-        "margin": {
-          "top": "28mm",
-          "bottom": "22mm"
-        },
-        "header": {
-          "height": "22mm",
-          "padding": "0 15mm",
-          "border_bottom": "1px solid #ddd",
-          "left_image": "@/our-logo.svg",
-          "left_image_height": "18mm",
-          "center_text": "{title}",
-          "right_image": "@/partner-logo.svg",
-          "right_image_height": "18mm"
-        },
-        "footer": {
-          "height": "12mm",
-          "padding": "0 15mm",
-          "font_size": "8px",
-          "color": "#666",
-          "left_text": "© {date:yyyy} Company Name",
-          "center_text": "Page {page} of {pages}",
-          "right_text": "Confidential"
-        }
-      }
-    }
+  "assets_directory": "~/.config/zed-markdown-pdf/assets",
+  "margin": {
+    "top": "28mm",
+    "bottom": "22mm"
+  },
+  "header": {
+    "height": "22mm",
+    "padding": "0 15mm",
+    "border_bottom": "1px solid #ddd",
+    "left_image": "@/our-logo.svg",
+    "left_image_height": "18mm",
+    "center_text": "{title}",
+    "right_image": "@/partner-logo.svg",
+    "right_image_height": "18mm"
+  },
+  "footer": {
+    "height": "12mm",
+    "padding": "0 15mm",
+    "font_size": "8px",
+    "color": "#666",
+    "left_text": "© {date:yyyy} Company Name",
+    "center_text": "Page {page} of {pages}",
+    "right_text": "Confidential"
   }
 }
 ```
@@ -254,34 +224,28 @@ Author-focused with institutional format.
 
 ```json
 {
-  "context_servers": {
-    "markdown-pdf": {
-      "settings": {
-        "font_family": "Times New Roman, Georgia, serif",
-        "margin": {
-          "top": "25mm",
-          "right": "25mm",
-          "bottom": "25mm",
-          "left": "25mm"
-        },
-        "header": {
-          "height": "12mm",
-          "padding": "0 20mm",
-          "font_size": "10px",
-          "font_style": "italic",
-          "color": "#555",
-          "border_bottom": "0.5px solid #ccc",
-          "left_text": "{author}",
-          "right_text": "{title}"
-        },
-        "footer": {
-          "height": "12mm",
-          "padding": "0 20mm",
-          "font_size": "10px",
-          "center_text": "{page}"
-        }
-      }
-    }
+  "font_family": "Times New Roman, Georgia, serif",
+  "margin": {
+    "top": "25mm",
+    "right": "25mm",
+    "bottom": "25mm",
+    "left": "25mm"
+  },
+  "header": {
+    "height": "12mm",
+    "padding": "0 20mm",
+    "font_size": "10px",
+    "font_style": "italic",
+    "color": "#555",
+    "border_bottom": "0.5px solid #ccc",
+    "left_text": "{author}",
+    "right_text": "{title}"
+  },
+  "footer": {
+    "height": "12mm",
+    "padding": "0 20mm",
+    "font_size": "10px",
+    "center_text": "{page}"
   }
 }
 ```
@@ -306,34 +270,28 @@ Detailed footer with document metadata.
 
 ```json
 {
-  "context_servers": {
-    "markdown-pdf": {
-      "settings": {
-        "font_family": "Helvetica Neue, Arial, sans-serif",
-        "margin": {
-          "top": "25mm",
-          "bottom": "25mm"
-        },
-        "header": {
-          "height": "16mm",
-          "padding": "0 15mm",
-          "font_size": "9px",
-          "border_bottom": "2px solid #333",
-          "left_text": "{title}",
-          "right_text": "Version {version}"
-        },
-        "footer": {
-          "height": "14mm",
-          "padding": "0 15mm",
-          "font_size": "8px",
-          "color": "#666",
-          "border_top": "1px solid #ddd",
-          "left_text": "{author} • {department}",
-          "center_text": "Page {page} of {pages}",
-          "right_text": "Updated: {date:yyyy-MM}"
-        }
-      }
-    }
+  "font_family": "Helvetica Neue, Arial, sans-serif",
+  "margin": {
+    "top": "25mm",
+    "bottom": "25mm"
+  },
+  "header": {
+    "height": "16mm",
+    "padding": "0 15mm",
+    "font_size": "9px",
+    "border_bottom": "2px solid #333",
+    "left_text": "{title}",
+    "right_text": "Version {version}"
+  },
+  "footer": {
+    "height": "14mm",
+    "padding": "0 15mm",
+    "font_size": "8px",
+    "color": "#666",
+    "border_top": "1px solid #ddd",
+    "left_text": "{author} • {department}",
+    "center_text": "Page {page} of {pages}",
+    "right_text": "Updated: {date:yyyy-MM}"
   }
 }
 ```
