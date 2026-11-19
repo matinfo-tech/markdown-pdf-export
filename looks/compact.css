@@ -1,0 +1,5 @@
+/* Look: compact — dense, small type, fits more per page. */
+:root { font-size: 11.5px; line-height: 1.45; }
+h1 { font-size: 1.6em; } h2 { font-size: 1.3em; } h3 { font-size: 1.1em; }
+h1, h2, h3, h4 { margin: 1em 0 0.35em; }
+p, ul, ol, pre, table, blockquote { margin-top: 0; margin-bottom: 0.7em; }
