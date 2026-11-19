@@ -58,6 +58,10 @@ The JSON examples below show the content of that settings file. See
 [Priority Order](#priority-order) for how the sources combine, and
 [Global Settings](/guide/global-settings) for a walkthrough.
 
+Most settings also have a command-line flag of the same name in kebab-case (`page_format` →
+`--page-format`); see [Command Line](/guide/cli#options). `header`, `footer`, `output_directory` and
+`assets_directory` are settings-file or front-matter only.
+
 ## Page Layout
 
 ### page_format

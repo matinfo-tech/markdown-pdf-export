@@ -43,6 +43,10 @@ export default defineConfig({
           items: [
             { text: "Getting Started", link: "/guide/getting-started" },
             { text: "Installation", link: "/guide/installation" },
+            { text: "Zed Task", link: "/guide/zed-task" },
+            { text: "AI Assistant (MCP)", link: "/guide/mcp" },
+            { text: "Command Line", link: "/guide/cli" },
+            { text: "Browser", link: "/guide/browser" },
             { text: "First Export", link: "/guide/first-export" },
           ],
         },

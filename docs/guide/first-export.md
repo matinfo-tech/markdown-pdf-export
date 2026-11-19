@@ -4,13 +4,22 @@ This guide walks you through creating your first PDF export with Markdown PDF.
 
 ## Basic Export
 
-With the [Zed task](/guide/installation#zed-task-recommended):
+Pick the way you set up. All three produce the same PDF, next to your source file.
+
+**1. Zed task** ([setup](/guide/zed-task))
 
 1. Open any Markdown file in Zed
 2. Run **task: spawn** and choose *Markdown: Export to PDF* (or press your key binding)
-3. The PDF is created next to your source file
 
-With the [MCP server](/guide/installation#mcp-server-zed-agent-or-any-mcp-client):
+**2. Command line** ([reference](/guide/cli))
+
+```sh
+npx -y markdown-pdf-export report.md
+```
+
+The command prints the path of the PDF.
+
+**3. AI assistant** ([setup](/guide/mcp))
 
 1. Open any Markdown file in Zed
 2. Open the assistant panel (`Cmd+Enter` / `Ctrl+Enter`)
@@ -20,15 +29,22 @@ With the [MCP server](/guide/installation#mcp-server-zed-agent-or-any-mcp-client
    Export this file to PDF
    ```
 
-4. The PDF will be created next to your source file
-
 If the export reports `No usable Chrome/Chromium browser found.`, install Google Chrome or Microsoft
-Edge, or run `npx -y markdown-pdf-export install-browser` once (see [Browser](/guide/installation#browser)).
-
+Edge, or run `npx -y markdown-pdf-export install-browser` once (see [Browser](/guide/browser)).
 
 ## Export with Options
 
-You can specify options directly in your prompt:
+On the command line, options are flags. In a Zed task, add the same flags to `args`:
+
+```sh
+npx -y markdown-pdf-export report.md --orientation landscape
+npx -y markdown-pdf-export report.md -o docs/output.pdf --highlight-style monokai.css
+npx -y markdown-pdf-export report.md --display-header-footer
+```
+
+`--display-header-footer` shows the header and footer you configured (see the next section).
+
+With the assistant, specify options directly in your prompt:
 
 ```
 Export this file to PDF in landscape orientation
@@ -63,11 +79,8 @@ pdf:
 Content goes here...
 ```
 
-Then export normally:
-
-```
-Export this file to PDF
-```
+Then export normally, with the task, the command line or the prompt `Export this file to PDF`. Front
+matter applies to all three.
 
 ## Output Location
 
@@ -79,7 +92,13 @@ docs/
 └── report.pdf    ← Generated here
 ```
 
-To specify a different location:
+To specify a different location, use `-o` on the command line (or in the task's `args`):
+
+```sh
+npx -y markdown-pdf-export report.md -o build/output.pdf
+```
+
+Or ask the assistant:
 
 ```
 Export to build/output.pdf
@@ -103,7 +122,7 @@ To automatically open the PDF after export, add to your settings file:
 }
 ```
 
-Or ask the assistant:
+Or pass `--open-after-export` on the command line, or ask the assistant:
 
 ```
 Export this file to PDF and open it
@@ -111,7 +130,8 @@ Export this file to PDF and open it
 
 ## Syntax Highlighting
 
-Code blocks are automatically syntax-highlighted using the `github.css` theme. To change the theme:
+Code blocks are automatically syntax-highlighted using the `github.css` theme. To change the theme,
+pass `--highlight-style atom-one-dark.css` on the command line, or ask the assistant:
 
 ```
 Export with the atom-one-dark theme
@@ -127,17 +147,22 @@ Or set a default in your settings file:
 
 ## Verify Your Setup
 
-If something doesn't work, run the diagnostic from a terminal (`npx -y markdown-pdf-export doctor`) or
-ask the assistant:
+If something doesn't work, run the diagnostic from a terminal:
+
+```sh
+npx -y markdown-pdf-export doctor
+```
+
+Or ask the assistant:
 
 ```
 Run doctor_markdown_pdf
 ```
 
 This shows:
-- Browser availability and version
+- Browser availability, version, and which browser was picked
 - Current settings
-- Server directory path
+- Package directory path
 
 ## Next Steps
 

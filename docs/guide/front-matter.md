@@ -295,7 +295,13 @@ pdf:
 
 ### Check Active Settings
 
-Ask the AI assistant:
+Run the diagnostic from a terminal:
+
+```sh
+npx -y markdown-pdf-export doctor
+```
+
+Or ask the AI assistant:
 
 ```
 Run doctor_markdown_pdf

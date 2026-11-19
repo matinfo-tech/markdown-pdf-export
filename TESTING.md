@@ -5,40 +5,39 @@ This guide covers local testing of the exporter as a CLI, as a standalone MCP se
 ## Prerequisites
 
 1. **Node.js** version 20 or higher
-2. **A browser:** Google Chrome or Microsoft Edge, or Playwright's Chromium. Nothing is downloaded
-   automatically. To install Chromium (~150 MB):
+2. **A Chromium-based browser:** Google Chrome or Microsoft Edge, or Playwright's Chromium. PDF
+   generation uses Chromium's print-to-PDF engine through Playwright, which does not support Firefox
+   or WebKit/Safari for PDFs. Nothing is downloaded automatically. To install Chromium (~150 MB):
    ```sh
-   cd server
    node cli.mjs install-browser
    ```
    To force a browser, set `MARKDOWN_PDF_BROWSER` to `chrome`, `msedge`, `chromium` or an executable path.
 
-Install the server's dependencies once:
+Install the dependencies once, from the repository root:
 
 ```sh
-cd server
 npm install
 ```
 
+All commands below run from the repository root.
+
 ## CLI
 
-From the repository root:
-
 ```sh
-node server/cli.mjs test-fixtures/sample.md -o /tmp/x.pdf   # prints the PDF path on stdout
-node server/cli.mjs doctor                                  # browser + settings
-node server/cli.mjs --help                                  # all options
+node cli.mjs test-fixtures/sample.md -o /tmp/x.pdf   # prints the PDF path on stdout
+node cli.mjs doctor                                  # browser + settings
+node cli.mjs --help                                  # all options
 ```
 
 Exit codes: `0` success, `1` error, `2` usage error. Flags mirror the MCP tool's options in kebab-case,
 for example:
 
 ```sh
-node server/cli.mjs test-fixtures/sample.md -o /tmp/x.pdf --page-format Letter --toc --no-highlight
-node server/cli.mjs test-fixtures/sample.md -o /tmp/x.pdf --margin '{"top":"10mm"}'
-node server/cli.mjs test-fixtures/sample.md -o /tmp/x.pdf --settings '{"orientation":"landscape"}'
-node server/cli.mjs test-fixtures/sample.md -o /tmp/x.pdf --settings /path/to/settings.json
-MARKDOWN_PDF_SETTINGS=/path/to/settings.json node server/cli.mjs test-fixtures/sample.md -o /tmp/x.pdf
+node cli.mjs test-fixtures/sample.md -o /tmp/x.pdf --page-format Letter --toc --no-highlight
+node cli.mjs test-fixtures/sample.md -o /tmp/x.pdf --margin '{"top":"10mm"}'
+node cli.mjs test-fixtures/sample.md -o /tmp/x.pdf --settings '{"orientation":"landscape"}'
+node cli.mjs test-fixtures/sample.md -o /tmp/x.pdf --settings /path/to/settings.json
+MARKDOWN_PDF_SETTINGS=/path/to/settings.json node cli.mjs test-fixtures/sample.md -o /tmp/x.pdf
 ```
 
 Settings precedence, highest first: front matter `pdf:` block, CLI flags, `--settings`,
@@ -47,19 +46,18 @@ Settings precedence, highest first: front matter `pdf:` block, CLI flags, `--set
 ## Automated Tests
 
 ```sh
-cd server
 npm run check          # syntax check of export.mjs, mcp.mjs, cli.mjs, tool-schemas.mjs
 npm test               # unit tests (lib/__tests__)
 npm run test:export    # end-to-end: runs the MCP server against test-fixtures/
 npm run test:all       # both
 ```
 
-`test:export` starts the MCP server (`server/mcp.mjs`) once, runs `doctor_markdown_pdf`, then a set of
+`test:export` starts the MCP server (`mcp.mjs`) once, runs `doctor_markdown_pdf`, then a set of
 `export_markdown_pdf` scenarios, and prints a pass/fail summary. Options (run the script directly):
 
 ```sh
-node ../test-fixtures/test-export.mjs --keep      # keep the generated PDFs
-node ../test-fixtures/test-export.mjs --verbose   # print every server stderr line
+node test-fixtures/test-export.mjs --keep      # keep the generated PDFs
+node test-fixtures/test-export.mjs --verbose   # print every server stderr line
 ```
 
 If no browser is found, the doctor step reports it with the `install-browser` hint.
@@ -75,7 +73,7 @@ Add a task to `.zed/tasks.json` that points at your checkout:
   {
     "label": "Markdown: Export to PDF (dev)",
     "command": "node",
-    "args": ["/path/to/zed-markdown-pdf/server/cli.mjs", "$ZED_FILE"],
+    "args": ["/path/to/zed-markdown-pdf/cli.mjs", "$ZED_FILE"],
     "reveal": "no_focus",
     "hide": "on_success"
   }
@@ -94,7 +92,7 @@ Add a `context_servers` entry in Zed's `settings.json` that runs your checkout:
   "context_servers": {
     "markdown-pdf": {
       "command": "node",
-      "args": ["/path/to/zed-markdown-pdf/server/mcp.mjs"],
+      "args": ["/path/to/zed-markdown-pdf/mcp.mjs"],
       "env": {
         "MARKDOWN_PDF_SETTINGS": "/path/to/settings.json",
         "MARKDOWN_PDF_DEBUG": "1"
@@ -111,7 +109,7 @@ uses the `export_markdown_pdf` tool and writes `sample.pdf` next to the source f
 settings object, or inline JSON. The same `env` works in the task above.
 
 To check the MCP handshake without Zed, run `./test-mcp-init.sh` from the repository root; it sends an
-`initialize` request to `server/mcp.mjs`.
+`initialize` request to `mcp.mjs`.
 
 ## MCP Tools
 
@@ -151,7 +149,7 @@ a hint. Fix it by one of:
 1. Installing Google Chrome or Microsoft Edge
 2. Setting `MARKDOWN_PDF_BROWSER` to `chrome`, `msedge`, `chromium` or an executable path
 3. Downloading Playwright's Chromium (~150 MB): `npx -y markdown-pdf-export install-browser`
-   (or `node server/cli.mjs install-browser` from a checkout)
+   (or `node cli.mjs install-browser` from a checkout)
 
 ### Debug log
 
@@ -160,7 +158,7 @@ The debug log is off by default. Set `MARKDOWN_PDF_DEBUG=1` to write
 `MARKDOWN_PDF_DEBUG=/some/file.log` to choose the path:
 
 ```sh
-MARKDOWN_PDF_DEBUG=/tmp/mdpdf.log node server/cli.mjs test-fixtures/sample.md -o /tmp/x.pdf
+MARKDOWN_PDF_DEBUG=/tmp/mdpdf.log node cli.mjs test-fixtures/sample.md -o /tmp/x.pdf
 ```
 
 ### MCP server not starting
@@ -170,7 +168,7 @@ MARKDOWN_PDF_DEBUG=/tmp/mdpdf.log node server/cli.mjs test-fixtures/sample.md -o
 1. Verify the server is enabled in Agent settings
 2. Check that Node.js is available: `which node`
 3. Check that the command runs in a terminal (`npx -y markdown-pdf-export --help` or
-   `node server/cli.mjs --help`)
+   `node cli.mjs --help`)
 4. View the MCP server logs in Zed (Agent panel → Server logs)
 5. Run `doctor_markdown_pdf` to check configuration
 
@@ -209,22 +207,27 @@ Use these to validate:
 
 ## Development Workflow
 
-1. **Server changes** (`server/*.mjs`, `server/lib/`):
+1. **Code changes** (`*.mjs`, `lib/`):
    ```sh
-   cd server
    npm run check
    npm test
    npm run test:export
    ```
    Restart the MCP server in Zed (disable/enable in settings) to pick up changes.
 
-2. **CSS changes** (`server/default.css`): take effect on the next export.
+2. **CSS changes** (`default.css`): take effect on the next export.
 
-3. **Dependency changes** (`server/package.json`):
+3. **Dependency changes** (`package.json`):
    ```sh
-   cd server
    npm install
    ```
+
+## Releasing
+
+Publishing is done by `.github/workflows/npm-publish.yml` with npm trusted publishing (OIDC); no token
+secret is involved. Bump `version` in `package.json` and `SERVER_VERSION` in `export.mjs`, then push
+the tag `npm-v<version>`. The one-time Trusted Publisher setup and the manual first publish are
+described in the README's "Publishing" section.
 
 ## Feedback
 

@@ -23,6 +23,9 @@ pdf:
 
 The path is resolved relative to the Markdown file.
 
+For a single export — CLI: `--stylesheet-path ./custom.css` (add `--no-include-default-styles` to drop
+the built-in stylesheet), or ask the assistant: `Export this file to PDF with the stylesheet custom.css`.
+
 ## How Styles Are Applied
 
 By default, styles are layered in this order:

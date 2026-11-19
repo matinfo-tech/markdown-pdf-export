@@ -1,6 +1,30 @@
 # Getting Started
 
-Markdown PDF exports Markdown files to high-quality PDFs using Playwright and Chromium. It ships as the npm package `markdown-pdf-export` (a CLI and an MCP server) that you run in Zed as a task or through the AI assistant over MCP.
+Markdown PDF exports Markdown files to high-quality PDFs using Playwright and Chromium.
+
+It is an npm package, `markdown-pdf-export`, that contains a **command-line tool** and an
+**MCP server**. There is no Zed extension to install: in Zed you run the command as a task, or let
+the AI assistant call the MCP server.
+
+## Three Ways to Use It
+
+| | How you trigger an export | Guide |
+|---|---|---|
+| **Zed task** | **task: spawn** or a key binding, on the open file | [Zed Task](/guide/zed-task) |
+| **AI assistant** | Ask the assistant: "Export this file to PDF" | [AI Assistant (MCP)](/guide/mcp) |
+| **Command line** | `npx -y markdown-pdf-export doc.md` in a terminal, script or CI job | [Command Line](/guide/cli) |
+
+All three run the same exporter and read the same settings, so everything in the rest of this guide
+applies to each of them.
+
+## Requirements
+
+- **Node.js 20 or newer** (it includes `npx`)
+- **A Chromium-based browser** — Google Chrome or Microsoft Edge are detected automatically
+  (see [Browser](/guide/browser))
+
+There is no install step: `npx` downloads the package on first use. See
+[Installation](/guide/installation).
 
 ## Features
 
@@ -10,30 +34,32 @@ Markdown PDF exports Markdown files to high-quality PDFs using Playwright and Ch
 - **Date formatting** — flexible date-fns patterns
 - **Image embedding** — SVG, PNG, JPG converted to data URIs
 - **Syntax highlighting** — 80+ highlight.js themes
+- **Math and table of contents** — KaTeX and a `[[toc]]` marker
 - **Custom CSS** — bring your own stylesheet
 - **Per-document overrides** — configure via YAML front matter
-
-## Requirements
-
-Node.js 20 or newer, and Google Chrome or Microsoft Edge (see [Installation](/guide/installation)).
 
 ## How It Works
 
 1. You run the Zed task, the CLI, or ask the AI assistant to export a Markdown file
 2. The exporter parses the Markdown and any front matter configuration
 3. HTML is generated with syntax highlighting and emoji rendering
-4. Playwright/Chromium converts the HTML to PDF
+4. Chromium, driven through Playwright, converts the HTML to PDF
 5. The PDF is saved next to your source file (or to a custom path)
 
 ## Quick Example
 
-Open any Markdown file and ask:
+From a terminal:
+
+```sh
+npx -y markdown-pdf-export report.md
+npx -y markdown-pdf-export report.md --orientation landscape --display-header-footer
+```
+
+In Zed, run the *Markdown: Export to PDF* task on the open file, or ask the assistant:
 
 ```
 Export this file to PDF
 ```
-
-Or with options:
 
 ```
 Export this file to PDF in landscape with header and footer
@@ -41,7 +67,8 @@ Export this file to PDF in landscape with header and footer
 
 ## Structured Header/Footer
 
-Markdown PDF supports a declarative header/footer system:
+Markdown PDF supports a declarative header/footer system. In your
+[settings file](/guide/global-settings):
 
 ```json
 {
@@ -73,6 +100,8 @@ pdf:
 
 ## Next Steps
 
-- [Installation](/guide/installation) — Set up the Zed task or MCP server
-- [First Export](/guide/first-export) — Your first PDF export
-- [Header & Footer](/guide/header-footer) — Configure headers and footers
+- [Installation](/guide/installation) — requirements and how the package is fetched
+- [Zed Task](/guide/zed-task), [AI Assistant (MCP)](/guide/mcp), [Command Line](/guide/cli) — set up
+  the way you want to use it
+- [First Export](/guide/first-export) — your first PDF
+- [Header & Footer](/guide/header-footer) — configure headers and footers

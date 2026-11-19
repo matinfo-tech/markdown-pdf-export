@@ -54,6 +54,11 @@ Apply to all exports, in your settings file (see [Global Settings](/guide/global
 }
 ```
 
+Structured `header` and `footer` objects are configured in the settings file or in front matter; they
+have no command-line flag, and they are shown automatically once configured. The
+`display_header_footer` setting does have one — CLI: `--display-header-footer`, or ask the assistant:
+`Export this file to PDF with header and footer`.
+
 ### Per-Document (Front Matter)
 
 Override for a specific document:

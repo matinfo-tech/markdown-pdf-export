@@ -9,11 +9,20 @@
 
 Export Markdown files to high-quality PDFs from Zed, from any MCP client, or from the command line, using Chromium.
 
-The exporter ships as the npm package [`markdown-pdf-export`](server/README.md): a **CLI** and an **MCP server**. In Zed you run it as a **task** (no extension needed) or let the AI agent call it over **MCP**.
+The exporter ships as the npm package `markdown-pdf-export`: a **CLI** and an **MCP server**. In Zed you run it as a **task** (no extension needed) or let the AI agent call it over **MCP**.
 
 ## Setup
 
-You need Node.js 20 or newer and a Chrome-family browser (see [Browser](#browser)).
+You need **Node.js 20 or newer** (it includes `npx`) and a **Chromium-based browser** such as Google
+Chrome or Microsoft Edge (see [Browser](#browser)).
+
+There is no install step. `npx -y markdown-pdf-export …` downloads the package into npm's cache on
+first use and reuses it afterwards, so the first run is slower and later runs start from the cache.
+
+Optional: install it once with `npm install -g markdown-pdf-export`, then use
+`"command": "markdown-pdf-export", "args": ["$ZED_FILE"]` in the task (and
+`"command": "markdown-pdf-export", "args": ["mcp"]` for MCP). It starts faster, works offline, and the
+version changes only when you run `npm update -g markdown-pdf-export`.
 
 ### 1. Zed task (recommended)
 
@@ -31,8 +40,8 @@ Add this to `~/.config/zed/tasks.json` (or to `.zed/tasks.json` in a project):
 ]
 ```
 
-Then run **task: spawn** and choose *Markdown: Export to PDF*. To bind it to a key, add this to
-`keymap.json`:
+Then run **task: spawn** and choose *Markdown: Export to PDF*. The PDF is written next to the Markdown
+file. To bind it to a key, add this to `keymap.json`:
 
 ```json
 [
@@ -44,6 +53,8 @@ Then run **task: spawn** and choose *Markdown: Export to PDF*. To bind it to a k
   }
 ]
 ```
+
+More: [Zed Task guide](https://matinfo.github.io/zed-markdown-pdf/guide/zed-task) — fixed options, several presets, settings file.
 
 ### 2. MCP: let the Zed agent (or any MCP client) export
 
@@ -62,7 +73,7 @@ Add this to Zed's `settings.json`:
 ```
 
 The server exposes two tools, `export_markdown_pdf` and `doctor_markdown_pdf`. Its MCP registry
-name is `io.github.matinfo/markdown-pdf-export`.
+name is `io.github.matinfo/markdown-pdf-export`. More: [AI Assistant (MCP) guide](https://matinfo.github.io/zed-markdown-pdf/guide/mcp).
 
 ### 3. Command line
 
@@ -75,20 +86,38 @@ npx -y markdown-pdf-export --help                  # all options
 
 Flags mirror the MCP tool's options in kebab-case (`--page-format Letter`, `--math`, `--toc`,
 `--no-highlight`, `--margin 10mm` or `--margin '{"top":"10mm"}'`), plus `-o/--output` and
-`--settings <json|file>`. The CLI prints the PDF path on stdout and exits with `0` (ok), `1` (error)
-or `2` (usage error).
+`--settings <json|file.json>`. The CLI prints the PDF path on stdout and exits with `0` (ok), `1` (error)
+or `2` (usage error). More: [Command Line guide](https://matinfo.github.io/zed-markdown-pdf/guide/cli) — every option.
 
 ### Browser
 
-The exporter uses an installed **Google Chrome** or **Microsoft Edge** first, then Playwright's
-Chromium if it is already present. Nothing is downloaded unless you ask for it:
+**Why Chromium, and not Firefox or Safari?** PDFs are produced by Chromium's print-to-PDF engine,
+driven through Playwright's `page.pdf()`. Playwright implements PDF generation only for Chromium: its
+Firefox and WebKit builds cannot produce PDFs, and Safari itself cannot be driven this way. The
+header/footer templates, page ranges, margins, scale and background printing documented here are
+options of that Chromium engine.
 
-```sh
-npx -y markdown-pdf-export install-browser   # optional, ~150 MB
-```
+So any Chromium-based browser works:
 
-To pick a browser yourself, set `MARKDOWN_PDF_BROWSER` to `chrome`, `msedge`, `chromium` or the path
-to an executable.
+- **Google Chrome** and **Microsoft Edge** are detected automatically, in that order.
+- Then **Playwright's own Chromium**, if you installed it. Nothing is downloaded unless you ask for it:
+
+  ```sh
+  npx -y markdown-pdf-export install-browser   # optional, ~150 MB
+  ```
+
+- **Other Chromium-based browsers** (Brave, Vivaldi, Chromium builds, …) can be used by setting
+  `MARKDOWN_PDF_BROWSER` to the path of the browser executable, for example
+  `/Applications/Brave Browser.app/Contents/MacOS/Brave Browser` on macOS. These are not tested by
+  the project.
+
+`MARKDOWN_PDF_BROWSER` accepts `chrome`, `msedge`, `chromium`, or an executable path. The Chrome and
+Edge channel variants `chrome-beta`, `chrome-dev`, `chrome-canary`, `msedge-beta`, `msedge-dev` and
+`msedge-canary` are also accepted.
+
+If you use Firefox or Safari, you only need one Chromium-based browser installed alongside, or the
+one-time `install-browser` download (~150 MB). Your default browser is not changed or used.
+More: [Browser guide](https://matinfo.github.io/zed-markdown-pdf/guide/browser).
 
 ### Why not a Zed extension?
 
@@ -140,6 +169,18 @@ Markdown PDF exports Markdown documents to PDF with:
 ---
 
 ## Usage
+
+### Task and command line
+
+Run the Zed task on the open Markdown file, or call the CLI. Options are flags (in a task, add them
+to `args`):
+
+```sh
+npx -y markdown-pdf-export doc.md                                   # PDF next to the file
+npx -y markdown-pdf-export doc.md -o build/report.pdf --highlight-style monokai.css
+npx -y markdown-pdf-export doc.md --orientation landscape --page-format A4 --display-header-footer
+npx -y markdown-pdf-export doctor                                   # browser status and settings
+```
 
 ### Natural-language prompts
 
@@ -495,46 +536,57 @@ Place it anywhere in your Markdown (HTML pass-through is enabled by default).
 
 ```
 .
-├── server/                           # npm package `markdown-pdf-export`
-│   ├── export.mjs                    # Core: export, doctor, browser launch/install
-│   ├── cli.mjs                       # CLI (`markdown-pdf-export` bin)
-│   ├── mcp.mjs                       # MCP stdio server
-│   ├── tool-schemas.mjs              # Tool schemas shared by CLI and MCP
-│   ├── lib/                          # Rendering, front matter, header/footer helpers
-│   ├── default.css                   # Built-in neutral stylesheet
-│   ├── server.json                   # MCP registry metadata
-│   ├── README.md                     # npm package README
-│   └── package.json
+├── package.json                      # npm package `markdown-pdf-export`
+├── cli.mjs                           # CLI (`markdown-pdf-export` bin)
+├── export.mjs                        # Core: export, doctor, browser launch/install
+├── mcp.mjs                           # MCP stdio server
+├── tool-schemas.mjs                  # Tool schemas shared by CLI and MCP
+├── lib/                              # Rendering, front matter, header/footer helpers
+├── default.css                       # Built-in neutral stylesheet
+├── server.json                       # MCP registry metadata
+├── scripts/
+│   └── bundle-katex-css.mjs          # Generates vendor/ (inlined KaTeX CSS)
+├── vendor/                           # Generated
 ├── docs/                             # Documentation site (VitePress)
 ├── test-fixtures/                    # Sample documents and end-to-end test runner
-└── test-mcp-init.sh                  # MCP handshake smoke test for server/mcp.mjs
+├── test-mcp-init.sh                  # MCP handshake smoke test for mcp.mjs
+└── README.md                         # This file (also the npm README)
 ```
 
 ---
 
 ## Development
 
-### Server
+From the repository root:
 
 ```bash
-cd server
 npm install
 npm run check          # syntax check
 npm test               # unit tests
 npm run test:export    # end-to-end export test
-node cli.mjs ../test-fixtures/sample.md -o /tmp/sample.pdf
+node cli.mjs test-fixtures/sample.md -o /tmp/sample.pdf
 node cli.mjs doctor
+./test-mcp-init.sh     # MCP handshake smoke test
 ```
 
-The npm package is published by `.github/workflows/npm-publish.yml` when a tag matching `npm-v*` is
-pushed (requires the `NPM_TOKEN` secret).
+### Publishing
+
+`.github/workflows/npm-publish.yml` publishes the package to npm and registers the server in the MCP
+Registry when a tag matching `npm-v*` is pushed. It uses npm trusted publishing (OIDC), so no token
+secret is needed.
+
+- **One-time setup:** on npmjs.com, open the package's **Settings → Trusted Publisher** and enter user
+  `matinfo`, repository `zed-markdown-pdf`, workflow filename `npm-publish.yml`. The package must exist
+  first, so publish the very first version by hand with `npm publish`.
+- **Later releases:** bump `version` in `package.json` and `SERVER_VERSION` in `export.mjs`, then push
+  the tag `npm-v<version>`.
 
 ### Testing in Zed
 
 Point a task or a `context_servers` entry (see [Setup](#setup)) at your checkout:
 
-- Task: `"command": "node", "args": ["/path/to/repo/server/cli.mjs", "$ZED_FILE"]`
-- MCP: `"command": "node", "args": ["/path/to/repo/server/mcp.mjs"]`
+- Task: `"command": "node", "args": ["/path/to/repo/cli.mjs", "$ZED_FILE"]`
+- MCP: `"command": "node", "args": ["/path/to/repo/mcp.mjs"]`
 
 Then open `test-fixtures/sample.md` and run the task, or ask the assistant: `Export this file to PDF`.
 See [TESTING.md](TESTING.md) for details.
@@ -562,13 +614,14 @@ npx -y markdown-pdf-export doctor
 Run doctor_markdown_pdf
 ```
 
-This reports browser availability, active settings, and the server directory in one call.
+This reports browser availability (and which browser was picked, in `browser.launch_options`), the
+active settings, and the package directory in one call.
 
 ### No usable Chrome/Chromium browser found
 
-The exporter does not download a browser on its own. Install Google Chrome or Microsoft Edge, point
-`MARKDOWN_PDF_BROWSER` at a browser (`chrome`, `msedge`, `chromium` or an executable path), or download
-Playwright's Chromium (~150 MB):
+The exporter needs a Chromium-based browser (see [Browser](#browser)) and does not download one on its
+own. Install Google Chrome or Microsoft Edge, point `MARKDOWN_PDF_BROWSER` at a browser (`chrome`,
+`msedge`, `chromium` or an executable path), or download Playwright's Chromium (~150 MB):
 
 ```bash
 npx -y markdown-pdf-export install-browser
@@ -578,7 +631,7 @@ npx -y markdown-pdf-export install-browser
 
 ## Architecture
 
-The project is a single Node.js package (`server/`), published to npm as `markdown-pdf-export`:
+The project is a single Node.js package at the repository root, published to npm as `markdown-pdf-export`:
 
 - `export.mjs` — core: renders Markdown → HTML with `markdown-it`, `highlight.js`, `markdown-it-emoji`,
   converts HTML → PDF with Playwright / Chromium, runs the diagnostic. No side effects at import.

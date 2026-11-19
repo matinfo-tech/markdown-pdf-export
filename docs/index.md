@@ -4,7 +4,7 @@ layout: home
 hero:
   name: Markdown PDF
   text: for Zed Editor
-  tagline: Export Markdown to polished PDFs with structured headers, footers, and custom styling
+  tagline: Export Markdown to polished PDFs from a Zed task, the AI assistant (MCP) or the command line — with structured headers, footers, and custom styling
   image:
     src: /logo.png
     alt: Markdown PDF for Zed
@@ -20,6 +20,9 @@ hero:
       link: https://github.com/matinfo/zed-markdown-pdf
 
 features:
+  - icon: ⌨️
+    title: Task, Assistant or CLI
+    details: One npm package, three ways to use it — a Zed task bound to a key, the AI assistant over MCP, or the markdown-pdf-export command in a terminal or CI job. No extension to install.
   - icon: 📄
     title: Structured Headers & Footers
     details: Declarative configuration with zones (left, center, right) and typed elements — no raw HTML required.
@@ -34,7 +37,7 @@ features:
     details: Embed logos and images (SVG, PNG, JPG) directly in headers and footers as base64 data URIs.
   - icon: ⚡
     title: Zero Configuration
-    details: Works out of the box with sensible defaults. Uses your installed Chrome or Edge — run it from a Zed task, over MCP, or on the command line.
+    details: Works out of the box with sensible defaults. No install step — npx fetches the package — and it uses your installed Chrome or Edge.
   - icon: 🔧
     title: Per-Document Overrides
     details: Override any setting via YAML front matter. Perfect for different document types in the same project.
@@ -61,7 +64,11 @@ pdf:
 ---
 ```
 
-Then ask Zed's AI assistant:
+Then export it — run the Zed task, ask Zed's AI assistant, or use the command line:
+
+```sh
+npx -y markdown-pdf-export report.md
+```
 
 > Export this file to PDF
 
@@ -69,7 +76,8 @@ That's it! The PDF will have a professional header with your company name, docum
 
 ## Next Steps
 
-- [Getting Started](/guide/getting-started) — Install and configure Markdown PDF
+- [Getting Started](/guide/getting-started) — What it is and the three ways to use it
+- [Zed Task](/guide/zed-task) · [AI Assistant (MCP)](/guide/mcp) · [Command Line](/guide/cli) — Set up the one you want
 - [Quick Start Templates](/examples/quick-templates) — Copy-paste ready configurations
 - [Header & Footer Guide](/guide/header-footer) — Learn the structured configuration
 - [Reference](/reference/settings) — Complete settings documentation

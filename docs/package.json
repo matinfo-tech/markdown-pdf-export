@@ -1,7 +1,7 @@
 {
   "name": "zed-markdown-pdf-docs",
   "version": "1.0.0",
-  "description": "Documentation for Markdown PDF Zed extension",
+  "description": "Documentation for markdown-pdf-export",
   "private": true,
   "type": "module",
   "scripts": {
@@ -13,6 +13,6 @@
     "vitepress": "^1.6.4"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   }
 }

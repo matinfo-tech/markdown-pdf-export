@@ -57,6 +57,18 @@ npx -y markdown-pdf-export doc.md --settings /Users/me/.config/markdown-pdf/sett
 The JSON examples on this site show the content of that settings file. See
 [Priority Order](#priority-order) for how the sources combine.
 
+## One-Off Overrides
+
+Most settings can also be given for a single export without touching the settings file:
+
+- **CLI / Zed task:** the flag of the same name in kebab-case, for example `page_format` →
+  `--page-format Letter`, `toc` → `--toc`, `highlight` → `--no-highlight`. See
+  [Command Line](/guide/cli#options) for the full list.
+- **AI assistant:** say it in the prompt, for example `Export this file to PDF in Letter format`.
+
+`header`, `footer`, `output_directory` and `assets_directory` have no flag; set them in the settings
+file or in front matter.
+
 ## Complete Example
 
 `settings.json`:

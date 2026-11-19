@@ -1,102 +1,71 @@
 # Installation
 
 Markdown PDF ships as the npm package `markdown-pdf-export`: a command-line tool and an MCP server.
-In Zed you run it as a **task** or let the AI assistant call it over **MCP**. No Zed extension is
-needed.
+No Zed extension is needed.
 
-## Prerequisites
+## Requirements
 
-- **Zed Editor** — [Download from zed.dev](https://zed.dev)
-- **Node.js 20+** — provides `npx`
-- **A browser** — Google Chrome or Microsoft Edge (see [Browser](#browser))
+- **Node.js 20 or newer** — it includes `npx`
+- **A Chromium-based browser** — Google Chrome or Microsoft Edge (see [Browser](#browser))
+- **Zed** — only if you want the task or the AI assistant; the command line works on its own
 
 ```bash
 node --version   # Must be ≥ 20
 ```
 
-## Zed Task (Recommended)
+## No Install Step
 
-Add this to `~/.config/zed/tasks.json` (or to `.zed/tasks.json` in a project):
-
-```json
-[
-  {
-    "label": "Markdown: Export to PDF",
-    "command": "npx",
-    "args": ["-y", "markdown-pdf-export", "$ZED_FILE"],
-    "reveal": "no_focus",
-    "hide": "on_success"
-  }
-]
-```
-
-Then run **task: spawn** and choose *Markdown: Export to PDF*. To bind it to a key, add this to
-`keymap.json`:
-
-```json
-[
-  {
-    "context": "Workspace",
-    "bindings": {
-      "cmd-alt-e": ["task::Spawn", { "task_name": "Markdown: Export to PDF" }]
-    }
-  }
-]
-```
-
-## MCP Server (Zed Agent or Any MCP Client)
-
-Add this to Zed's `settings.json`:
-
-```json
-{
-  "context_servers": {
-    "markdown-pdf": {
-      "command": "npx",
-      "args": ["-y", "markdown-pdf-export", "mcp"],
-      "env": { "MARKDOWN_PDF_SETTINGS": "/Users/me/.config/markdown-pdf/settings.json" }
-    }
-  }
-}
-```
-
-`env` is optional: `MARKDOWN_PDF_SETTINGS` is the absolute path of your settings file (or inline JSON).
-
-The server exposes two tools, `export_markdown_pdf` and `doctor_markdown_pdf`. Its MCP registry name
-is `io.github.matinfo/markdown-pdf-export`.
-
-The same `env` works in the task. See [Global Settings](/guide/global-settings#configuration-location)
-for the settings file and precedence.
-
-## Command Line
+Every snippet in this guide runs the package with `npx`:
 
 ```sh
-npx -y markdown-pdf-export README.md               # → README.pdf next to the file
-npx -y markdown-pdf-export doc.md -o out.pdf --math --toc --page-format Letter
-npx -y markdown-pdf-export doctor                  # check browser + settings
-npx -y markdown-pdf-export --help                  # all options
+npx -y markdown-pdf-export README.md
 ```
 
-Flags mirror the MCP tool's options in kebab-case, plus `-o/--output` and `--settings <json|file>`.
-The PDF path is printed on stdout.
+`npx -y markdown-pdf-export …` downloads the package into npm's cache on first use and reuses it
+afterwards. There is no separate install: the first run is slower because of the download, and later
+runs start from the cache.
+
+### Optional: Global Install
+
+You can also install the package once:
+
+```sh
+npm install -g markdown-pdf-export
+```
+
+Then use `markdown-pdf-export` as the command instead of `npx`:
+
+- Zed task: `"command": "markdown-pdf-export", "args": ["$ZED_FILE"]`
+- MCP: `"command": "markdown-pdf-export", "args": ["mcp"]`
+
+This starts faster, works offline, and the version changes only when you run
+`npm update -g markdown-pdf-export`.
+
+## Choose How to Use It
+
+| | Setup | Guide |
+|---|---|---|
+| **Zed task** | One entry in `tasks.json`, optional key binding | [Zed Task](/guide/zed-task) |
+| **AI assistant** | One `context_servers` entry in Zed's `settings.json` | [AI Assistant (MCP)](/guide/mcp) |
+| **Command line** | Nothing to set up | [Command Line](/guide/cli) |
+
+You can set up more than one; they share the same [settings file](/guide/global-settings).
 
 ## Browser
 
-Nothing is downloaded automatically. The exporter looks for, in order:
+PDFs are produced by Chromium's print-to-PDF engine, driven through Playwright, which implements PDF
+generation only for Chromium. Firefox and Safari cannot be used for this, so one Chromium-based
+browser must be present:
 
-1. Google Chrome
-2. Microsoft Edge
-3. Playwright's Chromium, if already installed
+- Google Chrome and Microsoft Edge are detected automatically, in that order
+- otherwise, download Playwright's Chromium once (~150 MB):
 
-If none is found, the export fails with `No usable Chrome/Chromium browser found.` and a hint. Install
-Chrome or Edge, or download Playwright's Chromium (~150 MB):
+  ```bash
+  npx -y markdown-pdf-export install-browser
+  ```
 
-```bash
-npx -y markdown-pdf-export install-browser
-```
-
-To pick a browser yourself, set `MARKDOWN_PDF_BROWSER` to `chrome`, `msedge`, `chromium` or the path
-to an executable.
+Nothing is downloaded automatically, and your default browser is not changed or used. Other
+Chromium-based browsers and the `MARKDOWN_PDF_BROWSER` variable are covered in [Browser](/guide/browser).
 
 ## Verify Installation
 
@@ -106,7 +75,7 @@ Run the diagnostic from a terminal:
 npx -y markdown-pdf-export doctor
 ```
 
-or ask the assistant: `Run doctor_markdown_pdf`.
+or, with the MCP server registered, ask the assistant: `Run doctor_markdown_pdf`.
 
 You should see output like:
 
@@ -114,23 +83,16 @@ You should see output like:
 {
   "browser": {
     "available": true,
+    "version": "157.0.8103.79",
     "backend": "Chromium (Playwright)",
-    "version": "147.0.7727.15"
+    "launch_options": {
+      "channel": "chrome"
+    }
   }
 }
 ```
 
 ## Troubleshooting
-
-### Context server doesn't start
-
-1. Check that `npx -y markdown-pdf-export --help` works in a terminal
-2. Confirm the `markdown-pdf` entry is present and enabled in **Agent → Context Servers**
-3. Restart Zed
-4. Check Zed logs: **Help → View Logs**
-5. Enable the debug log with `MARKDOWN_PDF_DEBUG=1` (in the `env` of the `context_servers` entry).
-   It is written to `markdown-pdf-debug.log` in the OS temp directory — on macOS under
-   `/var/folders/…/T/`, not `/tmp`. Set `MARKDOWN_PDF_DEBUG=/some/file.log` to choose the path.
 
 ### Node.js not found
 
@@ -141,8 +103,23 @@ which node   # Should return a path
 node --version   # Should be ≥ 20
 ```
 
+### No usable Chrome/Chromium browser found
+
+See [Browser](/guide/browser#troubleshooting-no-usable-chrome-chromium-browser-found).
+
+### Context server doesn't start
+
+See [AI Assistant (MCP)](/guide/mcp#troubleshooting).
+
+### Debug log
+
+Set `MARKDOWN_PDF_DEBUG=1` (in a terminal, or in the `env` of the task or `context_servers` entry). The
+log is written to `markdown-pdf-debug.log` in the OS temp directory — on macOS under
+`/var/folders/…/T/`, not `/tmp`. Set `MARKDOWN_PDF_DEBUG=/some/file.log` to choose the path.
+
 ## Next Steps
 
-- [First Export](/guide/first-export) — Create your first PDF
-- [Header & Footer](/guide/header-footer) — Add professional headers and footers
-- [Global Settings](/guide/global-settings) — Configure default options
+- [Zed Task](/guide/zed-task) — export with a key
+- [AI Assistant (MCP)](/guide/mcp) — export by asking
+- [Command Line](/guide/cli) — every option
+- [First Export](/guide/first-export) — create your first PDF

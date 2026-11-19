@@ -1,12 +1,27 @@
 # Markdown PDF — Quick Start
 
-Export any Markdown file to a polished PDF from Zed — with a task or through the AI assistant (MCP).
-
-> **Requires:** Node.js ≥ 20 and Google Chrome or Microsoft Edge (or see step 3).
+Export any Markdown file to a polished PDF from Zed — with a task or through the AI assistant (MCP) —
+or from the command line.
 
 ---
 
-## 1. Add a Zed Task
+## 1. Requirements
+
+- **Node.js 20 or newer** (it includes `npx`)
+- **A Chromium-based browser** — Google Chrome or Microsoft Edge (see [step 4](#4-browser))
+
+There is nothing to install first. The task and the MCP entry below run
+`npx -y markdown-pdf-export …`, which downloads the package into npm's cache on first use and reuses
+it afterwards. The first run is slower because of the download; later runs start from the cache.
+
+Optional: install it once with `npm install -g markdown-pdf-export`, then use
+`"command": "markdown-pdf-export", "args": ["$ZED_FILE"]` in the task (and
+`"command": "markdown-pdf-export", "args": ["mcp"]` for MCP). It starts faster, works offline, and the
+version changes only when you run `npm update -g markdown-pdf-export`.
+
+---
+
+## 2. Add a Zed Task
 
 Add this to `~/.config/zed/tasks.json` (or to `.zed/tasks.json` in a project):
 
@@ -22,8 +37,8 @@ Add this to `~/.config/zed/tasks.json` (or to `.zed/tasks.json` in a project):
 ]
 ```
 
-Open a `.md` file, run **task: spawn** and choose *Markdown: Export to PDF*. Optional key binding in
-`keymap.json`:
+Open a `.md` file, run **task: spawn** and choose *Markdown: Export to PDF*. The PDF is saved next to
+your Markdown file. Optional key binding in `keymap.json`:
 
 ```json
 [
@@ -38,7 +53,7 @@ Open a `.md` file, run **task: spawn** and choose *Markdown: Export to PDF*. Opt
 
 ---
 
-## 2. Enable the MCP Server (optional)
+## 3. Enable the MCP Server (optional)
 
 To let the AI assistant export, add this to Zed's `settings.json`:
 
@@ -64,34 +79,54 @@ The PDF is saved next to your Markdown file by default.
 
 ---
 
-## 3. Browser
+## 4. Browser
 
-Nothing is downloaded automatically. The exporter uses Google Chrome, then Microsoft Edge, then
-Playwright's Chromium if it is already installed. If none is found, the export fails with
-`No usable Chrome/Chromium browser found.` and a hint. Either install Chrome/Edge or run once:
+PDFs are produced by Chromium's print-to-PDF engine, driven through Playwright's `page.pdf()`.
+Playwright implements PDF generation only for Chromium — its Firefox and WebKit builds cannot produce
+PDFs, and Safari cannot be driven this way — so a Chromium-based browser is required.
+
+Google Chrome and Microsoft Edge are detected automatically, in that order, then Playwright's own
+Chromium if you installed it. Nothing is downloaded automatically. If no browser is found, the export
+fails with `No usable Chrome/Chromium browser found.` and a hint. Either install Chrome/Edge or run once:
 
 ```bash
 npx -y markdown-pdf-export install-browser   # ~150 MB
 ```
 
-To force a browser, set `MARKDOWN_PDF_BROWSER` to `chrome`, `msedge`, `chromium` or an executable path.
+Firefox and Safari users only need one Chromium-based browser installed alongside, or that one-time
+download; the default browser is not changed or used.
+
+To choose a browser, set `MARKDOWN_PDF_BROWSER` to `chrome`, `msedge`, `chromium` or an executable
+path. Other Chromium-based browsers (Brave, Vivaldi, …) can be used through their executable path, for
+example `/Applications/Brave Browser.app/Contents/MacOS/Brave Browser` on macOS, but are not tested by
+the project.
 
 ---
 
-## 4. Common Prompts
+## 5. Common Exports
 
-| What you want | What to ask |
-|---|---|
-| Basic export | `Export this file to PDF` |
-| Custom output path | `Export to docs/report.pdf` |
-| Dark code theme | `Export with the monokai theme` |
-| Landscape layout | `Export in landscape orientation` |
-| Header and footer | `Export with header and footer showing page numbers` |
-| Check setup | `Run doctor_markdown_pdf` |
+The prompts are for the AI assistant (MCP). With the task or the command line, use the flag instead —
+in a task, add it to `args`.
+
+| What you want | Ask the assistant (MCP) | CLI / task flag |
+|---|---|---|
+| Basic export | `Export this file to PDF` | *(none)* |
+| Custom output path | `Export to docs/report.pdf` | `-o docs/report.pdf` |
+| Dark code theme | `Export with the monokai theme` | `--highlight-style monokai.css` |
+| Landscape layout | `Export in landscape orientation` | `--orientation landscape` |
+| Header and footer | `Export with header and footer showing page numbers` | `--display-header-footer` |
+| Check setup | `Run doctor_markdown_pdf` | `npx -y markdown-pdf-export doctor` |
+
+```sh
+npx -y markdown-pdf-export report.md -o docs/report.pdf --highlight-style monokai.css --orientation landscape
+```
+
+`--display-header-footer` turns the header and footer on; their content comes from your settings file
+or front matter (see sections 8 and 12).
 
 ---
 
-## 5. Settings
+## 6. Settings
 
 Keep permanent defaults in a settings file, for example `~/.config/markdown-pdf/settings.json`:
 
@@ -127,11 +162,11 @@ settings file. Full details: [Global Settings](https://matinfo.github.io/zed-mar
 
 ---
 
-## 6. Syntax Highlighting
+## 7. Syntax Highlighting
 
 Highlighting is **on by default** using the `github.css` theme.
 
-Change the theme in settings or ask the assistant directly:
+Change the theme in settings, with `--highlight-style atom-one-dark.css`, or ask the assistant directly:
 
 ```
 Export this file to PDF using the atom-one-dark theme
@@ -154,7 +189,7 @@ Popular themes:
 
 80+ themes available — browse them at [highlightjs.org/demo](https://highlightjs.org/demo).
 
-To disable highlighting entirely:
+To disable highlighting entirely (CLI: `--no-highlight`):
 
 ```json
 { "highlight": false }
@@ -162,7 +197,7 @@ To disable highlighting entirely:
 
 ---
 
-## 7. Header and Footer
+## 8. Header and Footer
 
 There are two ways to add headers and footers:
 
@@ -195,7 +230,7 @@ Use zones (`left`, `center`, `right`) with typed elements:
 
 ---
 
-## 8. Page Layout Options
+## 9. Page Layout Options
 
 | Setting | Values | Default |
 |---|---|---|
@@ -207,7 +242,7 @@ Use zones (`left`, `center`, `right`) with typed elements:
 
 ---
 
-## 9. Custom Stylesheet
+## 10. Custom Stylesheet
 
 Append your own CSS on top of the built-in neutral styles:
 
@@ -226,7 +261,7 @@ To use **only** your stylesheet (no built-in CSS):
 
 ---
 
-## 10. Page Breaks
+## 11. Page Breaks
 
 The built-in stylesheet includes a `.page` utility class:
 
@@ -238,7 +273,7 @@ Place it anywhere in your Markdown — HTML pass-through is enabled by default.
 
 ---
 
-## 11. Front Matter
+## 12. Front Matter
 
 ### Document Title
 
@@ -274,18 +309,18 @@ Custom front matter fields (`company`, `author`) become `{placeholders}` in head
 
 ---
 
-## 12. Diagnostics
+## 13. Diagnostics
 
-If something goes wrong, ask:
-
-```
-Run doctor_markdown_pdf
-```
-
-Or from a terminal:
+If something goes wrong, run the diagnostic from a terminal:
 
 ```bash
 npx -y markdown-pdf-export doctor
+```
+
+Or ask the assistant:
+
+```
+Run doctor_markdown_pdf
 ```
 
 For a debug log, set `MARKDOWN_PDF_DEBUG=1` (for example in the `env` of the `context_servers` entry).
@@ -297,5 +332,4 @@ The log is written to `markdown-pdf-debug.log` in the OS temp directory — on m
 ## Full Documentation
 
 - [`README.md`](README.md) — Complete settings reference
-- [`server/README.md`](server/README.md) — npm package: CLI options, task and MCP setup
 - [Online Documentation](https://matinfo.github.io/zed-markdown-pdf/) — Full structured header/footer reference
