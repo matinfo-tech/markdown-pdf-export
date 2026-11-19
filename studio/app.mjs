@@ -463,7 +463,11 @@ async function save() {
   button.disabled = true;
   try {
     const settings = currentSettings();
-    await api("/api/save", { method: "POST", json: { settings } });
+    const { removed = [] } = await api("/api/save", { method: "POST", json: { settings } });
+    if (removed.length) {
+      $("status").textContent =
+        removed.length === 1 ? `Saved. Removed the logo no longer used (${removed[0]}).` : `Saved. Removed ${removed.length} logos no longer used.`;
+    }
     raw = settings;
     savedJson = JSON.stringify(settings);
     server.exists = true;

@@ -29,7 +29,9 @@ it for you where that is safe.
 
 - Studio saves to your settings file (`~/.config/markdown-pdf-export/settings.json`). The previous
   version is kept next to it as `settings.json.bak`.
-- Logos are copied into an `assets` folder next to the settings file.
+- Logos are copied into an `assets` folder next to the settings file. When you replace or remove a
+  logo and save, the file that is no longer used is deleted. Studio only deletes logos it added
+  itself.
 - `studio --project` saves a `.markdown-pdf.json` in the current folder instead, for a layout that
   belongs to one project.
 - `studio --file report.md` previews your own document instead of the sample.

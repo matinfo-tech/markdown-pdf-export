@@ -161,7 +161,7 @@ select {
 
 .color {
   width: 34px;
-  height: 30px;
+  height: 36px;
   padding: 2px;
   border: 1px solid var(--rule);
   border-radius: 8px;
