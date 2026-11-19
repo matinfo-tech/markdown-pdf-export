@@ -24,7 +24,7 @@ const SERVER_SCRIPT = path.join(
   __dirname,
   "..",
   "server",
-  "markdown_pdf_server.mjs",
+  "mcp.mjs",
 );
 const SAMPLE_MD = path.join(__dirname, "sample.md");
 const STRUCTURED_HEADER_MD = path.join(__dirname, "structured-header-test.md");

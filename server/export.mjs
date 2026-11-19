@@ -337,13 +337,33 @@ export function normalizeSettings(raw) {
   };
 }
 
+/**
+ * Default settings come from MARKDOWN_PDF_SETTINGS: either inline JSON
+ * ('{"page_format":"Letter"}') or the path to a JSON file.
+ */
 function loadSettings() {
-  const raw = process.env.MARKDOWN_PDF_SETTINGS ?? "{}";
+  let raw = process.env.MARKDOWN_PDF_SETTINGS ?? "{}";
   debugLog(`MARKDOWN_PDF_SETTINGS env: ${raw}`);
 
   // Empty or missing env — use defaults silently
   if (!raw || raw.trim() === "" || raw.trim() === "{}") {
     return normalizeSettings({});
+  }
+
+  let source = "the MARKDOWN_PDF_SETTINGS environment variable";
+  if (!raw.trim().startsWith("{")) {
+    const settingsPath = path.resolve(raw.trim());
+    source = settingsPath;
+    try {
+      raw = fsSync.readFileSync(settingsPath, "utf8");
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error);
+      console.error(
+        `[markdown-pdf] ⚠️  Could not read settings file — falling back to defaults.\n` +
+          `  Reason : ${msg}`,
+      );
+      return normalizeSettings({});
+    }
   }
 
   let parsed;
@@ -354,8 +374,7 @@ function loadSettings() {
     console.error(
       `[markdown-pdf] ⚠️  Could not parse settings — falling back to defaults.\n` +
         `  Reason : ${msg}\n` +
-        `  Fix    : Check the "context_servers.markdown-pdf.settings" block in your Zed settings.json for syntax errors.\n` +
-        `  Tip    : Use a JSON validator (e.g. https://jsonlint.com) to locate the problem.`,
+        `  Fix    : Check ${source} for JSON syntax errors.`,
     );
     debugLog(`raw settings that failed to parse: ${raw}`);
     return normalizeSettings({});

@@ -19,7 +19,6 @@
     "export.mjs",
     "mcp.mjs",
     "tool-schemas.mjs",
-    "markdown_pdf_server.mjs",
     "default.css",
     "lib/*.mjs",
     "vendor/"

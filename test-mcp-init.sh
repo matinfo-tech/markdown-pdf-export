@@ -3,16 +3,11 @@
 # Test script to verify MCP server responds to initialize request
 # Uses newline-delimited JSON (NDJSON) framing as defined by the MCP spec.
 
-SERVER_PATH="$HOME/Library/Application Support/Zed/extensions/installed/markdown-pdf/server/markdown_pdf_server.mjs"
+SERVER_PATH="$(dirname "$0")/server/mcp.mjs"
 
 if [ ! -f "$SERVER_PATH" ]; then
     echo "Error: Server not found at: $SERVER_PATH"
-    echo "Falling back to local dev server…"
-    SERVER_PATH="$(dirname "$0")/server/markdown_pdf_server.mjs"
-    if [ ! -f "$SERVER_PATH" ]; then
-        echo "Error: Server not found at: $SERVER_PATH"
-        exit 1
-    fi
+    exit 1
 fi
 
 echo "Testing MCP server at: $SERVER_PATH"
