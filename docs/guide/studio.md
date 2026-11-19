@@ -11,11 +11,13 @@ npx -y markdown-pdf-export studio
 
 ## What you do there
 
-1. **Page style.** Pick one of five looks.
-2. **Font and paper.** Pick a font, paper size, orientation and margins.
+1. **Page style.** Pick one of five looks: Clean, Report, Academic, Compact or Technical.
+2. **Font and paper.** Pick a font, paper size, orientation, margins and the colours used for code
+   blocks (light or dark themes).
 3. **Header and footer.** Pick a starting point, then click any spot on the small page to change
    it. Type text, or press a button such as *Title*, *Page 1 of 9* or *Date* to insert it. To add a
-   logo, drop an image on a spot or press *Logo…*.
+   logo, drop an image on a spot or press *Logo…*, then set its size with the slider. Lines under
+   the header and above the footer stop at the page margins, like the text.
 4. **Save.** Every export from your editor, your AI assistant or the command line now uses this
    layout.
 

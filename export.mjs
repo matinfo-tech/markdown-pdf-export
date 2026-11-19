@@ -1194,6 +1194,23 @@ async function resolveOutputPath(inputPath, outputPath, settings) {
   return path.join(baseDirectory, `${path.parse(inputPath).name}.pdf`);
 }
 
+/**
+ * Background colour a highlight.js theme gives code blocks, or null when it
+ * is plain white (then the default light grey box is kept) or not a hex colour.
+ * @param {string} css
+ * @returns {string|null}
+ */
+export function codeThemeBackground(css) {
+  // Only the bare ".hljs" rule counts ("pre code.hljs" is layout, not colour).
+  for (const rule of String(css).matchAll(/(?:^|[},\s/])\.hljs\s*\{([^}]*)\}/g)) {
+    const m = /background(?:-color)?\s*:\s*(#[0-9a-f]{3,8})\b/i.exec(rule[1]);
+    if (!m) continue;
+    const hex = m[1].toLowerCase();
+    return hex === "#fff" || hex === "#ffffff" ? null : hex;
+  }
+  return null;
+}
+
 function resolveStylesheetPath(baseDirectory, stylesheetPath) {
   if (!stylesheetPath) return null;
   return path.resolve(baseDirectory, stylesheetPath);
@@ -1246,6 +1263,10 @@ async function renderMarkdownToHtmlWithBody(inputPath, body, title, options) {
       const hljsCssPath = path.join(hljsStylesDir, options.highlight_style);
       const hljsCss = await fs.readFile(hljsCssPath, "utf8");
       styleBlocks += `<style>${hljsCss}</style>\n    `;
+      // default.css paints code blocks light grey. A theme with its own
+      // (dark or tinted) background must win, or light text lands on grey.
+      const themeBg = codeThemeBackground(hljsCss);
+      if (themeBg) styleBlocks += `<style>pre.hljs{background:${themeBg}}</style>\n    `;
     } catch {
       debugLog(`Could not load highlight style: ${options.highlight_style}`);
     }

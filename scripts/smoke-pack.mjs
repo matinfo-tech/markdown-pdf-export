@@ -206,7 +206,9 @@ async function main() {
       const input = path.join(work, "smoke.md");
       const output = path.join(work, "smoke.pdf");
       fs.copyFileSync(path.join(ROOT, "test-fixtures", "sample.md"), input);
-      run(process.execPath, [binPath, input, "-o", output]);
+      // Same throwaway HOME as init: the result must not depend on the
+      // settings file of whoever runs this.
+      run(process.execPath, [binPath, input, "-o", output], { env: initEnv });
       const head = fs.readFileSync(output).subarray(0, 5).toString("latin1");
       if (head !== "%PDF-") fail(`output is not a PDF (starts with "${head}")`);
       ok(`installed CLI exported a PDF (${fs.statSync(output).size} bytes)`);

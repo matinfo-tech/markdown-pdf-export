@@ -260,9 +260,9 @@
         "report",
         "academic",
         "compact",
-        "dark-code"
+        "technical"
       ],
-      "description": "Page style preset: clean (Default. GitHub-style, neutral.) report (Serif headings, strong title rule. Business reports.) academic (Serif body, justified, minimal colour. Papers and theses.) compact (Dense and small. More text per page.) dark-code (Light page, dark code blocks.) Explicit keys in this file override it."
+      "description": "Page style preset: clean (Default. GitHub-style, neutral.) report (Serif headings, strong title rule. Business reports.) academic (Serif body, justified, minimal colour. Papers and theses.) compact (Dense and small. More text per page.) technical (For documents with code: framed code blocks, blue accents.) Explicit keys in this file override it."
     },
     "font": {
       "type": "string",

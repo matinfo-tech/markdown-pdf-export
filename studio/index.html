@@ -12,7 +12,7 @@
   <section class="rail" aria-label="Page design">
     <header class="rail-head">
       <h1>Design your pages</h1>
-      <p class="lede">Pick a look. The page on the right is the real PDF.</p>
+      <p class="lede">Every choice shows on the real PDF, on the right.</p>
     </header>
 
     <div class="rail-body">
@@ -25,14 +25,21 @@
 
       <section class="group">
         <h2>Font and paper</h2>
-        <div class="seg" id="fonts" role="radiogroup" aria-label="Font"></div>
-        <div class="row">
-          <select id="format" aria-label="Paper size"></select>
-          <div class="seg" id="orientation" role="radiogroup" aria-label="Orientation"></div>
-        </div>
-        <div class="row">
+        <div class="fields">
+          <span class="label" id="font-label">Font</span>
+          <div class="seg" id="fonts" role="radiogroup" aria-labelledby="font-label"></div>
+
+          <label class="label" for="format">Paper</label>
+          <div class="pair">
+            <select id="format"></select>
+            <div class="seg" id="orientation" role="radiogroup" aria-label="Orientation"></div>
+          </div>
+
           <span class="label" id="margin-label">Margins</span>
           <div class="seg" id="margin" role="radiogroup" aria-labelledby="margin-label"></div>
+
+          <label class="label" for="highlight">Code colours</label>
+          <select id="highlight"></select>
         </div>
       </section>
 
@@ -42,13 +49,13 @@
         <div class="seg wrap" id="layouts" aria-label="Starting layout"></div>
 
         <div class="sheet" id="sheet">
-          <div class="band" id="band-header"></div>
+          <div class="band-box"><div class="band" id="band-header"></div></div>
           <div class="sheet-body" aria-hidden="true">
             <i class="ln t"></i><i class="ln"></i><i class="ln"></i><i class="ln s"></i>
             <i class="fold"></i>
             <i class="ln"></i><i class="ln s"></i>
           </div>
-          <div class="band" id="band-footer"></div>
+          <div class="band-box"><div class="band" id="band-footer"></div></div>
         </div>
 
         <div class="slot-editor" id="slot-editor"></div>
@@ -57,10 +64,12 @@
           <label class="check"><input type="checkbox" id="line-header"> Line under the header</label>
           <label class="check"><input type="checkbox" id="line-footer"> Line above the footer</label>
         </div>
-        <div class="row">
-          <span class="label" id="size-label">Text size</span>
-          <div class="seg" id="size" role="radiogroup" aria-labelledby="size-label"></div>
-          <label class="color"><span class="label">Colour</span><input type="color" id="color"></label>
+        <div class="fields spaced">
+          <span class="label" id="size-label">Text</span>
+          <div class="pair">
+            <div class="seg" id="size" role="radiogroup" aria-labelledby="size-label"></div>
+            <input type="color" class="color fixed" id="color" aria-label="Text colour" title="Text colour">
+          </div>
         </div>
       </section>
     </div>

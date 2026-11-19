@@ -1,10 +1,14 @@
 /* Studio page logic. No framework: one state object, one sync() that reflects it. */
 import {
   CHIPS,
+  FIRST_LAYOUT,
   LAYOUTS,
+  LOGO,
+  MARGINS,
   ZONES,
   draftToSettings,
   emptyDraft,
+  lookDefaults,
   matchLayout,
   renderText,
   settingsToDraft,
@@ -61,9 +65,9 @@ const thumbs = new Map(); // image path → object URL of the file just uploaded
 
 const AREA_NAMES = { header: "Top", footer: "Bottom" };
 const SIZE_LABELS = { s: "Small", m: "Medium", l: "Large" };
-const MARGIN_LABELS = { auto: "Auto", narrow: "Narrow", normal: "Normal", wide: "Wide" };
+const MARGIN_LABELS = { narrow: "Narrow", normal: "Normal", wide: "Wide" };
 const FONT_LABELS = { sans: "Sans", serif: "Serif", mono: "Mono", system: "System" };
-const LOOK_LABELS = { clean: "Clean", report: "Report", academic: "Academic", compact: "Compact", "dark-code": "Dark code" };
+const LOOK_LABELS = { clean: "Clean", report: "Report", academic: "Academic", compact: "Compact", technical: "Technical" };
 
 const currentSettings = () => draftToSettings(draft, raw, { looks: server.looks });
 const isDirty = () => JSON.stringify(currentSettings()) !== savedJson;
@@ -94,7 +98,7 @@ function build() {
     ...Object.entries(server.looks).map(([name, def]) =>
       el(
         "button",
-        { type: "button", class: "look", role: "radio", "data-value": name, title: def.description, onclick: () => change(() => (draft.look = name)) },
+        { type: "button", class: "look", role: "radio", "data-value": name, title: def.description, onclick: () => change(() => Object.assign(draft, { look: name }, lookDefaults(name, server.looks))) },
         el("span", { class: `thumb ${name}` }, el("i", { class: "h" }), el("i"), el("i", { class: "w80" }), el("i", { class: "code" }), el("i"), el("i", { class: "w55" })),
         el("span", { text: LOOK_LABELS[name] ?? name }),
       ),
@@ -107,6 +111,13 @@ function build() {
 
   $("format").replaceChildren(...server.pageFormats.map((f) => el("option", { value: f, text: f })));
   $("format").addEventListener("change", (e) => change(() => (draft.page_format = e.target.value)));
+
+  const themes = [...server.codeThemes];
+  if (!themes.some((t) => t.file === draft.highlight)) {
+    themes.push({ file: draft.highlight, label: `${draft.highlight.replace(/\.css$/, "")} (from file)` });
+  }
+  $("highlight").replaceChildren(...themes.map((t) => el("option", { value: t.file, text: t.label })));
+  $("highlight").addEventListener("change", (e) => change(() => (draft.highlight = e.target.value)));
   segmented($("orientation"), [["portrait", "Portrait"], ["landscape", "Landscape"]], () => draft.orientation, (v) => (draft.orientation = v));
 
   const margins = Object.entries(MARGIN_LABELS);
@@ -206,6 +217,24 @@ function syncBand(areaName) {
   band.replaceChildren(...ZONES.map((zone) => slotButton(areaName, zone)));
 }
 
+/** Logo size slider: percent of the standard 12 mm, within a range that still fits a header. */
+function sizeRow(slot) {
+  const output = el("output", { text: `${slot.size}%` });
+  const input = el("input", {
+    type: "range",
+    min: LOGO.min,
+    max: LOGO.max,
+    step: LOGO.step,
+    value: slot.size,
+    "aria-label": "Logo size",
+    oninput: (e) => {
+      output.textContent = `${e.target.value}%`;
+      change(() => (slot.size = Number(e.target.value)));
+    },
+  });
+  return el("div", { class: "size-row" }, el("span", { class: "label", text: "Size" }), input, output);
+}
+
 let editorKey = "";
 function syncSlotEditor() {
   const host = $("slot-editor");
@@ -238,9 +267,10 @@ function syncSlotEditor() {
           type: "button",
           class: "btn small quiet",
           text: "Use text",
-          onclick: () => change(() => (draft[areaName][zone] = { kind: "text", text: "", image: "" })),
+          onclick: () => change(() => (draft[areaName][zone] = { kind: "text", text: "", image: "", size: 100 })),
         }),
       ),
+      slot.image ? sizeRow(slot) : null,
     );
     return;
   }
@@ -253,7 +283,7 @@ function syncSlotEditor() {
     oninput: (e) =>
       change(() => {
         const text = e.target.value;
-        draft[areaName][zone] = { kind: text.trim() ? "text" : "none", text, image: "" };
+        draft[areaName][zone] = { kind: text.trim() ? "text" : "none", text, image: "", size: 100 };
       }),
   });
   const insert = (snippet) => {
@@ -313,6 +343,10 @@ function sync() {
   for (const b of $("looks").children) b.setAttribute("aria-checked", String(b.dataset.value === draft.look));
   for (const id of ["fonts", "orientation", "margin", "size"]) $(id)._sync();
   $("format").value = draft.page_format;
+  $("highlight").value = draft.highlight;
+  // The diagram's side padding follows the margins, so text and rules sit where they will print.
+  const side = MARGINS[draft.margin] ?? 15;
+  $("sheet").style.setProperty("--side", `${Math.round(side * 0.95)}px`);
   const layout = matchLayout(draft);
   for (const b of $("layouts").children) b.setAttribute("aria-pressed", String(b.dataset.value === layout));
 
@@ -397,7 +431,8 @@ async function uploadLogo(file, areaName, zone) {
     const { path } = await api(`/api/logo?name=${encodeURIComponent(file.name)}`, { method: "POST", body: file });
     thumbs.set(path, URL.createObjectURL(file));
     change(() => {
-      draft[areaName][zone] = { kind: "image", text: "", image: path };
+      const before = draft[areaName][zone];
+      draft[areaName][zone] = { kind: "image", text: "", image: path, size: before.kind === "image" ? before.size : 100 };
       selected = { area: areaName, zone };
     });
   } catch (error) {
@@ -517,6 +552,12 @@ async function start() {
   }
   raw = server.raw;
   draft = settingsToDraft(raw, { looks: server.looks, templates: server.templates });
+  if (!server.exists) {
+    // Nothing saved yet: propose a sensible page instead of a bare one.
+    const first = LAYOUTS.find((l) => l.id === FIRST_LAYOUT);
+    draft.header = first.header();
+    draft.footer = first.footer();
+  }
   // A file Studio would rewrite differently counts as unsaved only after a change.
   loadedJson = JSON.stringify(currentSettings());
   savedJson = server.exists && !server.fileError ? loadedJson : "";
