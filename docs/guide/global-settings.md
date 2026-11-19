@@ -1,10 +1,20 @@
 # Global Settings
 
-Configure default options for all PDF exports in your Zed `settings.json`.
+Configure default options for all PDF exports.
 
 ## Configuration Location
 
-Add settings under `context_servers.markdown-pdf.settings`:
+Settings are a JSON object. Where it goes depends on how you run Markdown PDF:
+
+- **Zed task, CLI or MCP server (npx):** pass the object as JSON in the `MARKDOWN_PDF_SETTINGS`
+  environment variable (for example in the `env` of the `context_servers` entry), or with the CLI's
+  `--settings <json|file>`. CLI flags override these defaults.
+- **Legacy dev extension:** put the object under `context_servers.markdown-pdf.settings` in Zed's
+  `settings.json`. The examples on this site use this form; the inner object is the same everywhere.
+
+A `pdf:` block in a document's [front matter](/guide/front-matter) overrides both for that document.
+
+Legacy dev extension form:
 
 ```json
 {

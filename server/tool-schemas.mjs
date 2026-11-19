@@ -1,0 +1,200 @@
+/**
+* JSON-schema definitions shared by the MCP server (tools/list) and the CLI
+* (option parsing / --help). Single source of truth for the export options.
+*/
+import { HIGHLIGHT_STYLES, ALLOWED_PAGE_FORMATS } from "./export.mjs";
+
+export const EXPORT_INPUT_SCHEMA = {
+  type: "object",
+  additionalProperties: false,
+  required: ["input_path"],
+  properties: {
+    input_path: {
+      type: "string",
+      description:
+        "Absolute or relative path to the Markdown file.",
+    },
+    output_path: {
+      type: "string",
+      description: "Optional output PDF path.",
+    },
+    stylesheet_path: {
+      type: "string",
+      description:
+        "Optional CSS file applied after the built-in stylesheet.",
+    },
+    open_after_export: {
+      type: "boolean",
+      description: "Open the PDF after export.",
+    },
+    page_format: {
+      type: "string",
+      enum: [...ALLOWED_PAGE_FORMATS],
+      description: "Paper format.",
+    },
+    print_background: {
+      type: "boolean",
+      description:
+        "Whether to print background colours and images.",
+    },
+    margin: {
+      type: "object",
+      description:
+        "Optional per-call page margins. Any omitted side falls back to settings/defaults.",
+      additionalProperties: false,
+      properties: {
+        top: {
+          type: "string",
+          description: "Top margin, for example '10mm' or '0.5in'.",
+        },
+        right: {
+          type: "string",
+          description:
+            "Right margin, for example '10mm' or '0.5in'.",
+        },
+        bottom: {
+          type: "string",
+          description:
+            "Bottom margin, for example '10mm' or '0.5in'.",
+        },
+        left: {
+          type: "string",
+          description:
+            "Left margin, for example '10mm' or '0.5in'.",
+        },
+      },
+    },
+    orientation: {
+      type: "string",
+      enum: ["portrait", "landscape"],
+      description: "Paper orientation.",
+    },
+    scale: {
+      type: "number",
+      description: "Scale of the page rendering (default 1).",
+    },
+    page_ranges: {
+      type: "string",
+      description:
+        "Paper ranges to print, e.g. '1-5, 8, 11-13'. Empty means all pages.",
+    },
+    include_default_styles: {
+      type: "boolean",
+      description: "Include the built-in default CSS stylesheet.",
+    },
+    highlight: {
+      type: "boolean",
+      description: "Enable syntax highlighting for code blocks.",
+    },
+    highlight_style: {
+      type: "string",
+      enum: [...HIGHLIGHT_STYLES].sort(),
+      description:
+        "Highlight.js style filename to use (e.g. 'github.css', 'monokai.css').",
+    },
+    breaks: {
+      type: "boolean",
+      description:
+        "Enable hard line breaks in the Markdown renderer.",
+    },
+    emoji: {
+      type: "boolean",
+      description:
+      "Render :emoji: shortcodes as Unicode characters.",
+    },
+    math: {
+      type: "boolean",
+      description:
+        "Render LaTeX math via KaTeX. Use $inline$ and $$display$$ syntax.",
+    },
+    math_options: {
+      type: "object",
+      additionalProperties: false,
+      description: "KaTeX rendering options.",
+      properties: {
+        throw_on_error: {
+          type: "boolean",
+          description:
+            "If true, abort rendering on a LaTeX error. Default false (renders error inline).",
+        },
+        error_color: {
+          type: "string",
+          description: "CSS color used for inline error messages.",
+        },
+        macros: {
+          type: "object",
+          additionalProperties: { type: "string" },
+          description:
+          'User-defined LaTeX macros, e.g. {"\\\\RR": "\\\\mathbb{R}"}.',
+        },
+      },
+    },
+    heading_anchors: {
+      type: "boolean",
+      description:
+        "Add id slugs to headings (required infrastructure for TOC links).",
+    },
+    toc: {
+      type: "boolean",
+      description:
+        "Render a [[toc]] marker as an auto-generated table of contents (also enables heading anchors).",
+    },
+    toc_options: {
+      type: "object",
+      additionalProperties: false,
+      description: "Table-of-contents rendering options.",
+      properties: {
+        level: {
+          type: "array",
+          items: { type: "number" },
+          description: "Heading levels to include, e.g. [1, 2, 3].",
+        },
+        list_type: {
+          type: "string",
+          enum: ["ul", "ol"],
+          description: "List type for the TOC.",
+        },
+      },
+    },
+    display_header_footer: {
+      type: "boolean",
+      default: false,
+      description:
+        "Display header and footer on each page. Defaults to false — omit this parameter to use the saved setting (which defaults to false if not configured).",
+    },
+
+    font_family: {
+      type: "string",
+      description:
+      "CSS font-family value for the document body and header/footer. Overrides the default system font stack. Example: \"Georgia, 'Times New Roman', serif\".",
+    },
+  },
+};
+
+export const DOCTOR_INPUT_SCHEMA = {
+  type: "object",
+  additionalProperties: false,
+  properties: {
+    input_path: {
+      type: "string",
+      description: "Optional Markdown file used to resolve relative settings.",
+    },
+  },
+};
+
+export const TOOLS = [
+  {
+    name: "export_markdown_pdf",
+    title: "Export Markdown PDF",
+    description:
+      "Render a Markdown file to HTML and convert it to PDF with Playwright/Chromium.",
+    inputSchema: EXPORT_INPUT_SCHEMA,
+  },
+  {
+    name: "doctor_markdown_pdf",
+    title: "Doctor Markdown PDF",
+    description:
+      "Inspect browser setup and current settings.",
+    inputSchema: DOCTOR_INPUT_SCHEMA,
+  },
+];

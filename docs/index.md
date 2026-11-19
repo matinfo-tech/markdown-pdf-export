@@ -34,7 +34,7 @@ features:
     details: Embed logos and images (SVG, PNG, JPG) directly in headers and footers as base64 data URIs.
   - icon: ⚡
     title: Zero Configuration
-    details: Works out of the box with sensible defaults. Chromium installs automatically on first use.
+    details: Works out of the box with sensible defaults. Uses your installed Chrome or Edge — run it from a Zed task, over MCP, or on the command line.
   - icon: 🔧
     title: Per-Document Overrides
     details: Override any setting via YAML front matter. Perfect for different document types in the same project.
@@ -69,7 +69,7 @@ That's it! The PDF will have a professional header with your company name, docum
 
 ## Next Steps
 
-- [Getting Started](/guide/getting-started) — Install and configure the extension
+- [Getting Started](/guide/getting-started) — Install and configure Markdown PDF
 - [Quick Start Templates](/examples/quick-templates) — Copy-paste ready configurations
 - [Header & Footer Guide](/guide/header-footer) — Learn the structured configuration
 - [Reference](/reference/settings) — Complete settings documentation

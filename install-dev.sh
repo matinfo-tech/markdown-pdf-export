@@ -95,13 +95,39 @@ if [[ ! -f "$PLAYWRIGHT_CLI" ]]; then
     yellow "    $PLAYWRIGHT_CLI"
     yellow "  Chromium will be downloaded automatically on the first PDF export."
 else
-    # Run the CLI directly with node — no npx or global playwright needed.
-    if "$NODE_BIN" "$PLAYWRIGHT_CLI" install chromium; then
-        green "  ✓ Chromium ready"
+    # Use the public playwright-core API to resolve the expected Chromium path.
+    CHROMIUM_EXEC=$(node -e "
+try {
+  const {chromium} = require('$SCRIPT_DIR/server/node_modules/playwright-core');
+  process.stdout.write(chromium.executablePath() ?? '');
+} catch { process.stdout.write(''); }
+" 2>/dev/null)
+
+    if [[ -n "$CHROMIUM_EXEC" && -f "$CHROMIUM_EXEC" ]]; then
+        green "  ✓ Chromium already installed at:"
+        green "    $CHROMIUM_EXEC"
     else
-        yellow "  Warning: Chromium install returned a non-zero exit code."
-        yellow "  You can retry manually:"
-        yellow "    node \"$PLAYWRIGHT_CLI\" install chromium"
+        echo "  Downloading Chrome for Testing + FFmpeg (this may take a few minutes)…"
+        echo "  Tip: If it appears stuck, it is downloading — no progress bar in non-TTY mode."
+        echo ""
+        # --no-shell skips Chrome Headless Shell (~100 MB, not needed for PDF export).
+        # FFmpeg (~6 MB) is always downloaded alongside Chromium by playwright-core.
+        # Force a pseudo-TTY so playwright shows real download progress.
+        if command -v script &>/dev/null; then
+            # macOS: script -q /dev/null <cmd> — allocates a pty, enabling progress output
+            script -q /dev/null "$NODE_BIN" "$PLAYWRIGHT_CLI" install --no-shell chromium
+            PW_EXIT=$?
+        else
+            "$NODE_BIN" "$PLAYWRIGHT_CLI" install --no-shell chromium
+            PW_EXIT=$?
+        fi
+        if [[ $PW_EXIT -eq 0 ]]; then
+            green "  ✓ Chromium ready"
+        else
+            yellow "  Warning: Chromium install returned a non-zero exit code."
+            yellow "  You can retry manually:"
+            yellow "    node \"$PLAYWRIGHT_CLI\" install --no-shell chromium"
+        fi
     fi
 fi
 echo ""

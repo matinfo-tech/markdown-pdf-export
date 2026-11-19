@@ -1,48 +1,80 @@
 # Markdown PDF — Quick Start
 
-Export any Markdown file to a polished PDF directly from Zed's AI assistant.
+Export any Markdown file to a polished PDF from Zed — with a task or through the AI assistant (MCP).
+
+> **Requires:** Node.js ≥ 18 and Google Chrome or Microsoft Edge (or see step 3).
 
 ---
 
-## 1. Install the Extension
+## 1. Add a Zed Task
 
-1. Open the command palette (`Cmd+Shift+P` / `Ctrl+Shift+P`)
-2. Run `zed: install dev extension`
-3. Select the `zed-markdown-pdf` folder
+Add this to `~/.config/zed/tasks.json` (or to `.zed/tasks.json` in a project):
 
-Zed compiles and installs the extension automatically.
+```json
+[
+  {
+    "label": "Markdown: Export to PDF",
+    "command": "npx",
+    "args": ["-y", "markdown-pdf-export", "$ZED_FILE"],
+    "reveal": "no_focus",
+    "hide": "on_success"
+  }
+]
+```
 
-> **Requires:** Rust with `rustup target add wasm32-wasip1` and Node.js ≥ 18
+Open a `.md` file, run **task: spawn** and choose *Markdown: Export to PDF*. Optional key binding in
+`keymap.json`:
+
+```json
+[
+  {
+    "context": "Workspace",
+    "bindings": {
+      "cmd-alt-e": ["task::Spawn", { "task_name": "Markdown: Export to PDF" }]
+    }
+  }
+]
+```
 
 ---
 
-## 2. Enable the Context Server
+## 2. Enable the MCP Server (optional)
 
-1. Open Zed Settings (`Cmd+,`)
-2. Go to **Agent → Context Servers**
-3. Enable **markdown-pdf**
+To let the AI assistant export, add this to Zed's `settings.json`:
 
----
+```json
+{
+  "context_servers": {
+    "markdown-pdf": {
+      "command": "npx",
+      "args": ["-y", "markdown-pdf-export", "mcp"],
+      "env": { "MARKDOWN_PDF_SETTINGS": "{\"page_format\":\"A4\"}" }
+    }
+  }
+}
+```
 
-## 3. First Export
-
-Open any `.md` file and ask the assistant:
+Then open any `.md` file and ask the assistant:
 
 ```
 Export this file to PDF
 ```
 
-On the very first run, Chromium (~150 MB) downloads automatically:
-
-```
-Installing npm dependencies (first run)…
-Chromium not found, installing automatically…
-Chromium installed successfully.
-```
-
-This happens **once**. After that, exports are instant.
-
 The PDF is saved next to your Markdown file by default.
+
+---
+
+## 3. Browser
+
+Nothing is downloaded automatically. The exporter uses Google Chrome, then Microsoft Edge, then
+Playwright's Chromium if it is already installed. If none is found, the export fails with
+`No usable Chrome/Chromium browser found.` and a hint. Either install Chrome/Edge or run once:
+
+```bash
+npx -y markdown-pdf-export install-browser   # ~150 MB
+```
+
+To force a browser, set `MARKDOWN_PDF_BROWSER` to `chrome`, `msedge`, `chromium` or an executable path.
 
 ---
 
@@ -61,33 +93,32 @@ The PDF is saved next to your Markdown file by default.
 
 ## 5. Settings
 
-Add settings to your Zed `settings.json` for permanent defaults:
+Set permanent defaults as JSON in the `MARKDOWN_PDF_SETTINGS` environment variable (for example in the
+`env` of the `context_servers` entry) or pass `--settings <json|file>` to the CLI. A settings file
+could look like this:
 
 ```json
 {
-  "context_servers": {
-    "markdown-pdf": {
-      "settings": {
-        "font_family": null,
-        "page_format": "A4",
-        "orientation": "portrait",
-        "print_background": true,
-        "highlight": true,
-        "highlight_style": "github.css",
-        "emoji": true,
-        "display_header_footer": false,
-        "open_after_export": false,
-        "margin": {
-          "top": "15mm",
-          "right": "15mm",
-          "bottom": "15mm",
-          "left": "15mm"
-        }
-      }
-    }
+  "font_family": null,
+  "page_format": "A4",
+  "orientation": "portrait",
+  "print_background": true,
+  "highlight": true,
+  "highlight_style": "github.css",
+  "emoji": true,
+  "display_header_footer": false,
+  "open_after_export": false,
+  "margin": {
+    "top": "15mm",
+    "right": "15mm",
+    "bottom": "15mm",
+    "left": "15mm"
   }
 }
 ```
+
+With the legacy dev extension, put the same object under `context_servers.markdown-pdf.settings` in
+Zed's `settings.json`.
 
 ---
 
@@ -246,17 +277,20 @@ If something goes wrong, ask:
 Run doctor_markdown_pdf
 ```
 
-Or check the debug log:
+Or from a terminal:
 
+```bash
+npx -y markdown-pdf-export doctor
 ```
-/tmp/zed-markdown-pdf-debug.log        # macOS / Linux
-%TEMP%\zed-markdown-pdf-debug.log      # Windows
-```
+
+For a debug log, set `MARKDOWN_PDF_DEBUG=1` (for example in the `env` of the `context_servers` entry).
+The log is written to `markdown-pdf-debug.log` in the OS temp directory — on macOS that is under
+`/var/folders/…/T/`, not `/tmp`. Set `MARKDOWN_PDF_DEBUG=/some/file.log` to choose the path.
 
 ---
 
 ## Full Documentation
 
 - [`README.md`](README.md) — Complete settings reference
-- [`configuration/installation_instructions.md`](configuration/installation_instructions.md) — Installation guide
+- [`server/README.md`](server/README.md) — npm package: CLI options, task and MCP setup
 - [Online Documentation](https://matinfo.github.io/zed-markdown-pdf/) — Full structured header/footer reference

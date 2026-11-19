@@ -22,7 +22,7 @@ for both automated CI and manual interactive testing in Zed.
 From the `server/` directory:
 
 ```sh
-npm test
+npm run test:export
 ```
 
 This is equivalent to:
@@ -166,12 +166,14 @@ Export this file to PDF in landscape, scale 0.9, with custom stylesheet test-fix
 
 ## Troubleshooting
 
-### Chromium downloads on first run
+### No browser available
 
-On the very first export, Chromium (~150 MB) downloads automatically. The test
-runner handles this gracefully — it passes the `doctor_markdown_pdf` check even
-when Chromium is not yet installed, then waits up to 3 minutes per scenario for
-the download and first render to complete.
+Nothing is downloaded automatically. The server uses Google Chrome, then
+Microsoft Edge, then Playwright's Chromium if present. If none is found, the
+doctor step prints a warning with the hint, and the export scenarios fail with
+`No usable Chrome/Chromium browser found.` Install Chrome or Edge, set
+`MARKDOWN_PDF_BROWSER`, or run `node cli.mjs install-browser` (~150 MB) from
+`server/`.
 
 ### A scenario fails with "output too small"
 

@@ -241,11 +241,9 @@ Result: Left shows "Different Left", center and right use global settings.
 
 ## Validation
 
-Invalid front matter configuration triggers warnings in the debug log:
-
-```
-/tmp/zed-markdown-pdf-debug.log
-```
+Invalid front matter configuration triggers warnings in the debug log. Enable it with
+`MARKDOWN_PDF_DEBUG=1`; it is written to `markdown-pdf-debug.log` in the OS temp directory (on macOS
+under `/var/folders/…/T/`, not `/tmp`). Set `MARKDOWN_PDF_DEBUG=/some/file.log` to choose the path.
 
 Common issues:
 
@@ -307,10 +305,10 @@ This shows the effective settings after merging.
 
 ### Debug Front Matter
 
-Check the debug log to see how front matter is parsed:
+Check the debug log to see how front matter is parsed. With `MARKDOWN_PDF_DEBUG=1`:
 
 ```bash
-tail -f /tmp/zed-markdown-pdf-debug.log
+tail -f "${TMPDIR:-/tmp}/markdown-pdf-debug.log"
 ```
 
 ## Next Steps

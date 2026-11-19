@@ -1,52 +1,35 @@
 # Installation Instructions
 
-This extension exports Markdown files to PDF using a modern, fully automated pipeline.
+This is the legacy development extension. It is not in the Zed registry. The recommended setup is
+the npm package `markdown-pdf-export`, used from a Zed task or as an MCP server
+(`npx -y markdown-pdf-export mcp`, MCP registry name `io.github.matinfo/markdown-pdf-export`).
+See the [project README](https://github.com/matinfo/zed-markdown-pdf#setup).
 
-## Zero external dependencies
+## What this extension needs
 
-Unlike traditional PDF exporters, this extension requires **no manual system
-installation**.
+- **Node.js 18 or newer.**
+- **A browser:** Google Chrome or Microsoft Edge is used if installed; otherwise Playwright's
+  Chromium, if present. Nothing is downloaded automatically. To install Chromium (~150 MB), run
+  `npx -y markdown-pdf-export install-browser`, or set `MARKDOWN_PDF_BROWSER` to `chrome`, `msedge`,
+  `chromium` or an executable path.
 
-The MCP server script is **not bundled** with the extension. Instead, the
-extension downloads `markdown-pdf-server.tar.gz` from the matching GitHub
-release the first time you invoke a tool. If `server/node_modules` is missing,
-the server repairs itself by running `npm install` automatically.
+On first use the extension downloads the server archive from the matching GitHub release. The
+archive bundles its npm dependencies, so nothing is installed at runtime.
 
 ## Usage
 
-After enabling the extension:
-
 1. Open any Markdown file in Zed.
-2. Trigger an export using one of the methods below.
-3. On the very first use the extension downloads the MCP server from GitHub
-   and installs its npm dependencies — this takes a few seconds and happens
-   only once.
-4. The `export_markdown_pdf` tool generates a high-quality PDF next to the
-   source file (or in `output_directory` if configured).
+2. Ask the assistant, for example:
+   - *"Export this to PDF"*
+   - *"Export in landscape with the monokai theme"*
+   - *"Export with header and footer showing page numbers"*
+3. The `export_markdown_pdf` tool writes the PDF next to the source file (or in
+   `output_directory` if configured). Use `doctor_markdown_pdf` to check the browser and settings.
 
-No manual setup is required.
+## Settings
 
-### Natural-language prompts
-
-You can also just describe what you want to the assistant:
-
-- *"Export this to PDF"*
-- *"Export in landscape with the monokai theme"*
-- *"Export with header and footer showing page numbers"*
-
----
-
-## Settings reference
-
-All settings can be placed in your Zed `settings.json` under the
-`context_servers.markdown-pdf.settings` key, or passed directly as tool-call
-arguments to override them on a per-export basis.
-
-For the full settings reference and header/footer documentation, see the [online documentation](https://matinfo.github.io/zed-markdown-pdf/).
-
-## Example settings
-
-Minimal Zed `settings.json` snippet:
+Put settings in your Zed `settings.json` under `context_servers.markdown-pdf.settings`, or pass them
+as tool-call arguments for a single export:
 
 ```json
 {
@@ -67,16 +50,12 @@ Minimal Zed `settings.json` snippet:
 }
 ```
 
----
+Full settings and header/footer reference: <https://matinfo.github.io/zed-markdown-pdf/>.
 
 ## Page-break helper
 
-The built-in stylesheet provides a `.page` utility class that forces a page
-break after the element:
+The built-in stylesheet provides a `.page` utility class that forces a page break:
 
 ```html
 <div class="page"></div>
 ```
-
-Place it in your Markdown (HTML pass-through is enabled) wherever you want a
-hard page break.

@@ -27,7 +27,7 @@ REQUEST='{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersio
 echo "Sending initialize request (NDJSON framing)…"
 echo ""
 
-RESPONSE=$(printf '%s\n' "$REQUEST" | timeout 5 node "$SERVER_PATH" 2>/dev/null)
+RESPONSE=$(printf '%s\n' "$REQUEST" | gtimeout 5 node "$SERVER_PATH" 2>/dev/null)
 EXIT_CODE=$?
 
 if [ -n "$RESPONSE" ]; then

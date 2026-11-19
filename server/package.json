@@ -1,18 +1,38 @@
 {
-  "name": "zed-markdown-pdf-server",
+  "name": "markdown-pdf-export",
   "version": "0.2.0",
-  "description": "MCP server for Markdown to PDF conversion using Playwright",
+  "description": "Export Markdown to PDF with Chromium — CLI and MCP server (works great as a Zed task)",
   "type": "module",
-  "private": true,
-  "main": "markdown_pdf_server.mjs",
+  "mcpName": "io.github.matinfo/markdown-pdf-export",
+  "main": "export.mjs",
+  "exports": {
+    ".": "./export.mjs",
+    "./mcp": "./mcp.mjs",
+    "./schemas": "./tool-schemas.mjs",
+    "./package.json": "./package.json"
+  },
+  "bin": {
+    "markdown-pdf-export": "cli.mjs"
+  },
+  "files": [
+    "cli.mjs",
+    "export.mjs",
+    "mcp.mjs",
+    "tool-schemas.mjs",
+    "markdown_pdf_server.mjs",
+    "default.css",
+    "lib/*.mjs",
+    "vendor/"
+  ],
   "scripts": {
-    "check": "node --check markdown_pdf_server.mjs",
+    "check": "node --check export.mjs && node --check mcp.mjs && node --check cli.mjs && node --check tool-schemas.mjs",
     "build": "npm run check && node scripts/bundle-katex-css.mjs",
     "build:katex-css": "node scripts/bundle-katex-css.mjs",
+    "prepack": "npm run build",
     "test": "node --test lib/__tests__/*.test.mjs",
     "test:export": "node ../test-fixtures/test-export.mjs",
     "test:all": "npm run test && npm run test:export",
-    "install:chromium": "node node_modules/playwright-core/cli.js install chromium"
+    "install-browser": "node cli.mjs install-browser"
   },
   "dependencies": {
     "@vscode/markdown-it-katex": "^1.1.2",

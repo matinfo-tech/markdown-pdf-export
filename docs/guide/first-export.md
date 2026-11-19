@@ -4,6 +4,14 @@ This guide walks you through creating your first PDF export with Markdown PDF.
 
 ## Basic Export
 
+With the [Zed task](/guide/installation#zed-task-recommended):
+
+1. Open any Markdown file in Zed
+2. Run **task: spawn** and choose *Markdown: Export to PDF* (or press your key binding)
+3. The PDF is created next to your source file
+
+With the [MCP server](/guide/installation#mcp-server-zed-agent-or-any-mcp-client):
+
 1. Open any Markdown file in Zed
 2. Open the assistant panel (`Cmd+Enter` / `Ctrl+Enter`)
 3. Type:
@@ -14,7 +22,8 @@ This guide walks you through creating your first PDF export with Markdown PDF.
 
 4. The PDF will be created next to your source file
 
-That's it! The extension handles everything automatically.
+If the export reports `No usable Chrome/Chromium browser found.`, install Google Chrome or Microsoft
+Edge, or run `npx -y markdown-pdf-export install-browser` once (see [Browser](/guide/installation#browser)).
 
 
 ## Export with Options
@@ -136,14 +145,15 @@ Or set a default in settings:
 
 ## Verify Your Setup
 
-If something doesn't work, run the diagnostic tool:
+If something doesn't work, run the diagnostic from a terminal (`npx -y markdown-pdf-export doctor`) or
+ask the assistant:
 
 ```
 Run doctor_markdown_pdf
 ```
 
 This shows:
-- Chromium availability and version
+- Browser availability and version
 - Current settings
 - Server directory path
 

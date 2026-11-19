@@ -1,10 +1,10 @@
 # Getting Started
 
-Markdown PDF is a Zed extension that exports Markdown files to high-quality PDFs using Playwright and Chromium.
+Markdown PDF exports Markdown files to high-quality PDFs using Playwright and Chromium. It ships as the npm package `markdown-pdf-export` (a CLI and an MCP server) that you run in Zed as a task or through the AI assistant over MCP.
 
 ## Features
 
-- **Native Zed integration** — works directly in the AI assistant
+- **Zed integration** — run it as a task or from the AI assistant (MCP)
 - **Structured headers & footers** — declarative configuration with zones and typed elements
 - **Custom placeholders** — use front matter variables in headers/footers
 - **Date formatting** — flexible date-fns patterns
@@ -15,8 +15,8 @@ Markdown PDF is a Zed extension that exports Markdown files to high-quality PDFs
 
 ## How It Works
 
-1. You ask the AI assistant to export a Markdown file
-2. The extension parses the Markdown and any front matter configuration
+1. You run the Zed task, the CLI, or ask the AI assistant to export a Markdown file
+2. The exporter parses the Markdown and any front matter configuration
 3. HTML is generated with syntax highlighting and emoji rendering
 4. Playwright/Chromium converts the HTML to PDF
 5. The PDF is saved next to your source file (or to a custom path)
@@ -37,7 +37,7 @@ Export this file to PDF in landscape with header and footer
 
 ## Structured Header/Footer
 
-The extension supports a declarative header/footer system:
+Markdown PDF supports a declarative header/footer system:
 
 ```json
 {
@@ -69,6 +69,6 @@ pdf:
 
 ## Next Steps
 
-- [Installation](/guide/installation) — Set up the extension
+- [Installation](/guide/installation) — Set up the Zed task or MCP server
 - [First Export](/guide/first-export) — Your first PDF export
 - [Header & Footer](/guide/header-footer) — Configure headers and footers

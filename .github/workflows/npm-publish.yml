@@ -1,0 +1,85 @@
+name: Publish npm package + MCP Registry
+
+# Release flow:
+#   1. bump "version" in server/package.json (and SERVER_VERSION in server/export.mjs)
+#   2. git tag npm-v<version> && git push origin npm-v<version>
+# server.json versions are synced from the tag below.
+#
+# Requires repository secret NPM_TOKEN (npm automation token).
+
+on:
+  push:
+    tags:
+      - "npm-v*"
+
+permissions:
+  id-token: write # Required for MCP Registry OIDC authentication
+  contents: read
+
+env:
+  MCP_PUBLISHER_VERSION: v1.8.1 # bump deliberately; never use releases/latest
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: server
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "lts/*"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Check tag matches package.json and SERVER_VERSION
+        run: |
+          set -euo pipefail
+          TAG_VERSION="${GITHUB_REF_NAME#npm-v}"
+          PKG_VERSION="$(node -p "require('./package.json').version")"
+          SRC_VERSION="$(grep -oE 'SERVER_VERSION = "[^"]+"' export.mjs | grep -oE '[0-9][^"]*')"
+          echo "tag=$TAG_VERSION package.json=$PKG_VERSION export.mjs=$SRC_VERSION"
+          test "$TAG_VERSION" = "$PKG_VERSION"
+          test "$TAG_VERSION" = "$SRC_VERSION"
+
+      - run: npm ci
+      - run: npm test
+
+      - name: Publish package to npm
+        run: npm publish # prepack builds vendor/katex-inline.css
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+
+      - name: Download and verify mcp-publisher
+        run: |
+          set -euo pipefail
+          os="$(uname -s | tr '[:upper:]' '[:lower:]')"
+          arch="$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/')"
+          archive="mcp-publisher_${os}_${arch}.tar.gz"
+          base_url="https://github.com/modelcontextprotocol/registry/releases/download/${MCP_PUBLISHER_VERSION}"
+          curl --fail --location --silent --show-error --output "$archive" "$base_url/$archive"
+          curl --fail --location --silent --show-error --output "$archive.sigstore.json" "$base_url/$archive.sigstore.json"
+          cosign verify-blob \
+            --bundle "$archive.sigstore.json" \
+            --certificate-identity "https://github.com/modelcontextprotocol/registry/.github/workflows/release.yml@refs/tags/${MCP_PUBLISHER_VERSION}" \
+            --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+            "$archive"
+          tar xzf "$archive" mcp-publisher
+          rm -f "$archive" "$archive.sigstore.json"
+
+      - name: Set version in server.json
+        run: |
+          VERSION="${GITHUB_REF_NAME#npm-v}"
+          jq --arg v "$VERSION" '.version = $v | .packages[0].version = $v' server.json > server.tmp
+          mv server.tmp server.json
+
+      - name: Authenticate to MCP Registry
+        run: ./mcp-publisher login github-oidc
+
+      - name: Publish server to MCP Registry
+        run: ./mcp-publisher publish

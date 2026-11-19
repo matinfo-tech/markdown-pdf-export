@@ -54,24 +54,10 @@ jobs:
           cache-dependency-path: server/package-lock.json
 
       - name: Install server deps (for KaTeX CSS bundling)
-        run: npm install --prefix server --no-audit --no-fund
+        run: npm ci --prefix server --no-audit --no-fund
 
-      - name: Bundle KaTeX CSS with inlined fonts
-        run: node server/scripts/bundle-katex-css.mjs
-
-      - name: Package server archive
-        run: |
-          cd server
-          tar -czf ../markdown-pdf-server.tar.gz \
-            markdown_pdf_server.mjs \
-            default.css \
-            package.json \
-            package-lock.json \
-            lib/ \
-            scripts/ \
-            vendor/
-          echo "Archive contents:"
-          tar -tzf ../markdown-pdf-server.tar.gz
+      - name: Package server archive (bundles production node_modules)
+        run: ./scripts/package-server.sh .
 
       - name: Create GitHub release and upload archive
         uses: softprops/action-gh-release@v2
@@ -81,14 +67,15 @@ jobs:
           body: |
             MCP server bundle for the **Markdown PDF** Zed extension.
 
-            This archive is downloaded automatically by the extension on first use — no manual action required.
+            This archive is downloaded automatically by the extension on first use.
+            For the CLI / Zed task / MCP-registry setup, use the npm package `markdown-pdf-export` instead.
 
             ### Contents
             | File | Description |
             |------|-------------|
-            | `markdown_pdf_server.mjs` | MCP server entry point |
-            | `default.css` | Built-in neutral stylesheet |
-            | `package.json` | npm manifest (markdown-it, highlight.js, …) |
-            | `lib/` | Server library modules |
+            | `markdown_pdf_server.mjs` | MCP entry point (shim → `mcp.mjs`) |
+            | `export.mjs`, `cli.mjs`, `tool-schemas.mjs`, `lib/` | Core, CLI and shared schemas |
+            | `default.css`, `vendor/` | Built-in stylesheet, KaTeX CSS with inlined fonts |
+            | `node_modules/` | Production dependencies (nothing is installed at runtime) |
           files: markdown-pdf-server.tar.gz
           fail_on_unmatched_files: true

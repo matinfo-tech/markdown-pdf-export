@@ -7,9 +7,13 @@
 # GitHub release and extracts it into its working directory.  The archive must
 # contain the following files at the **root level** (no subdirectory wrapper):
 #
-#   markdown_pdf_server.mjs
-#   default.css
-#   package.json
+#   markdown_pdf_server.mjs   (entry shim → mcp.mjs)
+#   mcp.mjs, export.mjs, cli.mjs, tool-schemas.mjs, lib/
+#   default.css, vendor/, package.json, package-lock.json
+#   node_modules/             (production deps — nothing is installed at runtime)
+#
+# NOTE: the primary distribution is now the npm package `markdown-pdf-export`
+# (see server/README.md). This archive only serves the legacy Zed extension shell.
 #
 # Usage:
 #   ./scripts/package-server.sh [output-dir]
@@ -57,17 +61,21 @@ mkdir -p "$OUTPUT_DIR"
 # ---------------------------------------------------------------------------
 ARCHIVE_PATH="$OUTPUT_DIR/$ARCHIVE_NAME"
 
-TAR_ARGS=(
-  -C "$SERVER_DIR"
-  markdown_pdf_server.mjs
-  default.css
-  package.json
-)
+# The server no longer runs `npm install` at runtime, so production
+# dependencies are bundled. Install them into a staging copy so the
+# developer's server/node_modules (with dev tooling) is left untouched.
+STAGE_DIR="$(mktemp -d)"
+trap 'rm -rf "$STAGE_DIR"' EXIT
 
-[[ -f "$SERVER_DIR/package-lock.json" ]] && TAR_ARGS+=(package-lock.json)
-[[ -d "$SERVER_DIR/lib" ]] && TAR_ARGS+=(lib)
-[[ -d "$SERVER_DIR/scripts" ]] && TAR_ARGS+=(scripts)
-[[ -d "$SERVER_DIR/vendor" ]] && TAR_ARGS+=(vendor)
+cp "$SERVER_DIR"/{markdown_pdf_server.mjs,mcp.mjs,export.mjs,cli.mjs,tool-schemas.mjs,default.css,package.json,package-lock.json} "$STAGE_DIR/"
+cp -R "$SERVER_DIR/lib" "$STAGE_DIR/lib"
+rm -rf "$STAGE_DIR/lib/__tests__"
+[[ -d "$SERVER_DIR/vendor" ]] && cp -R "$SERVER_DIR/vendor" "$STAGE_DIR/vendor"
+
+echo "Installing production dependencies into staging dir…"
+(cd "$STAGE_DIR" && npm ci --omit=dev --ignore-scripts --no-audit --no-fund)
+
+TAR_ARGS=(-C "$STAGE_DIR" .)
 
 tar -czf "$ARCHIVE_PATH" "${TAR_ARGS[@]}"
 
