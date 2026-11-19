@@ -75,6 +75,7 @@ function checkTarball(tarball) {
     "lib/editor-setup.mjs",
     "templates/minimal.json",
     "templates/corporate.json",
+    "schema/settings.schema.json",
   ];
   const missing = required.filter((f) => !files.has(f));
   if (missing.length) fail(`tarball is missing: ${missing.join(", ")}`);

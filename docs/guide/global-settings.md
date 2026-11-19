@@ -19,6 +19,21 @@ npx -y markdown-pdf-export init --template corporate
 An existing file is never overwritten unless you add `--force`. The templates are listed in
 [Quick Templates](/examples/quick-templates).
 
+### Autocomplete and Validation
+
+Files written by `init` start with a `$schema` line. VS Code, Zed and other editors with a JSON
+language server then offer autocomplete, hover help and error highlighting for every setting:
+
+```json
+{
+  "$schema": "https://matinfo.github.io/markdown-pdf-export/schema/settings.schema.json",
+  "page_format": "A4"
+}
+```
+
+Add the same line to a settings file you wrote by hand. The schema also ships in the package
+(`schema/settings.schema.json`).
+
 ## Where Settings Live
 
 Settings are a plain JSON object. They are found automatically, so editor tasks and MCP entries need

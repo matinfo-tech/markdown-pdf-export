@@ -323,10 +323,14 @@ Precedence, highest first: front matter `pdf:` block, CLI flags / tool arguments
 file, built-in defaults. `MARKDOWN_PDF_SETTINGS` (environment) or `--settings` (CLI), each a JSON file
 path or inline JSON, replace the user file.
 
+Add the `$schema` line (files from `init` already have it) to get autocomplete and error highlighting in
+VS Code, Zed and other editors with a JSON language server.
+
 Example `settings.json`:
 
 ```json
 {
+  "$schema": "https://matinfo.github.io/markdown-pdf-export/schema/settings.schema.json",
   "page_format": "A4",
   "orientation": "portrait",
   "print_background": true,
