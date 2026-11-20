@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://matinfo.github.io/markdown-pdf-export/schema/settings.schema.json",
+  "$id": "https://markdown-pdf.matinfo.tech/schema/settings.schema.json",
   "title": "markdown-pdf-export settings",
   "description": "User settings (~/.config/markdown-pdf-export/settings.json) or project settings (.markdown-pdf.json).",
   "type": "object",

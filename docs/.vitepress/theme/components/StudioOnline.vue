@@ -12,7 +12,7 @@ import Sheet from "./Sheet.vue";
 import PickTabs from "./PickTabs.vue";
 import CopyCommand from "./CopyCommand.vue";
 
-const SCHEMA = "https://matinfo.github.io/markdown-pdf-export/schema/settings.schema.json";
+const SCHEMA = "https://markdown-pdf.matinfo.tech/schema/settings.schema.json";
 const LOGO_PATH = "assets/logo.png";
 const SAMPLE = { title: "Quarterly report", author: "Alex Morgan", pages: 9 };
 const SAMPLE_MD = `# Quarterly report

@@ -1,5 +1,5 @@
 {
-  "$schema": "https://matinfo.github.io/markdown-pdf-export/schema/settings.schema.json",
+  "$schema": "https://markdown-pdf.matinfo.tech/schema/settings.schema.json",
   "font_family": "Times New Roman, Georgia, serif",
   "margin": {
     "top": "25mm",

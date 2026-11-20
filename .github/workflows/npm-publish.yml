@@ -7,7 +7,7 @@ name: Publish npm package + MCP Registry
 #
 # Authentication: npm trusted publishing (OIDC). No NPM_TOKEN secret.
 #   One-time setup on npmjs.com → package Settings → Trusted Publisher:
-#     Organization or user: matinfo
+#     Organization or user: matinfo-tech
 #     Repository:           markdown-pdf-export
 #     Workflow filename:    npm-publish.yml
 #   The package must already exist on npm, so publish the very first version

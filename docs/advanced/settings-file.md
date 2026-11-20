@@ -6,7 +6,7 @@ A settings file is a small JSON file. This one is complete:
 
 ```json
 {
-  "$schema": "https://matinfo.github.io/markdown-pdf-export/schema/settings.schema.json",
+  "$schema": "https://markdown-pdf.matinfo.tech/schema/settings.schema.json",
   "look": "report",
   "font": "serif",
   "template": "simple"

@@ -6,6 +6,15 @@ All notable changes to `markdown-pdf-export`. The format follows
 
 ## [Unreleased]
 
+## [2.0.3] - 2026-11-20
+
+### Changed
+
+- The project moved to the GitHub organisation `matinfo-tech`:
+  <https://github.com/matinfo-tech/markdown-pdf-export>. The documentation is now at
+  <https://markdown-pdf.matinfo.tech/>, and the settings `$schema` URL changed with it.
+- The MCP Registry name is now `io.github.matinfo-tech/markdown-pdf-export`.
+
 ## [2.0.2] - 2026-11-20
 
 ### Added
@@ -125,13 +134,14 @@ MCP server, usable from any editor or AI assistant.
 - First release, as a Zed extension: Markdown to PDF with Chromium, syntax highlighting,
   structured headers and footers, placeholders and date formats.
 
-[Unreleased]: https://github.com/matinfo/markdown-pdf-export/compare/npm-v2.0.2...HEAD
-[2.0.2]: https://github.com/matinfo/markdown-pdf-export/compare/npm-v2.0.1...npm-v2.0.2
-[2.0.1]: https://github.com/matinfo/markdown-pdf-export/compare/npm-v2.0.0...npm-v2.0.1
-[2.0.0]: https://github.com/matinfo/markdown-pdf-export/compare/v0.2.0...npm-v2.0.0
-[0.2.0]: https://github.com/matinfo/markdown-pdf-export/compare/v0.1.4...v0.2.0
-[0.1.4]: https://github.com/matinfo/markdown-pdf-export/compare/v0.1.3...v0.1.4
-[0.1.3]: https://github.com/matinfo/markdown-pdf-export/compare/v0.1.2...v0.1.3
-[0.1.2]: https://github.com/matinfo/markdown-pdf-export/compare/v0.1.1...v0.1.2
-[0.1.1]: https://github.com/matinfo/markdown-pdf-export/compare/v0.1.0...v0.1.1
-[0.1.0]: https://github.com/matinfo/markdown-pdf-export/releases/tag/v0.1.0
+[Unreleased]: https://github.com/matinfo-tech/markdown-pdf-export/compare/npm-v2.0.3...HEAD
+[2.0.3]: https://github.com/matinfo-tech/markdown-pdf-export/compare/npm-v2.0.2...npm-v2.0.3
+[2.0.2]: https://github.com/matinfo-tech/markdown-pdf-export/compare/npm-v2.0.1...npm-v2.0.2
+[2.0.1]: https://github.com/matinfo-tech/markdown-pdf-export/compare/npm-v2.0.0...npm-v2.0.1
+[2.0.0]: https://github.com/matinfo-tech/markdown-pdf-export/compare/v0.2.0...npm-v2.0.0
+[0.2.0]: https://github.com/matinfo-tech/markdown-pdf-export/compare/v0.1.4...v0.2.0
+[0.1.4]: https://github.com/matinfo-tech/markdown-pdf-export/compare/v0.1.3...v0.1.4
+[0.1.3]: https://github.com/matinfo-tech/markdown-pdf-export/compare/v0.1.2...v0.1.3
+[0.1.2]: https://github.com/matinfo-tech/markdown-pdf-export/compare/v0.1.1...v0.1.2
+[0.1.1]: https://github.com/matinfo-tech/markdown-pdf-export/compare/v0.1.0...v0.1.1
+[0.1.0]: https://github.com/matinfo-tech/markdown-pdf-export/releases/tag/v0.1.0

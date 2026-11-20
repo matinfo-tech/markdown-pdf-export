@@ -2,7 +2,7 @@
 
 Thanks for helping. This page covers the development setup, tests, how the code is laid out, and
 how releases work. User documentation lives on the
-[docs site](https://matinfo.github.io/markdown-pdf-export/).
+[docs site](https://markdown-pdf.matinfo.tech/).
 
 ## Development setup
 

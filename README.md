@@ -2,19 +2,19 @@
 
 [![npm version](https://img.shields.io/npm/v/markdown-pdf-export?color=e8231f)](https://www.npmjs.com/package/markdown-pdf-export)
 [![npm downloads](https://img.shields.io/npm/dm/markdown-pdf-export)](https://www.npmjs.com/package/markdown-pdf-export)
-[![CI](https://github.com/matinfo/markdown-pdf-export/actions/workflows/ci.yml/badge.svg)](https://github.com/matinfo/markdown-pdf-export/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/license-MIT-green)](https://github.com/matinfo/markdown-pdf-export/blob/main/LICENSE)
+[![CI](https://github.com/matinfo-tech/markdown-pdf-export/actions/workflows/ci.yml/badge.svg)](https://github.com/matinfo-tech/markdown-pdf-export/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)](https://github.com/matinfo-tech/markdown-pdf-export/blob/main/LICENSE)
 
 Turn Markdown files into clean PDFs from VS Code, Zed, Cursor, Claude or any AI assistant, or from
 the command line.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/matinfo/markdown-pdf-export/main/docs/public/img/banner.jpeg" alt="Markdown PDF Export: Markdown to polished PDFs from VS Code, Copilot, Cursor, any MCP client or the command line" width="100%">
+  <img src="https://raw.githubusercontent.com/matinfo-tech/markdown-pdf-export/main/docs/public/img/banner.jpeg" alt="Markdown PDF Export: Markdown to polished PDFs from VS Code, Copilot, Cursor, any MCP client or the command line" width="100%">
 </p>
 
-Full documentation: <https://matinfo.github.io/markdown-pdf-export/>
+Full documentation: <https://markdown-pdf.matinfo.tech/>
 
-![Studio: page style, fonts, paper, header and footer on the left, a live preview of the PDF on the right](https://raw.githubusercontent.com/matinfo/markdown-pdf-export/main/docs/public/img/studio.png)
+![Studio: page style, fonts, paper, header and footer on the left, a live preview of the PDF on the right](https://raw.githubusercontent.com/matinfo-tech/markdown-pdf-export/main/docs/public/img/studio.png)
 
 ## Get started
 
@@ -36,9 +36,9 @@ real PDF update as you go. Click **Save**, then **Add to my editor**, and you ar
 There is nothing to install first: `npx` downloads the package on first use and reuses it after.
 Prefer the terminal? Run `npx -y markdown-pdf-export` with no arguments for a small menu.
 
-More: [Get started](https://matinfo.github.io/markdown-pdf-export/start) ·
-[Studio](https://matinfo.github.io/markdown-pdf-export/studio) ·
-[Design online, no install](https://matinfo.github.io/markdown-pdf-export/online)
+More: [Get started](https://markdown-pdf.matinfo.tech/start) ·
+[Studio](https://markdown-pdf.matinfo.tech/studio) ·
+[Design online, no install](https://markdown-pdf.matinfo.tech/online)
 
 ## Export a file
 
@@ -50,7 +50,7 @@ More: [Get started](https://matinfo.github.io/markdown-pdf-export/start) ·
 
 The PDF is saved next to the Markdown file. To add the task or the assistant tool by hand, run
 `npx -y markdown-pdf-export setup`, or see
-[Editors](https://matinfo.github.io/markdown-pdf-export/editors).
+[Editors](https://markdown-pdf.matinfo.tech/editors).
 
 ## What you get
 
@@ -64,18 +64,18 @@ The PDF is saved next to the Markdown file. To add the task or the assistant too
 
 ## Go further
 
-- [Advanced topics](https://matinfo.github.io/markdown-pdf-export/advanced/): a one-page map of everything below.
-- [Settings file](https://matinfo.github.io/markdown-pdf-export/advanced/settings-file): where it lives and how files are combined.
-- [Per-document settings](https://matinfo.github.io/markdown-pdf-export/advanced/per-document): change one document with front matter.
-- [Header and footer](https://matinfo.github.io/markdown-pdf-export/advanced/header-footer): zones, logos, page numbers and dates.
-- [Styling](https://matinfo.github.io/markdown-pdf-export/advanced/styling): your own CSS, fonts and code colours.
-- [Content](https://matinfo.github.io/markdown-pdf-export/advanced/content): maths, contents list, images and page breaks.
-- [Command line](https://matinfo.github.io/markdown-pdf-export/advanced/cli): every command and option.
-- [Assistant tools](https://matinfo.github.io/markdown-pdf-export/advanced/assistant-tools): the MCP server and its two tools.
-- [Browser](https://matinfo.github.io/markdown-pdf-export/advanced/browser): which browser is used and how to pick another.
-- [Recipes](https://matinfo.github.io/markdown-pdf-export/advanced/recipes): ready-made setups for common jobs.
-- [Settings reference](https://matinfo.github.io/markdown-pdf-export/reference/settings): every setting.
-- [Placeholders reference](https://matinfo.github.io/markdown-pdf-export/reference/placeholders): `{page}`, `{title}`, `{date}` and more.
+- [Advanced topics](https://markdown-pdf.matinfo.tech/advanced/): a one-page map of everything below.
+- [Settings file](https://markdown-pdf.matinfo.tech/advanced/settings-file): where it lives and how files are combined.
+- [Per-document settings](https://markdown-pdf.matinfo.tech/advanced/per-document): change one document with front matter.
+- [Header and footer](https://markdown-pdf.matinfo.tech/advanced/header-footer): zones, logos, page numbers and dates.
+- [Styling](https://markdown-pdf.matinfo.tech/advanced/styling): your own CSS, fonts and code colours.
+- [Content](https://markdown-pdf.matinfo.tech/advanced/content): maths, contents list, images and page breaks.
+- [Command line](https://markdown-pdf.matinfo.tech/advanced/cli): every command and option.
+- [Assistant tools](https://markdown-pdf.matinfo.tech/advanced/assistant-tools): the MCP server and its two tools.
+- [Browser](https://markdown-pdf.matinfo.tech/advanced/browser): which browser is used and how to pick another.
+- [Recipes](https://markdown-pdf.matinfo.tech/advanced/recipes): ready-made setups for common jobs.
+- [Settings reference](https://markdown-pdf.matinfo.tech/reference/settings): every setting.
+- [Placeholders reference](https://markdown-pdf.matinfo.tech/reference/placeholders): `{page}`, `{title}`, `{date}` and more.
 
 ## Help
 
@@ -86,12 +86,12 @@ npx -y markdown-pdf-export doctor
 ```
 
 You can also ask the assistant: "Run doctor_markdown_pdf". For common problems, see
-[Help](https://matinfo.github.io/markdown-pdf-export/help).
+[Help](https://markdown-pdf.matinfo.tech/help).
 
 ## Contributing
 
-See [CONTRIBUTING.md](https://github.com/matinfo/markdown-pdf-export/blob/main/CONTRIBUTING.md) for development setup, tests and how the project is built.
+See [CONTRIBUTING.md](https://github.com/matinfo-tech/markdown-pdf-export/blob/main/CONTRIBUTING.md) for development setup, tests and how the project is built.
 
 ## Licence
 
-MIT. See [LICENSE](https://github.com/matinfo/markdown-pdf-export/blob/main/LICENSE).
+MIT. See [LICENSE](https://github.com/matinfo-tech/markdown-pdf-export/blob/main/LICENSE).
