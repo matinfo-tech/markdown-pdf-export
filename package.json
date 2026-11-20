@@ -1,6 +1,6 @@
 {
   "name": "markdown-pdf-export",
-  "version": "0.2.0",
+  "version": "2.0.0",
   "description": "Export Markdown to PDF with Chromium: CLI and MCP server for any editor or AI assistant (VS Code, Zed, Claude, Cursor), with math, TOC, headers and footers",
   "type": "module",
   "mcpName": "io.github.matinfo/markdown-pdf-export",
