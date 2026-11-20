@@ -1,9 +1,11 @@
 name: Publish npm package + MCP Registry
 
 # Release flow:
-#   1. bump "version" in package.json
+#   1. bump "version" in package.json and add a "## [<version>]" section to CHANGELOG.md
 #   2. git tag npm-v<version> && git push origin npm-v<version>
-# server.json versions are synced from the tag below.
+# server.json versions are synced from the tag below. Once npm and the MCP
+# Registry have the version, the release job creates the GitHub release with
+# that CHANGELOG section as its notes.
 #
 # Authentication: npm trusted publishing (OIDC). No NPM_TOKEN secret.
 #   One-time setup on npmjs.com → package Settings → Trusted Publisher:
@@ -20,9 +22,7 @@ on:
     tags:
       - "npm-v*"
 
-permissions:
-  id-token: write # OIDC for npm trusted publishing and the MCP Registry
-  contents: read
+permissions: {} # each job asks for what it needs
 
 env:
   MCP_PUBLISHER_VERSION: v1.8.1 # bump deliberately; never use releases/latest
@@ -30,11 +30,16 @@ env:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write # OIDC for npm trusted publishing and the MCP Registry
+      contents: read
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Set up Node.js
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: "24" # trusted publishing needs Node >= 22.14 and npm >= 11.5.1
           registry-url: "https://registry.npmjs.org"
@@ -112,3 +117,52 @@ jobs:
 
       - name: Publish server to MCP Registry
         run: ./mcp-publisher publish
+
+  release:
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # create the GitHub release
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Release notes from CHANGELOG.md
+        run: |
+          set -euo pipefail
+          VERSION="${GITHUB_REF_NAME#npm-v}"
+          NAME="$(node -p "require('./package.json').name")"
+          # The "## [<version>]" section, up to the next "## [".
+          awk -v v="$VERSION" '
+            index($0, "## [" v "]") == 1 { on = 1; next }
+            on && /^## \[/ { exit }
+            on { print }
+          ' CHANGELOG.md > notes.md
+          if ! grep -q '[^[:space:]]' notes.md; then
+            echo "::warning::No \"## [$VERSION]\" section in CHANGELOG.md; using GitHub's generated notes."
+            : > notes.md
+          fi
+          printf '\nnpm: https://www.npmjs.com/package/%s/v/%s\n' "$NAME" "$VERSION" >> notes.md
+          cat notes.md
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          VERSION="${GITHUB_REF_NAME#npm-v}"
+          NAME="$(node -p "require('./package.json').name")"
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            echo "Release $GITHUB_REF_NAME already exists; updating its notes."
+            gh release edit "$GITHUB_REF_NAME" --notes-file notes.md
+            exit 0
+          fi
+          flags=()
+          case "$VERSION" in *-*) flags+=(--prerelease) ;; esac # 2.2.0-beta.1
+          if [ "$(wc -l < notes.md)" -le 2 ]; then flags+=(--generate-notes); fi
+          gh release create "$GITHUB_REF_NAME" \
+            --verify-tag \
+            --title "$NAME $VERSION" \
+            --notes-file notes.md \
+            "${flags[@]}"
