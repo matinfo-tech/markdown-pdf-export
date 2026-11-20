@@ -6,6 +6,8 @@ All notable changes to `markdown-pdf-export`. The format follows
 
 ## [Unreleased]
 
+## [2.1.1] - 2026-11-20
+
 ### Added
 
 - `accent_color`: the theme colour of the `report` and `technical` looks (title rule, section titles,
@@ -169,7 +171,8 @@ MCP server, usable from any editor or AI assistant.
 - First release, as a Zed extension: Markdown to PDF with Chromium, syntax highlighting,
   structured headers and footers, placeholders and date formats.
 
-[Unreleased]: https://github.com/matinfo-tech/markdown-pdf-export/compare/npm-v2.1.0...HEAD
+[Unreleased]: https://github.com/matinfo-tech/markdown-pdf-export/compare/npm-v2.1.1...HEAD
+[2.1.1]: https://github.com/matinfo-tech/markdown-pdf-export/compare/npm-v2.1.0...npm-v2.1.1
 [2.1.0]: https://github.com/matinfo-tech/markdown-pdf-export/compare/npm-v2.0.3...npm-v2.1.0
 [2.0.3]: https://github.com/matinfo-tech/markdown-pdf-export/compare/npm-v2.0.2...npm-v2.0.3
 [2.0.2]: https://github.com/matinfo-tech/markdown-pdf-export/compare/npm-v2.0.1...npm-v2.0.2
