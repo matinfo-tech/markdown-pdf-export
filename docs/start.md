@@ -1,4 +1,5 @@
 ---
+description: "Make your first PDF from Markdown in three steps: get Node.js, open a terminal, paste one line."
 title: Get started
 ---
 

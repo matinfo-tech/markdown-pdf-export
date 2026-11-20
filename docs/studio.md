@@ -1,4 +1,5 @@
 ---
+description: "Studio: pick a page style, fonts, header, footer and logo, and see the real PDF update as you click."
 title: Studio
 ---
 

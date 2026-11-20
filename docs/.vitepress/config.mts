@@ -2,10 +2,12 @@ import { fileURLToPath } from "node:url";
 import { defineConfig } from "vitepress";
 
 const BASE = "/markdown-pdf-export/";
+const SITE = "https://matinfo.github.io/markdown-pdf-export/";
+const DESCRIPTION = "Turn Markdown into a PDF worth sending, with your header, footer, page numbers and logo.";
 
 export default defineConfig({
   title: "Markdown PDF Export",
-  description: "Turn Markdown into a PDF worth sending, with your header, footer, page numbers and logo.",
+  description: DESCRIPTION,
   base: BASE,
   appearance: "dark",
   cleanUrls: true,
@@ -15,7 +17,27 @@ export default defineConfig({
     ["meta", { name: "theme-color", content: "#262624" }],
     ["meta", { property: "og:type", content: "website" }],
     ["meta", { property: "og:site_name", content: "Markdown PDF Export" }],
+    ["meta", { property: "og:image", content: `${SITE}banner.jpeg` }],
+    ["meta", { property: "og:image:width", content: "1456" }],
+    ["meta", { property: "og:image:height", content: "720" }],
+    ["meta", { name: "twitter:card", content: "summary_large_image" }],
+    ["meta", { name: "twitter:image", content: `${SITE}banner.jpeg` }],
   ],
+
+  sitemap: { hostname: SITE },
+
+  // Per-page title and description for link previews and search results.
+  transformHead({ pageData }) {
+    const title = pageData.frontmatter.title ?? pageData.title;
+    const description = pageData.frontmatter.description ?? pageData.description ?? DESCRIPTION;
+    const url = SITE + pageData.relativePath.replace(/(index)?\.md$/, "");
+    return [
+      ["meta", { property: "og:title", content: title ? `${title} | Markdown PDF Export` : "Markdown PDF Export" }],
+      ["meta", { property: "og:description", content: description }],
+      ["meta", { property: "og:url", content: url }],
+      ["link", { rel: "canonical", href: url }],
+    ];
+  },
 
   // Main pages: one quiet column, no sidebar. Advanced and reference keep the docs layout.
   transformPageData(page) {

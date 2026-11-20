@@ -1,4 +1,5 @@
 ---
+description: "Fix common problems when exporting Markdown to PDF: browser not found, settings not used, logo missing."
 title: Help
 ---
 

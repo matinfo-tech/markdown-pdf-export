@@ -1,7 +1,7 @@
 {
   "name": "markdown-pdf-export",
-  "version": "2.0.0",
-  "description": "Export Markdown to PDF with Chromium: CLI and MCP server for any editor or AI assistant (VS Code, Zed, Claude, Cursor), with math, TOC, headers and footers",
+  "version": "2.0.1",
+  "description": "Markdown to PDF with your header, footer, page numbers and logo. Design pages in Studio, export from VS Code, Zed, Cursor, Claude or any MCP client, or the command line.",
   "type": "module",
   "mcpName": "io.github.matinfo/markdown-pdf-export",
   "main": "export.mjs",
@@ -72,7 +72,16 @@
     "zed",
     "vscode",
     "export",
-    "converter"
+    "converter",
+    "pdf-generator",
+    "header-footer",
+    "markdown-pdf",
+    "studio",
+    "claude",
+    "cursor",
+    "ai",
+    "documentation",
+    "report"
   ],
   "author": "Mat <mat@matinfo.ch>",
   "license": "MIT",

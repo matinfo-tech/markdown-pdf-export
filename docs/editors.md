@@ -1,4 +1,5 @@
 ---
+description: "Export Markdown to PDF from VS Code, Zed, Cursor, Claude Code, Claude Desktop, JetBrains, Vim or the terminal."
 title: Your editor
 ---
 
