@@ -136,6 +136,10 @@ Relative paths in a settings file (`stylesheet_path`, `assets_directory`, header
 are relative to the folder of that settings file. A logo next to your user file can be written as
 `"logo.svg"`. Paths starting with `~/` start from your home folder.
 
+To share images, set `assets_directory` once, then write `@/` before an image name, for example
+`"@/logo.svg"`. This also works in a document's front matter. See
+[The assets folder](/advanced/header-footer#the-assets-folder).
+
 ## Autocomplete
 
 Keep the `$schema` line at the top. VS Code, Zed and other editors with a JSON language server then

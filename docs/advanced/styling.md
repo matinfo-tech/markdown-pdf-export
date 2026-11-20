@@ -127,9 +127,13 @@ Put one of these lines where a new page should start. They all do the same:
 <hr class="page-break">
 ```
 
-Other accepted names: the classes `page`, `pagebreak`, `page_break`, `new-page`, `newpage` and
-`break-page`, and the comments `<!-- pagebreak -->`, `<!-- new-page -->`, `<!-- newpage -->` and
-`<!-- page -->`. A plain `<div style="page-break-after: always"></div>` works too. To break
+Other accepted names for the classes en comments are:
+`page`, `pagebreak`, `page_break`, `new-page`, `newpage` and
+`break-page`. 
+
+A plain `<div style="page-break-after: always"></div>` works too. 
+
+To break
 *before* an element instead, use `<div class="page-break-before"></div>`.
 
 These work even when `include_default_styles` is off. For more control, use CSS in your own
