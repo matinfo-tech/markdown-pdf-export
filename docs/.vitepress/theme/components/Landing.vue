@@ -45,10 +45,20 @@ const options = computed(() => ({
   meta: { title: parsed.value.meta.title || "Document", pages: 9 },
 }));
 
+// Same order as the banner, then the other editors. `mono` logos are drawn
+// as a mask in the text colour so they work on light and dark pages.
 const EDITORS = [
-  ["VS Code", "vscode"], ["Zed", "zed"], ["Cursor", "cursor"], ["Claude", "claude-code"],
-  ["JetBrains and Vim", "other"], ["Terminal", "terminal"],
+  { name: "VS Code", href: "/editors#vscode", logo: "vs-code" },
+  { name: "Copilot", href: "/editors#copilot-cli", logo: "copilot", mono: true },
+  { name: "Cursor", href: "/editors#cursor", logo: "cursor", mono: true },
+  { name: "Terminal", href: "/editors#terminal", logo: "terminal", mono: true },
+  { name: "MCP client", href: "/advanced/assistant-tools", logo: "mcp", mono: true },
+  { name: "Claude", href: "/editors#claude-code", logo: "claude" },
+  { name: "Zed", href: "/editors#zed", logo: "zed", mono: true },
+  { name: "JetBrains", href: "/editors#other", logo: "jetbrains" },
+  { name: "Vim", href: "/editors#other", logo: "vim" },
 ];
+const logoSrc = (logo: string) => withBase(`/img/editor-logo/${logo}.svg`);
 </script>
 
 <template>
@@ -103,8 +113,17 @@ const EDITORS = [
     <section class="band">
       <h2>Works where you write</h2>
       <ul class="where">
-        <li v-for="[name, id] in EDITORS" :key="id">
-          <a :href="withBase(`/editors#${id}`)">{{ name }}</a>
+        <li v-for="e in EDITORS" :key="e.name">
+          <a :href="withBase(e.href)">
+            <span
+              v-if="e.mono"
+              class="logo mono"
+              :style="{ '--logo': `url(${logoSrc(e.logo)})` }"
+              aria-hidden="true"
+            />
+            <img v-else class="logo" :src="logoSrc(e.logo)" alt="" width="40" height="40" />
+            {{ e.name }}
+          </a>
         </li>
       </ul>
     </section>

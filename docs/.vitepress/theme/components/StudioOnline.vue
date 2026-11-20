@@ -487,9 +487,14 @@ input[type="text"] {
   font-weight: 600;
 }
 .chips {
-  display: flex;
-  flex-wrap: wrap;
+  /* Six chips: two rows of three. */
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 4px;
+}
+.chip {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .check {
   display: block;
