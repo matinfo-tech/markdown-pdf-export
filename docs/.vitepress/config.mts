@@ -15,7 +15,7 @@ export default defineConfig({
   head: [
     ["link", { rel: "icon", type: "image/png", href: `${BASE}logo.png` }],
     ["meta", { name: "theme-color", content: "#262624" }],
-    ["meta", { name: "google-site-verification", content: "KBXM8qqqdgKLdS68uTL07unkLjflV0tz33rCykkgiPc" }],
+    ["meta", { name: "google-site-verification", content: "EK5OfVCQeIjj5648JHxbpWAsacMds0NGWNbHp9Wbkxs" }],
     ["meta", { property: "og:type", content: "website" }],
     ["meta", { property: "og:site_name", content: "Markdown PDF Export" }],
     ["meta", { property: "og:image", content: `${SITE}img/banner.jpeg` }],
