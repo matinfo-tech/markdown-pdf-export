@@ -83,7 +83,11 @@
     "documentation",
     "report"
   ],
-  "author": "Mat <mat@matinfo.ch>",
+  "author": {
+    "name": "Matinfo",
+    "email": "dev@matinfo.tech",
+    "url": "https://matinfo.tech"
+  },
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -91,7 +95,8 @@
   },
   "homepage": "https://markdown-pdf.matinfo.tech/",
   "bugs": {
-    "url": "https://github.com/matinfo-tech/markdown-pdf-export/issues"
+    "url": "https://github.com/matinfo-tech/markdown-pdf-export/issues",
+    "email": "dev@matinfo.tech"
   },
   "packageManager": "npm@11.12.1",
   "devDependencies": {
