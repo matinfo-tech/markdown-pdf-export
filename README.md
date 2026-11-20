@@ -1,15 +1,16 @@
 # Markdown PDF Export
 
-[![Version](https://img.shields.io/github/v/release/matinfo/markdown-pdf-export?label=version&color=blue)](https://github.com/matinfo/markdown-pdf-export/releases)
-[![Publish](https://github.com/matinfo/markdown-pdf-export/actions/workflows/npm-publish.yml/badge.svg)](https://github.com/matinfo/markdown-pdf-export/actions/workflows/npm-publish.yml)
-[![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![npm version](https://img.shields.io/npm/v/markdown-pdf-export?color=e8231f)](https://www.npmjs.com/package/markdown-pdf-export)
+[![npm downloads](https://img.shields.io/npm/dm/markdown-pdf-export)](https://www.npmjs.com/package/markdown-pdf-export)
+[![CI](https://github.com/matinfo/markdown-pdf-export/actions/workflows/ci.yml/badge.svg)](https://github.com/matinfo/markdown-pdf-export/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)](https://github.com/matinfo/markdown-pdf-export/blob/main/LICENSE)
 
 Turn Markdown files into clean PDFs from VS Code, Zed, Cursor, Claude or any AI assistant, or from
 the command line.
 
 Full documentation: <https://matinfo.github.io/markdown-pdf-export/>
 
-![Studio: page style, fonts, paper, header and footer on the left, a live preview of the PDF on the right](docs/public/img/studio.png)
+![Studio: page style, fonts, paper, header and footer on the left, a live preview of the PDF on the right](https://raw.githubusercontent.com/matinfo/markdown-pdf-export/main/docs/public/img/studio.png)
 
 ## Get started
 
@@ -85,8 +86,8 @@ You can also ask the assistant: "Run doctor_markdown_pdf". For common problems, 
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, tests and how the project is built.
+See [CONTRIBUTING.md](https://github.com/matinfo/markdown-pdf-export/blob/main/CONTRIBUTING.md) for development setup, tests and how the project is built.
 
 ## Licence
 
-MIT. See [LICENSE](LICENSE).
+MIT. See [LICENSE](https://github.com/matinfo/markdown-pdf-export/blob/main/LICENSE).

@@ -1,4 +1,5 @@
 ---
+description: "Design your PDF pages in the browser and download the settings file. Nothing to install."
 title: Design online
 pageClass: simple wide
 ---
