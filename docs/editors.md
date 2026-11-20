@@ -1,5 +1,5 @@
 ---
-description: "Export Markdown to PDF from VS Code, Zed, Cursor, Claude Code, Claude Desktop, JetBrains, Vim or the terminal."
+description: "Export Markdown to PDF from VS Code (Copilot), Copilot CLI, Zed, Cursor, Claude Code, Claude Desktop, JetBrains, Vim or the terminal."
 title: Your editor
 ---
 
@@ -14,16 +14,12 @@ finds your editors and shows what to add:
 
 Or pick yours:
 
-<PickTabs group="editor" tabs="vscode:VS Code,zed:Zed,cursor:Cursor,claude-code:Claude Code,claude-desktop:Claude Desktop,other:JetBrains and Vim,terminal:Terminal">
+<PickTabs group="editor" tabs="vscode:VS Code (Copilot),copilot-cli:Copilot CLI,claude-code:Claude Code,claude-desktop:Claude Desktop,cursor:Cursor,zed:Zed,other:JetBrains and Vim,terminal:Terminal">
 <template #vscode>
 
-- **Export:** open a Markdown file, then **Terminal → Run Task… → Markdown: Export to PDF**.
-- **Ask:** in Copilot Chat agent mode, type *Export this file to PDF*.
+**1. Set up, once.** Press **Add to my editor** in Studio, or do it by hand:
 
-<details>
-<summary>Do it by hand</summary>
-
-Run **Tasks: Open User Tasks** from the Command Palette and add:
+*For the export command.* Run **Tasks: Open User Tasks** from the Command Palette and add:
 
 ```json
 {
@@ -40,23 +36,85 @@ Run **Tasks: Open User Tasks** from the Command Palette and add:
 }
 ```
 
-For the AI assistant, run this once in a terminal:
+*For Copilot Chat.* Run this once in a terminal:
 
 ```sh
 code --add-mcp '{"name":"markdown-pdf","command":"npx","args":["-y","markdown-pdf-export","mcp"]}'
 ```
 
-</details>
+**2. Use it.**
+
+- **Export:** open a Markdown file, then **Terminal → Run Task… → Markdown: Export to PDF**.
+- **Ask:** in Copilot Chat agent mode, type *Export this file to PDF*.
+
+</template>
+<template #copilot-cli>
+
+**1. Set up, once.** Press **Add to my editor** in Studio, or run this in a terminal. GitHub Copilot in the
+terminal has its own list of tools, separate from VS Code's.
+
+```sh
+copilot mcp add markdown-pdf -- npx -y markdown-pdf-export mcp
+```
+
+**2. Use it.** Start `copilot` and type *Export report.md to PDF*.
+
+</template>
+<template #claude-code>
+
+**1. Set up, once.** Press **Add to my editor** in Studio, or run this in a terminal:
+
+```sh
+claude mcp add markdown-pdf -- npx -y markdown-pdf-export mcp
+```
+
+**2. Use it.** Start `claude` and type *Export report.md to PDF*.
+
+</template>
+<template #claude-desktop>
+
+**1. Set up, once.** Press **Add to my editor** in Studio, or do it by hand: in Claude Desktop, open
+**Settings → Developer → Edit Config**, add this to `claude_desktop_config.json`, then restart
+Claude Desktop:
+
+```json
+{
+  "mcpServers": {
+    "markdown-pdf": { "command": "npx", "args": ["-y", "markdown-pdf-export", "mcp"] }
+  }
+}
+```
+
+**2. Use it.** Type *Export ~/Documents/report.md to PDF*. Give the full path of the file.
+
+</template>
+<template #cursor>
+
+**1. Set up, once.** Press **Add to my editor** in Studio, or do it by hand:
+
+*For the chat.* Add to `~/.cursor/mcp.json` (or `.cursor/mcp.json` in a project):
+
+```json
+{
+  "mcpServers": {
+    "markdown-pdf": { "command": "npx", "args": ["-y", "markdown-pdf-export", "mcp"] }
+  }
+}
+```
+
+*For the export command (optional).* Use the VS Code task: Cursor reads the same `tasks.json`.
+
+**2. Use it.**
+
+- **Ask:** in the chat, type *Export this file to PDF*.
+- **Export:** with the task added, **Terminal → Run Task… → Markdown: Export to PDF**.
+
 </template>
 <template #zed>
 
-- **Export:** open a Markdown file, then **task: spawn → Markdown: Export to PDF**.
-- **Ask:** in the Agent panel, type *Export this file to PDF*.
+**1. Set up, once.** Press **Add to my editor** in Studio, or do it by hand:
 
-<details>
-<summary>Do it by hand</summary>
-
-Add to `~/.config/zed/tasks.json`:
+*For the export command.* Add to `~/.config/zed/tasks.json`:
 
 ```json
 [
@@ -70,7 +128,7 @@ Add to `~/.config/zed/tasks.json`:
 ]
 ```
 
-For the AI assistant, add to Zed's `settings.json`:
+*For the Agent panel.* Add to Zed's `settings.json`:
 
 ```json
 {
@@ -80,82 +138,30 @@ For the AI assistant, add to Zed's `settings.json`:
 }
 ```
 
-A key for the task, in `keymap.json`:
+*A key for the export (optional).* In `keymap.json`:
 
 ```json
 [{ "context": "Workspace", "bindings": { "cmd-alt-e": ["task::Spawn", { "task_name": "Markdown: Export to PDF" }] } }]
 ```
 
-</details>
-</template>
-<template #cursor>
+**2. Use it.**
 
-**Ask:** in the chat, type *Export this file to PDF*.
+- **Export:** open a Markdown file, then **task: spawn → Markdown: Export to PDF**, or your key.
+- **Ask:** in the Agent panel, type *Export this file to PDF*.
 
-<details>
-<summary>Do it by hand</summary>
-
-Add to `~/.cursor/mcp.json` (or `.cursor/mcp.json` in a project):
-
-```json
-{
-  "mcpServers": {
-    "markdown-pdf": { "command": "npx", "args": ["-y", "markdown-pdf-export", "mcp"] }
-  }
-}
-```
-
-For a task, use the VS Code one: Cursor reads the same `tasks.json`.
-
-</details>
-</template>
-<template #claude-code>
-
-**Ask:** *Export report.md to PDF*.
-
-<details>
-<summary>Do it by hand</summary>
-
-Run once in a terminal:
-
-```sh
-claude mcp add markdown-pdf -- npx -y markdown-pdf-export mcp
-```
-
-</details>
-</template>
-<template #claude-desktop>
-
-**Ask:** *Export ~/Documents/report.md to PDF*. Give the full path of the file.
-
-<details>
-<summary>Do it by hand</summary>
-
-In Claude Desktop, open **Settings → Developer → Edit Config** and add to
-`claude_desktop_config.json`, then restart Claude Desktop:
-
-```json
-{
-  "mcpServers": {
-    "markdown-pdf": { "command": "npx", "args": ["-y", "markdown-pdf-export", "mcp"] }
-  }
-}
-```
-
-</details>
 </template>
 <template #other>
 
-**JetBrains** (IntelliJ, WebStorm, PyCharm…): **Settings → Tools → External Tools → +**
+**JetBrains** (IntelliJ, WebStorm, PyCharm…). **1. Set up, once:** **Settings → Tools → External Tools → +**
 
 | Field | Value |
 |---|---|
 | Program | `npx` |
 | Arguments | `-y markdown-pdf-export $FilePath$` |
 
-Then **Tools → External Tools** exports the open file. You can give it a key in **Keymap**.
+**2. Use it:** **Tools → External Tools** exports the open file. You can give it a key in **Keymap**.
 
-**Vim and Neovim:**
+**Vim and Neovim.** Nothing to set up. Run:
 
 ```vim
 :!npx -y markdown-pdf-export %:S

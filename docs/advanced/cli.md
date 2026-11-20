@@ -19,7 +19,7 @@ simply `markdown-pdf-export`. Node.js 20 or newer is needed.
 | `markdown-pdf-export studio [--project] [--file <doc.md>] [--port <n>] [--no-open]` | Open [Studio](/studio). `--project` edits `./.markdown-pdf.json`; `--file` previews your own document; `--no-open` only prints the link. |
 | `markdown-pdf-export init [--look <n>] [--font <n>] [--template <n>] [--project] [--force] [--list]` | Create the settings file. See [Settings file](/advanced/settings-file#create-it-with-init). |
 | `markdown-pdf-export init --from <file> [--project] [--force]` | Install a settings file you already have, such as the one from [Design online](/online). See [Install a file you already have](/advanced/settings-file#install-a-file-you-already-have). |
-| `markdown-pdf-export setup [zed\|vscode\|cursor\|claude-code\|claude-desktop\|all] [--write]` | Print the editor task and assistant entries for the editors found. `--write` creates missing files and runs the editor's own command; it never changes an existing file. |
+| `markdown-pdf-export setup [zed\|vscode\|cursor\|claude-code\|claude-desktop\|copilot-cli\|all] [--write]` | Print the editor task and assistant entries for the editors found. `--write` creates missing files and runs the editor's own command; it never changes an existing file. |
 | `markdown-pdf-export doctor [file.md] [--json]` | Check Node, the browser and the settings files. |
 | `markdown-pdf-export install-browser` | Download Chromium (about 200 MB). See [Browser](/advanced/browser). |
 | `markdown-pdf-export mcp` | Run as an assistant tool server. See [Assistant tools](/advanced/assistant-tools). |

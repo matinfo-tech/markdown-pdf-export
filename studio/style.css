@@ -449,8 +449,9 @@ input[type="range"] { accent-color: var(--accent); }
 
 /* ── editors dialog ─────────────────────────────────────────────────────── */
 dialog {
-  width: min(680px, calc(100vw - 40px));
+  width: min(720px, calc(100vw - 40px));
   max-height: calc(100vh - 60px);
+  min-height: 640px;
   border: 1px solid var(--rule);
   border-radius: 10px;
   padding: 22px 24px;
@@ -462,11 +463,23 @@ dialog::backdrop { background: rgba(0, 0, 0, 0.6); }
 .dialog-head h2 { margin: 0; font-size: 21px; }
 dialog .hint { margin: 0 0 6px; }
 
-.editor { border-top: 1px solid var(--rule); padding: 14px 0 4px; }
-.editor h3 { margin: 0 0 8px; font: 600 15px var(--ui); }
-.editor h3 small { font-weight: 400; color: var(--quiet); margin-left: 6px; }
+.tabs { display: flex; gap: 2px; margin: 12px 0 0; border-bottom: 1px solid var(--rule); overflow-x: auto; overflow-y: hidden; }
+.tab {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 9px; margin-bottom: -1px;
+  font: 600 13.5px var(--ui); white-space: nowrap; cursor: pointer;
+  color: var(--quiet); background: none;
+  border: 0; border-bottom: 2px solid transparent;
+}
+.tab:hover { color: var(--text); }
+.tab[aria-selected="true"] { color: var(--text); border-bottom-color: var(--accent); }
+.tab:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; border-radius: 4px; }
+.tab .found { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); }
+.tab-panel { padding-top: 14px; min-height: 260px; }
+.editor-note { margin: 0 0 10px; font-size: 13px; }
+.found-note { margin: 0 0 10px; font-size: 13px; color: var(--quiet); }
 .step { margin-bottom: 12px; }
-.step-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.step-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
 .step-file { font: 11.5px var(--mono); color: var(--quiet); overflow-wrap: anywhere; margin: 2px 0 5px; }
 .step pre {
   margin: 0;
@@ -480,7 +493,6 @@ dialog .hint { margin: 0 0 6px; }
 }
 .step .result { margin-top: 5px; color: var(--ok); }
 .step .result.bad { color: var(--error); }
-details.others summary { cursor: pointer; padding: 12px 0; color: var(--quiet); border-top: 1px solid var(--rule); }
 
 /* ── small screens: form first, preview below ───────────────────────────── */
 @media (max-width: 860px) {

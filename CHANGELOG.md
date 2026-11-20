@@ -8,6 +8,8 @@ All notable changes to `markdown-pdf-export`. The format follows
 
 ### Added
 
+- Copilot CLI: `setup copilot-cli` and a tab in Studio's "Add to my editor", which now shows one tab per
+  editor. The VS Code tab is labelled "VS Code (Copilot)".
 - `init --from <file>` installs a settings file you already have, such as the one downloaded from
   Design online. It checks the file, refuses to overwrite without `--force` (and then keeps a `.bak`
   copy) and says where to put a missing logo. Design online now shows this command.

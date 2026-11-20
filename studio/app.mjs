@@ -481,6 +481,13 @@ async function save() {
   }
 }
 
+const EDITOR_ORDER = ["vscode", "copilot-cli", "claude-code", "claude-desktop", "cursor", "zed"];
+const EDITOR_NOTES = {
+  vscode: "Works with GitHub Copilot Chat in agent mode.",
+  "copilot-cli": "For GitHub Copilot in the terminal (the copilot command).",
+};
+let editorTab = "";
+
 async function openEditors() {
   const dialog = $("editors");
   const list = $("editors-list");
@@ -498,7 +505,8 @@ async function openEditors() {
     el(
       "div",
       { class: "editor" },
-      el("h3", { text: editor.name }, editor.detected ? el("small", { text: "found on this computer" }) : null),
+      editor.detected ? el("p", { class: "found-note", text: `${editor.name} is on this computer.` }) : null,
+      EDITOR_NOTES[editor.id] ? el("p", { class: "editor-note", text: EDITOR_NOTES[editor.id] }) : null,
       ...editor.items.map((item, index) => {
         const result = el("div", { class: "result", role: "status" });
         const copy = el("button", {
@@ -543,13 +551,53 @@ async function openEditors() {
       }),
     );
 
-  const found = editors.filter((e) => e.detected);
-  const others = editors.filter((e) => !e.detected);
-  const nodes = (found.length ? found : others).map(card);
-  if (found.length && others.length) {
-    nodes.push(el("details", { class: "others" }, el("summary", { text: "Other editors" }), ...others.map(card)));
-  }
-  list.replaceChildren(...nodes);
+  // One tab per editor, in a fixed order; open on the first one found on this computer.
+  const sorted = EDITOR_ORDER.map((id) => editors.find((e) => e.id === id)).filter(Boolean);
+  for (const e of editors) if (!sorted.includes(e)) sorted.push(e);
+  let current = sorted.find((e) => e.id === editorTab) ?? sorted.find((e) => e.detected) ?? sorted[0];
+
+  const tabs = el("div", { class: "tabs", role: "tablist", "aria-label": "Editors" });
+  const panel = el("div", { class: "tab-panel", role: "tabpanel" });
+  const buttons = new Map();
+
+  const select = (editor, focus = false) => {
+    current = editor;
+    editorTab = editor.id;
+    for (const [id, button] of buttons) {
+      const on = id === editor.id;
+      button.setAttribute("aria-selected", String(on));
+      button.tabIndex = on ? 0 : -1;
+      if (on && focus) button.focus();
+    }
+    panel.setAttribute("aria-labelledby", `tab-${editor.id}`);
+    panel.replaceChildren(card(editor));
+  };
+
+  sorted.forEach((editor, i) => {
+    const button = el(
+      "button",
+      {
+        type: "button",
+        role: "tab",
+        id: `tab-${editor.id}`,
+        class: "tab",
+        onclick: () => select(editor),
+        onkeydown: (event) => {
+          const step = { ArrowRight: 1, ArrowLeft: -1 }[event.key];
+          if (!step) return;
+          event.preventDefault();
+          select(sorted[(i + step + sorted.length) % sorted.length], true);
+        },
+      },
+      editor.name,
+      editor.detected ? el("span", { class: "found", title: "Found on this computer", "aria-label": "found on this computer" }) : null,
+    );
+    buttons.set(editor.id, button);
+    tabs.append(button);
+  });
+
+  list.replaceChildren(tabs, panel);
+  select(current);
 }
 
 // ── start ───────────────────────────────────────────────────────────────────
