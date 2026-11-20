@@ -1,248 +1,170 @@
-# Placeholders Reference
+# Placeholders
 
-Complete reference for all placeholders available in headers and footers.
+For people writing header and footer text who need the exact name of a placeholder or a date format token.
+
+```json
+{
+  "header": { "left_text": "{title}", "right_text": "{date:d MMMM yyyy}" },
+  "footer": { "center_text": "Page {page} of {pages}" }
+}
+```
 
 ## Syntax
 
+| Form | Example | Meaning |
+|---|---|---|
+| `{name}` | `{title}` | Replaced by the value. |
+| `{name:format}` | `{date:dd.MM.yyyy}` | Date or time in your own format. Only for `date`, `time` and `datetime`. |
+
+Names are not case sensitive. Names use letters, digits and underscores only.
+
+Placeholders work in header and footer text: the flat keys `left_text`, `center_text` and
+`right_text`, the `content` of a `text` element and the `format` of `page_number` and `total_pages`
+elements. They are not replaced in the document body.
+
+## Built-in placeholders
+
+| Placeholder | Prints | Example |
+|---|---|---|
+| `{page}` | Current page number. | `3` |
+| `{pages}` | Total number of pages. | `12` |
+| `{title}` | Front matter `title`; without it, the first `# heading`; without it, the file name without extension. | `Annual report` |
+| `{author}` | Front matter `author`. A list is joined with commas. Empty when missing. | `Jane Smith` |
+| `{filename}` | Markdown file name, with extension. | `report.md` |
+| `{date}` | Export date, format `yyyy-MM-dd`. | `2026-06-14` |
+| `{time}` | Export time, format `HH:mm:ss`. | `14:30:05` |
+| `{datetime}` | Export date and time, format `yyyy-MM-dd HH:mm:ss`. | `2026-06-14 14:30:05` |
+
+`{date}` is always the day of the export. The `date:` field in front matter does not change it; to
+print a fixed date, use a custom variable such as `release_date`.
+
+Date and time use the clock and time zone of the computer that makes the PDF. Month and day names
+are in English.
+
+## Custom variables
+
+Any other top-level field of the document's front matter becomes a placeholder:
+
+```markdown
+---
+title: Service agreement
+client: Acme Corp
+contract_no: "2026-117"
+---
 ```
-{placeholder}
-{placeholder:format}
-```
 
-The `:format` suffix is optional and only applies to certain placeholders (like `date`).
+`{client}` prints `Acme Corp` and `{contract_no}` prints `2026-117`.
 
-## Page Placeholders
+| Rule | Detail |
+|---|---|
+| Names | Letters, digits and underscores. `{contract-no}` is not recognised. |
+| Case | `Client:` and `CLIENT:` are both `{client}`. |
+| Values | Text or numbers. Quote dates and codes that look like numbers. |
+| Reserved | `title`, `author`, `date` and `pdf` are read by the tool, not used as custom variables. Avoid `page`, `pages`, `time`, `datetime` and `filename`: the built-in value wins. |
+| Missing | A placeholder with no matching field is printed as written, braces included. |
 
-Rendered by Chromium at print time — guaranteed accurate.
+There is no escape for literal braces: any `{word}` in header text is read as a placeholder.
 
-| Placeholder | Description | HTML Output |
-|-------------|-------------|-------------|
-| `{page}` | Current page number | `<span class="pageNumber"></span>` |
-| `{pages}` | Total page count | `<span class="totalPages"></span>` |
+More in [Per document](/advanced/per-document#custom-variables).
 
-### Example
+## Date formats
 
-```json
-{
-  "footer": {
-    "center_text": "Page {page} of {pages}"
-  }
-}
-```
+Write the format after a colon: `{date:d MMMM yyyy}`. The same format strings are used by the
+`format` key of a `date` element. Formats follow the
+[date-fns format](https://date-fns.org/docs/format) rules.
 
-Output: **Page 3 of 10**
+Examples for Sunday 14 June 2026, 14:30:05:
 
-## Date & Time Placeholders
+| Format | Output |
+|---|---|
+| `yyyy-MM-dd` | `2026-06-14` |
+| `dd/MM/yyyy` | `14/06/2026` |
+| `MM/dd/yyyy` | `06/14/2026` |
+| `dd.MM.yyyy` | `14.06.2026` |
+| `d MMMM yyyy` | `14 June 2026` |
+| `MMMM d, yyyy` | `June 14, 2026` |
+| `EEEE, MMMM d, yyyy` | `Sunday, June 14, 2026` |
+| `QQQ yyyy` | `Q2 2026` |
+| `'Week' I, yyyy` | `Week 24, 2026` |
+| `HH:mm` | `14:30` |
+| `h:mm a` | `2:30 PM` |
+| `MMM d 'at' h:mm a` | `Jun 14 at 2:30 PM` |
 
-Resolved at export time using [date-fns](https://date-fns.org/).
+### Tokens
 
-| Placeholder | Default Format | Example Output |
-|-------------|----------------|----------------|
-| `{date}` | `yyyy-MM-dd` | `2025-06-14` |
-| `{date:FORMAT}` | Custom | See below |
-| `{time}` | `HH:mm:ss` | `14:30:00` |
-| `{datetime}` | `yyyy-MM-dd HH:mm:ss` | `2025-06-14 14:30:00` |
-
-### Date Format Examples
-
-| Placeholder | Output |
-|-------------|--------|
-| `{date}` | `2025-06-14` |
-| `{date:yyyy-MM-dd}` | `2025-06-14` |
-| `{date:MMMM d, yyyy}` | `June 14, 2025` |
-| `{date:MM/dd/yyyy}` | `06/14/2025` |
-| `{date:dd/MM/yyyy}` | `14/06/2025` |
-| `{date:dd.MM.yyyy}` | `14.06.2025` |
-| `{date:d MMMM yyyy}` | `14 June 2025` |
-| `{date:EEE, MMM d}` | `Sat, Jun 14` |
-| `{date:EEEE, MMMM d, yyyy}` | `Saturday, June 14, 2025` |
-| `{date:Q}` | `2` (quarter) |
-| `{date:yyyy}` | `2025` |
-
-### Time Format Examples
-
-| Placeholder | Output |
-|-------------|--------|
-| `{time}` | `14:30:00` |
-| `{date:HH:mm}` | `14:30` |
-| `{date:h:mm a}` | `2:30 PM` |
-| `{date:HH:mm:ss}` | `14:30:00` |
-
-### Date-fns Format Tokens
-
-| Token | Description | Example |
-|-------|-------------|---------|
-| `yyyy` | 4-digit year | `2025` |
-| `yy` | 2-digit year | `25` |
-| `MMMM` | Full month | `January` |
-| `MMM` | Abbreviated month | `Jan` |
-| `MM` | 2-digit month | `01` |
-| `M` | Month number | `1` |
-| `dd` | 2-digit day | `05` |
-| `d` | Day number | `5` |
-| `EEEE` | Full weekday | `Monday` |
-| `EEE` | Abbreviated weekday | `Mon` |
-| `HH` | 24-hour hour | `14` |
-| `hh` | 12-hour hour | `02` |
-| `mm` | Minutes | `30` |
-| `ss` | Seconds | `45` |
-| `a` | AM/PM | `PM` |
+| Token | Meaning | Output |
+|---|---|---|
+| `yyyy` | Year | `2026` |
+| `yy` | Year, 2 digits | `26` |
 | `Q` | Quarter | `2` |
+| `QQQ` | Quarter, short | `Q2` |
+| `QQQQ` | Quarter, long | `2nd quarter` |
+| `M` | Month | `6` |
+| `MM` | Month, 2 digits | `06` |
+| `MMM` | Month, short name | `Jun` |
+| `MMMM` | Month, full name | `June` |
+| `I` | ISO week number | `24` |
+| `w` | Week number (weeks start on Sunday) | `25` |
+| `d` | Day of month | `14` |
+| `dd` | Day of month, 2 digits | `14` |
+| `do` | Day of month, ordinal | `14th` |
+| `E`, `EEE` | Weekday, short name | `Sun` |
+| `EEEE` | Weekday, full name | `Sunday` |
+| `EEEEE` | Weekday, one letter | `S` |
+| `H` | Hour, 0 to 23 | `14` |
+| `HH` | Hour, 2 digits | `14` |
+| `h` | Hour, 1 to 12 | `2` |
+| `hh` | Hour, 1 to 12, 2 digits | `02` |
+| `m`, `mm` | Minutes | `30` |
+| `s`, `ss` | Seconds | `5`, `05` |
+| `a` | AM or PM | `PM` |
+| `aaa` | am or pm | `pm` |
+| `xxx` | Time zone offset | `+02:00` |
+| `O` | Time zone, GMT form | `GMT+2` |
 
-## Document Metadata Placeholders
+### Literal text
 
-| Placeholder | Source | Description |
-|-------------|--------|-------------|
-| `{title}` | Front matter `title:` or filename | Document title |
-| `{author}` | Front matter `author:` | Author name |
-| `{filename}` | File path | Source filename with extension |
+Put words inside single quotes so their letters are not read as tokens. Write two single quotes for
+an apostrophe:
 
-### Example
+| Format | Output |
+|---|---|
+| `'Printed on' d MMMM yyyy` | `Printed on 14 June 2026` |
+| `'Q'Q yyyy` | `Q2 2026` |
+| `h 'o''clock'` | `2 o'clock` |
 
-```yaml
----
-title: Quarterly Report
-author: Jane Smith
----
-```
+Text outside the braces needs no quotes: `"Printed on {date:d MMMM yyyy}"` gives the same result as
+the first line.
 
-```json
-{
-  "header": {
-    "left_text": "{author}",
-    "center_text": "{title}"
-  }
-}
-```
+### Common mistakes
 
-Output: **Jane Smith** | **Quarterly Report**
+| Wrong | Right | Why |
+|---|---|---|
+| `YYYY` | `yyyy` | `YYYY` is a week-based year. It stops the format. |
+| `DD` | `dd` | `DD` is the day of the year. It stops the format. |
+| `mm/dd/yyyy` | `MM/dd/yyyy` | `mm` is minutes, `MM` is the month. |
 
-## Custom Variable Placeholders
+An invalid format prints a warning and falls back to `yyyy-MM-dd`.
 
-Any field in front matter becomes a placeholder:
+### Named formats
 
-```yaml
----
-title: Project Report
-company: Acme Corporation
-department: Engineering
-version: 2.0.0
-project_code: PRJ-2025-001
-client_name: BigCorp Inc.
-fiscal_year: 2025
----
-```
+Instead of a pattern, use one of these names, for example `{date:us-long}`:
 
-All are available as placeholders:
-
-| Front Matter Field | Placeholder |
-|--------------------|-------------|
-| `company: Acme Corporation` | `{company}` |
-| `department: Engineering` | `{department}` |
-| `version: 2.0.0` | `{version}` |
-| `project_code: PRJ-2025-001` | `{project_code}` |
-| `client_name: BigCorp Inc.` | `{client_name}` |
-| `fiscal_year: 2025` | `{fiscal_year}` |
-
-### Using Custom Variables
-
-```yaml
----
-company: Acme Corp
-version: 1.0.0
-pdf:
-  header:
-    left_text: "{company}"
-    right_text: "v{version}"
-  footer:
-    center_text: "Page {page} of {pages}"
----
-```
-
-## Combining Placeholders
-
-Multiple placeholders can be combined in a single text:
-
-```json
-{
-  "type": "text",
-  "content": "{company} — {title} — {date:yyyy}"
-}
-```
-
-Output: **Acme Corp — Quarterly Report — 2025**
-
-```json
-{
-  "type": "text",
-  "content": "Generated {date:MMMM d, yyyy} at {date:HH:mm}"
-}
-```
-
-Output: **Generated June 14, 2025 at 14:30**
-
-## Placeholder Resolution
-
-Placeholders are resolved in this order:
-
-1. **Page placeholders** (`{page}`, `{pages}`) → Chromium spans
-2. **Date/time placeholders** → date-fns formatted strings
-3. **Document metadata** (`{title}`, `{author}`, `{filename}`)
-4. **Custom variables** → From front matter
-5. **Unknown** → Left as-is (for debugging)
-
-## Case Sensitivity
-
-Placeholder names are **case-insensitive**:
-
-```yaml
----
-Company: Acme Corp
-DEPARTMENT: Engineering
----
-```
-
-Both work as `{company}` and `{department}`.
-
-## Reserved Names
-
-These names are reserved and have special handling:
-
-| Name | Type |
-|------|------|
-| `page` | Chromium page number |
-| `pages` | Chromium total pages |
-| `date` | Current date |
-| `time` | Current time |
-| `datetime` | Current date and time |
-| `title` | Document title |
-| `author` | Document author |
-| `filename` | Source filename |
-
-Avoid using these as custom front matter field names.
-
-## Escaping
-
-Currently, there is no escape syntax for literal curly braces. Avoid text that matches the `{name}` pattern unless you want placeholder substitution.
-
-## Troubleshooting
-
-### Placeholder Not Replaced
-
-1. Check spelling and case
-2. Verify front matter is valid YAML
-3. Ensure the field exists in front matter
-4. Check the debug log: set `MARKDOWN_PDF_DEBUG=1` and read `markdown-pdf-debug.log` in the OS temp directory (on macOS under `/var/folders/…/T/`), or set `MARKDOWN_PDF_DEBUG=/some/file.log`
-
-### Date Format Invalid
-
-If a date format is invalid, it falls back to ISO format (`yyyy-MM-dd`). Check the format string against [date-fns documentation](https://date-fns.org/docs/format).
-
-### Unknown Placeholder Shows
-
-Unknown placeholders are left as-is. This helps with debugging:
-
-```
-{compnay}  → {compnay}  (typo, not replaced)
-{company}  → Acme Corp  (correct)
-```
+| Name | Pattern | Example |
+|---|---|---|
+| `iso` | `yyyy-MM-dd` | `2026-06-14` |
+| `iso-time` | `HH:mm:ss` | `14:30:00` |
+| `iso-datetime` | `yyyy-MM-dd HH:mm:ss` | `2026-06-14 14:30:00` |
+| `us` | `MM/dd/yyyy` | `06/14/2026` |
+| `us-long` | `MMMM d, yyyy` | `June 14, 2026` |
+| `us-short` | `M/d/yy` | `6/14/26` |
+| `eu` | `dd/MM/yyyy` | `14/06/2026` |
+| `eu-long` | `d MMMM yyyy` | `14 June 2026` |
+| `eu-short` | `d/M/yy` | `14/6/26` |
+| `eu-dot` | `dd.MM.yyyy` | `14.06.2026` |
+| `full` | `EEEE, MMMM d, yyyy` | `Sunday, June 14, 2026` |
+| `medium` | `MMM d, yyyy` | `Jun 14, 2026` |
+| `short` | `M/d/yy` | `6/14/26` |
+| `year` | `yyyy` | `2026` |
+| `month` | `MMMM` | `June` |
+| `day` | `d` | `14` |
