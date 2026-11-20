@@ -28,7 +28,7 @@ import {
   readSettingsFile,
   userSettingsPath,
 } from "./lib/settings-loader.mjs";
-import { applyPresets } from "./lib/looks.mjs";
+import { accentCss, applyPresets, normalizeAccentColor } from "./lib/looks.mjs";
 import { PAGE_BREAK_CSS, pageBreakComments } from "./lib/page-breaks.mjs";
 import {
   createPlaceholderResolver,
@@ -94,6 +94,7 @@ export const DEFAULT_SETTINGS = {
   // content / rendering
   font_family: null,
   heading_font_family: null,
+  accent_color: null,
   include_default_styles: true,
   highlight: true,
   highlight_style: "github.css",
@@ -342,6 +343,7 @@ export function normalizeSettings(raw) {
 
     font_family: normalizeNonEmptyString(safe.font_family),
     heading_font_family: normalizeNonEmptyString(safe.heading_font_family),
+    accent_color: normalizeAccentColor(safe.accent_color),
 
     // Structured header/footer configs – pass through as-is for the
     // config-merger / html-generator pipeline to consume.
@@ -560,6 +562,7 @@ function buildEffectiveOptions(args = {}, settings) {
       normalizeNonEmptyString(args.font_family) ?? settings.font_family,
     heading_font_family:
       normalizeNonEmptyString(args.heading_font_family) ?? settings.heading_font_family,
+    accent_color: normalizeAccentColor(args.accent_color) ?? settings.accent_color,
   };
 }
 
@@ -896,6 +899,7 @@ export async function doctorMarkdownPdf(args) {
       display_header_footer: doc.settings.display_header_footer,
       font_family: doc.settings.font_family,
       heading_font_family: doc.settings.heading_font_family,
+      accent_color: doc.settings.accent_color,
       header: doc.settings.header,
       footer: doc.settings.footer,
     },
@@ -969,6 +973,7 @@ export async function exportMarkdownPdf(args) {
     margin: options.margin,
     font_family: options.font_family,
     heading_font_family: options.heading_font_family,
+    accent_color: options.accent_color,
     include_default_styles: options.include_default_styles,
     highlight: options.highlight,
     highlight_style: options.highlight_style,
@@ -1002,6 +1007,7 @@ export async function exportMarkdownPdf(args) {
     margin: mergedConfig.margin ?? options.margin,
     font_family: mergedConfig.font_family ?? options.font_family,
     heading_font_family: mergedConfig.heading_font_family ?? options.heading_font_family,
+    accent_color: normalizeAccentColor(mergedConfig.accent_color) ?? options.accent_color,
     include_default_styles:
       mergedConfig.include_default_styles ?? options.include_default_styles,
     highlight: mergedConfig.highlight ?? options.highlight,
@@ -1303,6 +1309,9 @@ async function renderMarkdownToHtmlWithBody(inputPath, body, title, options) {
   if (options.heading_font_family) {
     styleBlocks += `<style>h1, h2, h3, h4, h5, h6 { font-family: ${options.heading_font_family}; }</style>\n    `;
   }
+  // Accent colour: only page styles that read --accent change with it.
+  const accent = accentCss(options.accent_color);
+  if (accent) styleBlocks += `<style>${accent}</style>\n    `;
 
   const baseHref = `${pathToFileURL(path.dirname(inputPath)).href}/`;
 

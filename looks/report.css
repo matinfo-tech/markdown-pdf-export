@@ -1,8 +1,9 @@
-/* Look: report — serif headings, restrained rules, roomy paragraphs. */
+/* Look: report — serif headings, restrained rules, roomy paragraphs.
+   Accent colours come from accent_color when set (see accentCss in lib/looks.mjs). */
 :root { line-height: 1.7; }
 h1, h2, h3 { font-family: Georgia, "Times New Roman", serif; letter-spacing: -0.01em; }
-h1 { border-bottom: 2px solid #24292e; }
+h1 { border-bottom: 2px solid var(--accent, #24292e); }
 h2 { border-bottom: 1px solid #d0d7de; }
 table { border-collapse: collapse; }
 th { background: #f6f8fa; }
-blockquote { border-left: 4px solid #0969da; color: #57606a; }
+blockquote { border-left: 4px solid var(--accent, #0969da); color: #57606a; }

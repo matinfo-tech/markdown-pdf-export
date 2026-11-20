@@ -28,6 +28,26 @@ The quickest change, in your [settings file](/advanced/settings-file):
 A look is a stylesheet plus a few settings. Keys you write next to it win, so
 `"look": "academic", "margin": {"top": "20mm"}` keeps the academic style with a smaller top margin.
 
+### Theme colour
+
+`report` and `technical` have an accent colour. `accent_color` replaces it:
+
+```json
+{
+  "look": "technical",
+  "accent_color": "#2e7d32"
+}
+```
+
+| Look | What changes |
+|---|---|
+| `technical` | the rule under the title, section titles, the bar beside code blocks, inline code and table headers (a light tint) |
+| `report` | the rule under the title, the bar beside quotes |
+
+The value is `#rgb` or `#rrggbb`. The other looks have no accent and ignore it. In your own CSS,
+`var(--accent)`, `var(--accent-strong)` (darker) and `var(--accent-soft)` (light tint) give the
+same colours.
+
 ## Fonts
 
 | Key | Sets |
@@ -37,7 +57,7 @@ A look is a stylesheet plus a few settings. Keys you write next to it win, so
 | `font_family` | the text font, as a CSS font list |
 | `heading_font_family` | the title font, as a CSS font list |
 
-The preset names are `sans`, `serif`, `book`, `humanist`, `geometric`, `mono` and `system` (see
+The preset names are `sans`, `serif`, `book`, `humanist`, `geometric`, `office`, `mono` and `system` (see
 [Settings file](/advanced/settings-file)). For any other font:
 
 ```json
@@ -49,6 +69,11 @@ The preset names are `sans`, `serif`, `book`, `humanist`, `geometric`, `mono` an
 
 The font must be installed on the computer that makes the PDF. List a common font last as a
 fallback. A font you choose always wins over the font of the page style.
+
+`office` needs Aptos or Calibri installed as a normal font. On Windows, Calibri always is; Aptos comes
+with recent Office. On a Mac, Office keeps its fonts for itself, so the PDF falls back to Segoe UI or
+Arial unless you install the font files. On Linux, the free Carlito font has the same widths as
+Calibri.
 
 The header and footer use the text font unless you set `font_family` on them.
 

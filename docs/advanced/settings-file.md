@@ -140,6 +140,7 @@ A look sets `stylesheet_path`, and some looks also set `highlight_style` and `ma
 | `book` | Iowan Old Style, Palatino, Book Antiqua, Georgia |
 | `humanist` | Seravek, Gill Sans, Ubuntu, Calibri, DejaVu Sans |
 | `geometric` | Avenir, Montserrat, Corbel, Century Gothic |
+| `office` | Aptos, Calibri, Carlito, Segoe UI, Arial (the Microsoft Office fonts) |
 | `mono` | SF Mono, Menlo, Consolas |
 | `system` | the system UI font |
 

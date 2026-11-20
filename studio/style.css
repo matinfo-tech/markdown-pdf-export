@@ -101,6 +101,37 @@ h2 {
 
 .label { color: var(--quiet); }
 
+/* collapsed extra option inside .fields (theme colour) */
+.more { grid-column: 1 / -1; margin-top: -2px; }
+.more[hidden] { display: none; }
+.more > summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--quiet);
+  cursor: pointer;
+  list-style: none;
+}
+.more > summary::-webkit-details-marker { display: none; }
+.more > summary::before { content: "▸"; font-size: 0.8em; transition: transform 0.15s; }
+.more[open] > summary::before { transform: rotate(90deg); }
+.more > summary:hover { color: var(--text); }
+.more .swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  box-shadow: 0 0 0 1px var(--rule);
+}
+.more-body {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+  padding-left: 18px;
+}
+.more-body .hint { margin: 0; flex: 1; }
+.more-body .btn[hidden] { display: none; }
+
 .row {
   display: flex;
   flex-wrap: wrap;

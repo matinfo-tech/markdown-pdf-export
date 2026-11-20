@@ -41,6 +41,7 @@ line wins over the settings files; front matter wins over both.
 | `--print-background` | Print background colours (on by default). |
 | `--font-family <css>` | Text font, as a CSS font list. |
 | `--heading-font-family <css>` | Title font. |
+| `--accent-color <#hex>` | Theme colour of the `report` and `technical` looks. |
 | `--stylesheet-path <file.css>` | Your CSS, relative to the Markdown file. |
 | `--include-default-styles` | Use the built-in stylesheet (on by default). |
 | `--highlight` | Colour code blocks (on by default). |

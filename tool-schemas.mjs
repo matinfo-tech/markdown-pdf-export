@@ -183,6 +183,12 @@ export const EXPORT_INPUT_SCHEMA = {
       description:
         "CSS font-family value for headings (h1-h6). Default: same as the body text.",
     },
+    accent_color: {
+      type: "string",
+      pattern: "^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+      description:
+        "Accent colour of the page style, as #rgb or #rrggbb: title rules, coloured titles, code block bars. Used by the report and technical looks; the others have no accent.",
+    },
   },
 };
 
