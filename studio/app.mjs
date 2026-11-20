@@ -8,6 +8,7 @@ import {
   ZONES,
   draftToSettings,
   emptyDraft,
+  lookAccent,
   lookDefaults,
   matchLayout,
   renderText,
@@ -66,6 +67,11 @@ const thumbs = new Map(); // image path → object URL of the file just uploaded
 const AREA_NAMES = { header: "Top", footer: "Bottom" };
 const SIZE_LABELS = { s: "Small", m: "Medium", l: "Large" };
 const MARGIN_LABELS = { narrow: "Narrow", normal: "Normal", wide: "Wide" };
+/** What the theme colour paints, per page style that has one. */
+const ACCENT_HINTS = {
+  technical: "Title rule, section titles, code bars.",
+  report: "Title rule and quote bars.",
+};
 const LOOK_LABELS = { clean: "Clean", report: "Report", academic: "Academic", compact: "Compact", technical: "Technical" };
 
 const currentSettings = () => draftToSettings(draft, raw, { looks: server.looks });
@@ -119,6 +125,9 @@ function build() {
     $(id).replaceChildren(...options);
     $(id).addEventListener("change", (e) => change(() => (draft[key] = e.target.value)));
   }
+
+  $("accent").addEventListener("input", (e) => change(() => (draft.accent = e.target.value)));
+  $("accent-reset").addEventListener("click", () => change(() => (draft.accent = "")));
 
   $("format").replaceChildren(...server.pageFormats.map((f) => el("option", { value: f, text: f })));
   $("format").addEventListener("change", (e) => change(() => (draft.page_format = e.target.value)));
@@ -357,6 +366,7 @@ function sync() {
     $(id).value = draft[key];
     $(id).style.fontFamily = server.fonts[draft[key]] ?? ""; // the control shows its own choice
   }
+  syncAccent();
   $("format").value = draft.page_format;
   $("highlight").value = draft.highlight;
   // The diagram's side padding follows the margins, so text and rules sit where they will print.
@@ -388,6 +398,18 @@ function sync() {
     state.className = "saved";
     $("save").disabled = true;
   }
+}
+
+/** Theme colour: offered only for page styles that have one. */
+function syncAccent() {
+  const own = lookAccent(draft.look, server.looks);
+  $("accent-box").hidden = !own;
+  if (!own) return;
+  const value = draft.accent || own;
+  $("accent").value = value;
+  $("accent-swatch").style.background = value;
+  $("accent-hint").textContent = ACCENT_HINTS[draft.look] ?? "";
+  $("accent-reset").hidden = !draft.accent || draft.accent.toLowerCase() === own;
 }
 
 // ── preview ─────────────────────────────────────────────────────────────────

@@ -17,7 +17,9 @@ title: Studio
 text, tables and code.
 
 **Fonts and paper.** A font for the text and one for the titles, the paper size, portrait or
-landscape, the margins and the colours of code blocks.
+landscape, the margins and the colours of code blocks. With the *Report* or *Technical* page
+style, *Theme colour* (folded under the title font) changes the colour of the title rule, the
+section titles and the bars beside code and quotes.
 
 **Header and footer.** Pick a starting point, then click any of the six spots on the small page to
 change it. Type text, or press *Title*, *Page 1 of 9*, *Date* or *Author* to insert it. To add a

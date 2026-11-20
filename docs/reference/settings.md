@@ -14,8 +14,8 @@ The quickest way to set many things at once.
 | Setting | What it does | Values | Default |
 |---|---|---|---|
 | `look` | Page style preset: clean (Default. GitHub-style, neutral.) report (Serif headings, strong title rule. Business reports.) academic (Serif body, justified, minimal colour. Papers and theses.) compact (Dense and small. More text per page.) technical (For documents with code: framed code blocks, blue accents.) Explicit keys in this file override it. | `clean`, `report`, `academic`, `compact`, `technical` |  |
-| `font` | Font preset for the text. Use font_family for a custom stack. | `sans`, `serif`, `book`, `humanist`, `geometric`, `mono`, `system` |  |
-| `heading_font` | Font preset for titles (h1-h6). Use heading_font_family for a custom stack. | `sans`, `serif`, `book`, `humanist`, `geometric`, `mono`, `system` |  |
+| `font` | Font preset for the text. Use font_family for a custom stack. | `sans`, `serif`, `book`, `humanist`, `geometric`, `office`, `mono`, `system` |  |
+| `heading_font` | Font preset for titles (h1-h6). Use heading_font_family for a custom stack. | `sans`, `serif`, `book`, `humanist`, `geometric`, `office`, `mono`, `system` |  |
 | `template` | Header/footer preset. Explicit header/footer keys in this file override it. | `minimal`, `simple`, `corporate`, `academic`, `two-logo` |  |
 
 ## Page
@@ -35,6 +35,7 @@ The quickest way to set many things at once.
 |---|---|---|---|
 | `font_family` | CSS font-family value for the document body and header/footer. Overrides the default system font stack. Example: "Georgia, 'Times New Roman', serif". | string |  |
 | `heading_font_family` | CSS font-family value for headings (h1-h6). Default: same as the body text. | string |  |
+| `accent_color` | Accent colour of the page style, as #rgb or #rrggbb: title rules, coloured titles, code block bars. Used by the report and technical looks; the others have no accent. | string |  |
 | `stylesheet_path` | CSS file applied after the built-in stylesheet (relative to this settings file). | string |  |
 | `include_default_styles` | Include the built-in default CSS stylesheet. | boolean | `true` |
 | `highlight` | Enable syntax highlighting for code blocks. | boolean | `true` |

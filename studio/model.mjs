@@ -5,7 +5,9 @@
  *
  * Draft shape:
  *   { look, font, heading_font, highlight, page_format, orientation, margin,
- *     header: Area, footer: Area, text_size, color }
+ *     header: Area, footer: Area, text_size, color, accent }
+ *   accent = "" (the page style's own colour) or "#rrggbb"; written only for
+ *   page styles that have an accent
  *   font / heading_font = a preset name, "look" (whatever the page style
  *   brings) or "custom" (a hand-written font_family kept from the file)
  *   Area = { left: Slot, center: Slot, right: Slot, line: boolean, custom: boolean }
@@ -90,6 +92,7 @@ export function emptyDraft() {
     footer: area(),
     text_size: "m",
     color: DEFAULT_COLOR,
+    accent: "",
   };
 }
 
@@ -104,6 +107,15 @@ const nameOfMargin = (side) => Object.entries(MARGINS).find(([, v]) => v === sid
 /** Side margin a look brings, in mm (15 when it has none). */
 export function lookMargin(look, looks = {}) {
   return mm(looks[look]?.margin?.left) ?? MARGINS.normal;
+}
+
+const HEX = /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i;
+const longHex = (c) => (c.length === 4 ? `#${[...c.slice(1)].map((x) => x + x).join("")}` : c).toLowerCase();
+
+/** Accent colour a look brings, or null when the look has none (no colour to change). */
+export function lookAccent(look, looks = {}) {
+  const a = looks[look]?.accent;
+  return typeof a === "string" && HEX.test(a) ? longHex(a) : null;
 }
 
 /** What picking a look suggests for the controls it influences. */
@@ -170,6 +182,9 @@ export function settingsToDraft(raw, ctx = {}) {
   if (typeof raw.heading_font === "string") draft.heading_font = raw.heading_font;
   else if (typeof raw.heading_font_family === "string" && raw.heading_font_family) draft.heading_font = "custom";
   draft.highlight = typeof raw.highlight_style === "string" ? raw.highlight_style : defaults.highlight;
+  if (typeof raw.accent_color === "string" && HEX.test(raw.accent_color.trim())) {
+    draft.accent = longHex(raw.accent_color.trim());
+  }
   if (typeof raw.page_format === "string") draft.page_format = raw.page_format;
   if (raw.orientation === "landscape") draft.orientation = "landscape";
 
@@ -249,6 +264,17 @@ export function draftToSettings(draft, raw = {}, ctx = {}) {
     delete out[stack];
     if (choice === "look") delete out[preset];
     else out[preset] = choice;
+  }
+
+  // Accent: written when the look has one and the choice differs from it. A
+  // look without an accent ignores the key, so whatever the file had stays.
+  const ownAccent = lookAccent(draft.look, looks);
+  const accent = typeof draft.accent === "string" && HEX.test(draft.accent) ? longHex(draft.accent) : "";
+  if (ownAccent) {
+    const written = typeof raw?.accent_color === "string" ? raw.accent_color.trim() : "";
+    const same = HEX.test(written) && longHex(written) === accent; // "#ABC" stays as typed
+    if (accent && accent !== ownAccent) out.accent_color = same ? raw.accent_color : accent;
+    else delete out.accent_color;
   }
 
   if (draft.highlight === defaults.highlight) delete out.highlight_style;

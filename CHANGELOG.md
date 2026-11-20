@@ -6,6 +6,15 @@ All notable changes to `markdown-pdf-export`. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- `accent_color`: the theme colour of the `report` and `technical` looks (title rule, section titles,
+  code and quote bars). Studio offers it as *Theme colour*, folded under the title font, only for
+  those two page styles.
+- `office` font preset: Aptos, then Calibri (the Microsoft Office fonts), for `font` and `heading_font`.
+- The Studio sample document now has a short maths (LaTeX) section, so you can see formulas in your
+  page style and fonts.
+
 ## [2.1.0] - 2026-11-20
 
 ### Added

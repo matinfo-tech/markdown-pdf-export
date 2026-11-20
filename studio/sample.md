@@ -1,6 +1,8 @@
 ---
 title: Quarterly report
 author: Alex Morgan
+pdf:
+  math: true
 ---
 
 # Quarterly report
@@ -35,6 +37,16 @@ function total(rows) {
   return rows.reduce((sum, row) => sum + row.revenue, 0);
 }
 ```
+
+## A little maths
+
+Growth over the quarter, with $r$ the monthly rate:
+
+$$
+\text{growth} = \frac{47\,300 - 41\,200}{41\,200} \approx 14.8\,\%
+\qquad
+r = \sqrt[3]{1.148} - 1 \approx 4.7\,\%
+$$
 
 <div style="page-break-after: always"></div>
 
