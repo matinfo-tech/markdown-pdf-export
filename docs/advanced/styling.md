@@ -119,13 +119,21 @@ Code is coloured only when the block names its language after the opening backti
 
 ## Page breaks
 
-Put this line where a new page should start:
+Put one of these lines where a new page should start. They all do the same:
 
 ```markdown
-<div class="page"></div>
+<div class="page-break"></div>
+<!-- page-break -->
+<hr class="page-break">
 ```
 
-It needs the built-in stylesheet. For more control, use CSS in your own stylesheet:
+Other accepted names: the classes `page`, `pagebreak`, `page_break`, `new-page`, `newpage` and
+`break-page`, and the comments `<!-- pagebreak -->`, `<!-- new-page -->`, `<!-- newpage -->` and
+`<!-- page -->`. A plain `<div style="page-break-after: always"></div>` works too. To break
+*before* an element instead, use `<div class="page-break-before"></div>`.
+
+These work even when `include_default_styles` is off. For more control, use CSS in your own
+stylesheet:
 
 ```css
 h1 { break-before: page; }               /* each h1 starts a new page */
