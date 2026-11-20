@@ -34,11 +34,11 @@ import {
 import { EXPORT_INPUT_SCHEMA } from "./tool-schemas.mjs";
 import {
   PROJECT_SETTINGS_FILENAME,
-  resolveSettingsPaths,
+  prepareSettings,
   userSettingsPath,
 } from "./lib/settings-loader.mjs";
 import { formatDoctor } from "./lib/doctor-report.mjs";
-import { LOOKS, FONTS } from "./lib/looks.mjs";
+import { LOOKS, FONTS, applyPresets } from "./lib/looks.mjs";
 import { EDITOR_IDS, applySetupItem, buildEditorSetup, launchSpec } from "./lib/editor-setup.mjs";
 
 const BIN = "markdown-pdf-export";
@@ -215,7 +215,11 @@ function loadSettingsArg(value) {
   } catch (error) {
     throw new UsageError(`--settings is not valid JSON: ${error.message}`);
   }
-  return { data: file ? resolveSettingsPaths(data, path.dirname(file)) : data, file };
+  // Same expansion as a settings file: look / font / template presets, and
+  // for a file, paths relative to it. Inline JSON keeps its paths as written.
+  const { data: prepared, warnings } = file ? prepareSettings(data, path.dirname(file)) : applyPresets(data);
+  for (const warning of warnings) console.error(`--settings: ${warning}`);
+  return { data: prepared, file };
 }
 
 async function main(argv) {
@@ -454,7 +458,7 @@ const TEMPLATE_HINTS = {
   minimal: "title and page number only",
   simple: "title + date on top, page x of y at the bottom",
   corporate: "logo, title, date, blue rule",
-  academic: "centred title, page numbers",
+  academic: "author left, title right, page number centred below",
   "two-logo": "two logos, confidential footer",
 };
 

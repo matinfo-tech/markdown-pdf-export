@@ -18,6 +18,7 @@ docs/.vitepress/dist/
 
 # ── PDF output from test/dev exports ──────────────────────────────────────────
 *.pdf
+!docs/public/samples/*.pdf
 
 # ── OS junk ────────────────────────────────────────────────────────────────────
 .DS_Store

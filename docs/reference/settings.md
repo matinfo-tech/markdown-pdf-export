@@ -1,459 +1,101 @@
-# Settings Reference
-
-Complete reference for all Markdown PDF settings.
-
-## Configuration
-
-Settings are a plain JSON object, read automatically from the user settings file
-`~/.config/markdown-pdf-export/settings.json` (create it with `npx -y markdown-pdf-export init`) and
-from the nearest `.markdown-pdf.json` above the Markdown file:
-
-```json
-{
-  "page_format": "A4",
-  "highlight_style": "github.css"
-}
-```
-
-The JSON examples below show the content of a settings file. See
-[Priority Order](#priority-order) for how the sources combine, and
-[Global Settings](/guide/global-settings) for file locations, relative paths and the
-`MARKDOWN_PDF_SETTINGS` / `--settings` override.
-
-Most settings also have a command-line flag of the same name in kebab-case (`page_format` →
-`--page-format`); see [Command Line](/guide/cli#options). `header`, `footer`, `output_directory` and
-`assets_directory` are settings-file or front-matter only.
-
-## Page Layout
-
-### page_format
-
-Paper size for the PDF.
-
-| Type | Default | Options |
-|------|---------|---------|
-| `string` | `"A4"` | `A4`, `Letter`, `Legal`, `Tabloid`, `Ledger`, `A0`, `A1`, `A2`, `A3`, `A5`, `A6` |
-
-```json
-{ "page_format": "Letter" }
-```
-
-### orientation
-
-Page orientation.
-
-| Type | Default | Options |
-|------|---------|---------|
-| `string` | `"portrait"` | `portrait`, `landscape` |
-
-```json
-{ "orientation": "landscape" }
-```
-
-### scale
-
-Zoom factor for page rendering.
-
-| Type | Default | Range |
-|------|---------|-------|
-| `number` | `1` | `0.1` – `2` |
-
-```json
-{ "scale": 0.9 }
-```
-
-### margin
-
-Page margins as CSS length values.
-
-| Type | Default |
-|------|---------|
-| `object` | `{ top: "15mm", right: "15mm", bottom: "15mm", left: "15mm" }` |
-
-```json
-{
-  "margin": {
-    "top": "20mm",
-    "right": "15mm",
-    "bottom": "20mm",
-    "left": "15mm"
-  }
-}
-```
-
-Supported units: `mm`, `cm`, `in`, `px`, `pt`
-
-### page_ranges
-
-Print only specific pages.
-
-| Type | Default |
-|------|---------|
-| `string` | `""` (all pages) |
-
-```json
-{ "page_ranges": "1-5, 8, 10-12" }
-```
-
-### print_background
-
-Include background colors and images.
-
-| Type | Default |
-|------|---------|
-| `boolean` | `true` |
-
-```json
-{ "print_background": true }
-```
-
-## Content & Rendering
-
-### font_family
-
-CSS font-family for document body and header/footer.
-
-| Type | Default |
-|------|---------|
-| `string \| null` | `null` (system fonts) |
-
-```json
-{ "font_family": "Georgia, 'Times New Roman', serif" }
-```
-
-### include_default_styles
-
-Include the built-in neutral stylesheet.
-
-| Type | Default |
-|------|---------|
-| `boolean` | `true` |
-
-```json
-{ "include_default_styles": false }
-```
-
-### stylesheet_path
-
-Path to a custom CSS file (relative to the settings file that sets it; in front matter, to the
-Markdown file).
-
-| Type | Default |
-|------|---------|
-| `string \| null` | `null` |
-
-```json
-{ "stylesheet_path": "./styles/custom.css" }
-```
-
-### breaks
-
-Convert single newlines to `<br>` elements.
-
-| Type | Default |
-|------|---------|
-| `boolean` | `false` |
-
-```json
-{ "breaks": true }
-```
-
-### emoji
-
-Render emoji shortcodes (`:smile:` → 😄).
-
-| Type | Default |
-|------|---------|
-| `boolean` | `true` |
-
-```json
-{ "emoji": true }
-```
-
-### math
-
-Render LaTeX math via KaTeX. Use `$inline$` and `$$display$$` syntax.
-
-| Type | Default |
-|------|---------|
-| `boolean` | `false` |
-
-```json
-{ "math": true }
-```
-
-### math_options
-
-Pass-through options to KaTeX. See [Math (KaTeX)](/guide/math).
-
-| Type | Default |
-|------|---------|
-| `object` | `{ throw_on_error: false, error_color: "#cc0000", macros: {} }` |
-
-```json
-{
-  "math_options": {
-    "throw_on_error": false,
-    "error_color": "#cc0000",
-    "macros": { "\\RR": "\\mathbb{R}" }
-  }
-}
-```
-
-### heading_anchors
-
-Add `id="slug"` attributes to headings. Required infrastructure for in-document
-links; auto-enabled when `toc` is `true`.
-
-| Type | Default |
-|------|---------|
-| `boolean` | `false` |
-
-```json
-{ "heading_anchors": true }
-```
-
-### toc
-
-Render the literal marker `[[toc]]` in your markdown as an auto-generated
-table of contents. Also enables heading anchors.
-
-| Type | Default |
-|------|---------|
-| `boolean` | `false` |
-
-```json
-{ "toc": true }
-```
-
-### toc_options
-
-Heading levels and list type for the table of contents.
-
-| Type | Default |
-|------|---------|
-| `object` | `{ level: [1, 2, 3], list_type: "ul" }` |
-
-```json
-{
-  "toc_options": { "level": [1, 2, 3], "list_type": "ol" }
-}
-```
-
-## Syntax Highlighting
-
-### highlight
-
-Enable syntax highlighting for code blocks.
-
-| Type | Default |
-|------|---------|
-| `boolean` | `true` |
-
-```json
-{ "highlight": true }
-```
-
-### highlight_style
-
-Highlight.js theme filename.
-
-| Type | Default |
-|------|---------|
-| `string` | `"github.css"` |
-
-```json
-{ "highlight_style": "atom-one-dark.css" }
-```
-
-**Popular themes:**
-
-| Theme | Description |
-|-------|-------------|
-| `github.css` | Light GitHub (default) |
-| `github-dark.css` | Dark GitHub |
-| `monokai.css` | Classic Monokai |
-| `atom-one-dark.css` | Atom One Dark |
-| `atom-one-light.css` | Atom One Light |
-| `nord.css` | Nord |
-| `vs.css` | Visual Studio Light |
-| `vs2015.css` | Visual Studio Dark |
-| `tokyo-night-dark.css` | Tokyo Night |
-| `rose-pine.css` | Rosé Pine |
-
-See [highlightjs.org/demo](https://highlightjs.org/demo) for all 80+ themes.
-
-## Header & Footer
-
-### header
-
-Structured header configuration.
-
-| Type | Default |
-|------|---------|
-| `object \| null` | `null` |
-
-```json
-{
-  "header": {
-    "height": "15mm",
-    "padding": "0 10mm",
-    "font_size": "9px",
-    "border_bottom": "1px solid #ddd",
-    "left": { "type": "image", "src": "./logo.svg", "height": "12mm" },
-    "center": { "type": "title" },
-    "right": { "type": "date", "format": "MMMM d, yyyy" }
-  }
-}
-```
-
-See [Header/Footer Schema](/reference/header-footer-schema) for complete documentation.
-
-### footer
-
-Structured footer configuration.
-
-| Type | Default |
-|------|---------|
-| `object \| null` | `null` |
-
-```json
-{
-  "footer": {
-    "height": "10mm",
-    "center": { "type": "text", "content": "Page {page} of {pages}" }
-  }
-}
-```
-
-### Shorthand Properties
-
-For simple configurations:
-
-```json
-{
-  "header": {
-    "height": "15mm",
-    "left_image": "./logo.svg",
-    "left_image_height": "12mm",
-    "center_text": "{title}",
-    "right_text": "{date:yyyy-MM-dd}"
-  }
-}
-```
-
-| Property | Description |
-|----------|-------------|
-| `left_text` | Text in left zone |
-| `left_image` | Image path in left zone |
-| `left_image_height` | Height for left image |
-| `center_text` | Text in center zone |
-| `center_image` | Image path in center zone |
-| `center_image_height` | Height for center image |
-| `right_text` | Text in right zone |
-| `right_image` | Image path in right zone |
-| `right_image_height` | Height for right image |
-
-## Output
-
-### output_directory
-
-Default directory for output PDFs.
-
-| Type | Default |
-|------|---------|
-| `string \| null` | `null` (same as source) |
-
-```json
-{ "output_directory": "./build" }
-```
-
-### open_after_export
-
-Open PDF in default viewer after export.
-
-| Type | Default |
-|------|---------|
-| `boolean` | `false` |
-
-```json
-{ "open_after_export": true }
-```
-
-## Priority Order
-
-Highest priority first:
-
-1. **Front matter** — the `pdf:` block of the document
-2. **Per-export options** — CLI flags (`--page-format Letter`) or MCP tool arguments (from the prompt)
-3. **Project file** — the nearest `.markdown-pdf.json`
-4. **User file** — `~/.config/markdown-pdf-export/settings.json`, or `--settings` /
-   `MARKDOWN_PDF_SETTINGS` when set
-5. **Built-in defaults**
-
-## Minimal Example
-
-```json
-{
-  "page_format": "A4",
-  "header": {
-    "center_text": "{title}",
-    "right_text": "{date:yyyy-MM-dd}"
-  },
-  "footer": {
-    "center_text": "Page {page} of {pages}"
-  }
-}
-```
-
-## Full Example
-
-```json
-{
-  "page_format": "A4",
-  "orientation": "portrait",
-  "scale": 1,
-  "print_background": true,
-  "margin": {
-    "top": "20mm",
-    "right": "15mm",
-    "bottom": "20mm",
-    "left": "15mm"
-  },
-  "font_family": "Georgia, serif",
-  "include_default_styles": true,
-  "highlight": true,
-  "highlight_style": "github.css",
-  "emoji": true,
-  "open_after_export": false,
-  "header": {
-    "height": "18mm",
-    "padding": "0 15mm",
-    "font_size": "9px",
-    "border_bottom": "1px solid #ddd",
-    "left": {
-      "type": "image",
-      "src": "./logo.svg",
-      "height": "14mm"
-    },
-    "center": {
-      "type": "title",
-      "font_weight": "bold"
-    },
-    "right": {
-      "type": "date",
-      "format": "MMMM d, yyyy"
-    }
-  },
-  "footer": {
-    "height": "12mm",
-    "padding": "0 15mm",
-    "font_size": "8px",
-    "color": "#666",
-    "center": {
-      "type": "text",
-      "content": "Page {page} of {pages}"
-    }
-  }
-}
-```
+<!-- Generated by scripts/build-settings-reference.mjs from lib/settings-schema.mjs. Do not edit. -->
+
+# All settings
+
+Every key a settings file or a project `.markdown-pdf.json` accepts. Most people never need this
+page: [Studio](/studio) writes these for you. Where the files live and how they combine:
+[Settings file](/advanced/settings-file). Which keys a document's front matter accepts:
+[Per-document options](/advanced/per-document).
+
+## Short presets
+
+The quickest way to set many things at once.
+
+| Setting | What it does | Values | Default |
+|---|---|---|---|
+| `look` | Page style preset: clean (Default. GitHub-style, neutral.) report (Serif headings, strong title rule. Business reports.) academic (Serif body, justified, minimal colour. Papers and theses.) compact (Dense and small. More text per page.) technical (For documents with code: framed code blocks, blue accents.) Explicit keys in this file override it. | `clean`, `report`, `academic`, `compact`, `technical` |  |
+| `font` | Font preset for the text. Use font_family for a custom stack. | `sans`, `serif`, `book`, `humanist`, `geometric`, `mono`, `system` |  |
+| `heading_font` | Font preset for titles (h1-h6). Use heading_font_family for a custom stack. | `sans`, `serif`, `book`, `humanist`, `geometric`, `mono`, `system` |  |
+| `template` | Header/footer preset. Explicit header/footer keys in this file override it. | `minimal`, `simple`, `corporate`, `academic`, `two-logo` |  |
+
+## Page
+
+| Setting | What it does | Values | Default |
+|---|---|---|---|
+| `page_format` | Paper format. | `A4`, `Letter`, `Legal`, `Tabloid`, `Ledger`, `A0`, `A1`, `A2`, `A3`, `A5`, `A6` | `A4` |
+| `orientation` | Paper orientation. | `portrait`, `landscape` | `portrait` |
+| `margin` | Page margins. | object: `top`, `right`, `bottom`, `left` | top: `15mm`, right: `15mm`, bottom: `15mm`, left: `15mm` |
+| `scale` | Scale of the page rendering (default 1). | number | `1` |
+| `page_ranges` | Paper ranges to print, e.g. '1-5, 8, 11-13'. Empty means all pages. | string |  |
+| `print_background` | Whether to print background colours and images. | boolean | `true` |
+
+## Text, fonts and code
+
+| Setting | What it does | Values | Default |
+|---|---|---|---|
+| `font_family` | CSS font-family value for the document body and header/footer. Overrides the default system font stack. Example: "Georgia, 'Times New Roman', serif". | string |  |
+| `heading_font_family` | CSS font-family value for headings (h1-h6). Default: same as the body text. | string |  |
+| `stylesheet_path` | CSS file applied after the built-in stylesheet (relative to this settings file). | string |  |
+| `include_default_styles` | Include the built-in default CSS stylesheet. | boolean | `true` |
+| `highlight` | Enable syntax highlighting for code blocks. | boolean | `true` |
+| `highlight_style` | Highlight.js style filename to use (e.g. 'github.css', 'monokai.css'). | one of 80 names, e.g. `github.css`, `github-dark.css`, `monokai.css` | `github.css` |
+
+## Content
+
+| Setting | What it does | Values | Default |
+|---|---|---|---|
+| `breaks` | Enable hard line breaks in the Markdown renderer. | boolean | `false` |
+| `emoji` | Render :emoji: shortcodes as Unicode characters. | boolean | `true` |
+| `math` | Render LaTeX math via KaTeX. Use $inline$ and $$display$$ syntax. | boolean | `false` |
+| `math_options` | KaTeX rendering options. | object: `throw_on_error`, `error_color`, `macros` | throw_on_error: `false`, error_color: `#cc0000` |
+| `heading_anchors` | Add id slugs to headings (required infrastructure for TOC links). | boolean | `false` |
+| `toc` | Render a `[[toc]]` marker as an auto-generated table of contents (also enables heading anchors). | boolean | `false` |
+| `toc_options` | Table-of-contents rendering options. | object: `level`, `list_type` | level: `[1,2,3]`, list_type: `ul` |
+
+## Header and footer
+
+See [Header and footer](/advanced/header-footer).
+
+| Setting | What it does | Values | Default |
+|---|---|---|---|
+| `header` | Page header. | object, see below |  |
+| `footer` | Page footer. | object, see below |  |
+| `display_header_footer` | Display header and footer on each page. Content comes from `header` / `footer` (here, in settings or in front matter); without them the header and footer are empty. Enabled automatically when `header` or `footer` is given. | boolean | `false` |
+
+## Files
+
+| Setting | What it does | Values | Default |
+|---|---|---|---|
+| `output_directory` | Folder for the PDFs, relative to each Markdown file. Default: next to it. | string |  |
+| `assets_directory` | Folder for "@/name.svg" image references (relative to this settings file). | string |  |
+| `open_after_export` | Open the PDF after export. | boolean | `false` |
+
+## Inside `header` and `footer`
+
+| Key | What it does | Values |
+|---|---|---|
+| `height` | Height of the area. | string |
+| `padding` | CSS padding. | string |
+| `font_family` |  | string |
+| `font_size` | Default font-size. | string |
+| `font_style` |  | `normal`, `italic`, `oblique` |
+| `font_weight` |  | string or number |
+| `color` | Default text color. | string |
+| `background` |  | string |
+| `border_bottom` | Header only. | string |
+| `border_top` | Footer only. | string |
+| `style` | Extra inline CSS, e.g. "letter-spacing: 1px". | string |
+| `left` | Element, array of elements, or null to clear the zone. |  |
+| `center` | Element, array of elements, or null to clear the zone. |  |
+| `right` | Element, array of elements, or null to clear the zone. |  |
+| `left_text` | Shorthand: text in the left zone; placeholders allowed, e.g. "Page {page} of {pages}". | string |
+| `left_image` | Shorthand: image in the left zone (relative to the settings file, or "@/name.svg"). | string |
+| `left_image_height` | Shorthand: height of the left image. | string |
+| `center_text` | Shorthand: text in the center zone; placeholders allowed, e.g. "Page {page} of {pages}". | string |
+| `center_image` | Shorthand: image in the center zone (relative to the settings file, or "@/name.svg"). | string |
+| `center_image_height` | Shorthand: height of the center image. | string |
+| `right_text` | Shorthand: text in the right zone; placeholders allowed, e.g. "Page {page} of {pages}". | string |
+| `right_image` | Shorthand: image in the right zone (relative to the settings file, or "@/name.svg"). | string |
+| `right_image_height` | Shorthand: height of the right image. | string |
+
+The structured form (`left`, `center`, `right` as objects): [Structured header and footer](/reference/header-footer).

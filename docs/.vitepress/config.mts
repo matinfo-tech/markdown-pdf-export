@@ -1,143 +1,97 @@
+import { fileURLToPath } from "node:url";
 import { defineConfig } from "vitepress";
+
+const BASE = "/markdown-pdf-export/";
 
 export default defineConfig({
   title: "Markdown PDF Export",
-  description:
-    "Export Markdown to PDF with structured headers, footers, and custom styling",
-
-  base: "/markdown-pdf-export/",
+  description: "Turn Markdown into a PDF worth sending, with your header, footer, page numbers and logo.",
+  base: BASE,
+  appearance: "dark",
+  cleanUrls: true,
 
   head: [
-    [
-      "link",
-      { rel: "icon", type: "image/png", href: "/markdown-pdf-export/logo.png" },
-    ],
-    ["meta", { name: "theme-color", content: "#3eaf7c" }],
-    ["meta", { name: "og:type", content: "website" }],
-    ["meta", { name: "og:site_name", content: "Markdown PDF Export" }],
+    ["link", { rel: "icon", type: "image/png", href: `${BASE}logo.png` }],
+    ["meta", { name: "theme-color", content: "#262624" }],
+    ["meta", { property: "og:type", content: "website" }],
+    ["meta", { property: "og:site_name", content: "Markdown PDF Export" }],
   ],
+
+  // Main pages: one quiet column, no sidebar. Advanced and reference keep the docs layout.
+  transformPageData(page) {
+    const detailed = /^(advanced|reference)\//.test(page.relativePath);
+    if (!detailed && page.frontmatter.layout !== "page") {
+      page.frontmatter.sidebar ??= false;
+      page.frontmatter.aside ??= false;
+      page.frontmatter.outline ??= false;
+      page.frontmatter.pageClass ??= "simple";
+    }
+  },
+
+  vite: {
+    server: { fs: { allow: [fileURLToPath(new URL("../..", import.meta.url))] } },
+  },
 
   themeConfig: {
     logo: "/logo.png",
+    siteTitle: "Markdown PDF",
 
     nav: [
-      { text: "Guide", link: "/guide/getting-started" },
-      { text: "Configurator", link: "/configurator" },
-      { text: "Reference", link: "/reference/settings" },
-      { text: "Examples", link: "/examples/quick-templates" },
-      {
-        text: "Links",
-        items: [
-          {
-            text: "GitHub",
-            link: "https://github.com/matinfo/markdown-pdf-export",
-          },
-          { text: "VS Code", link: "https://code.visualstudio.com" },
-          { text: "Zed Editor", link: "https://zed.dev" },
-        ],
-      },
+      { text: "Get started", link: "/start" },
+      { text: "Studio", link: "/studio" },
+      { text: "Your editor", link: "/editors" },
+      { text: "Design online", link: "/online" },
+      { text: "Help", link: "/help" },
+      { text: "Advanced", link: "/advanced/", activeMatch: "^/(advanced|reference)/" },
     ],
 
     sidebar: {
-      "/guide/": [
-        {
-          text: "Introduction",
-          items: [
-            { text: "Getting Started", link: "/guide/getting-started" },
-            { text: "Installation", link: "/guide/installation" },
-            { text: "First Export", link: "/guide/first-export" },
-            { text: "Design Your Pages (Studio)", link: "/guide/studio" },
-          ],
-        },
-        {
-          text: "Usage",
-          items: [
-            { text: "VS Code", link: "/guide/vscode" },
-            { text: "Zed", link: "/guide/zed-task" },
-            { text: "AI Assistant (MCP)", link: "/guide/mcp" },
-            { text: "Command Line", link: "/guide/cli" },
-            { text: "Other Editors & MCP Clients", link: "/guide/other-editors" },
-            { text: "Browser", link: "/guide/browser" },
-          ],
-        },
-        {
-          text: "Header & Footer",
-          items: [
-            { text: "Overview", link: "/guide/header-footer" },
-            { text: "Zones & Layout", link: "/guide/zones" },
-            { text: "Elements", link: "/guide/elements" },
-            { text: "Placeholders", link: "/guide/placeholders" },
-            { text: "Date Formatting", link: "/guide/date-formatting" },
-            { text: "Images & Assets", link: "/guide/images" },
-          ],
-        },
-        {
-          text: "Configuration",
-          items: [
-            { text: "Global Settings", link: "/guide/global-settings" },
-            { text: "Configurator", link: "/configurator" },
-            { text: "Front Matter", link: "/guide/front-matter" },
-            { text: "Custom Styling", link: "/guide/custom-styling" },
-          ],
-        },
-        {
-          text: "Content Features",
-          items: [
-            { text: "Math (KaTeX)", link: "/guide/math" },
-            { text: "TOC & Anchors", link: "/guide/toc-and-anchors" },
-          ],
-        },
-      ],
-      "/reference/": [
-        {
-          text: "Reference",
-          items: [
-            { text: "Settings", link: "/reference/settings" },
-            {
-              text: "Header/Footer Schema",
-              link: "/reference/header-footer-schema",
-            },
-            { text: "Element Types", link: "/reference/element-types" },
-            { text: "Placeholders", link: "/reference/placeholders" },
-            { text: "Date Formats", link: "/reference/date-formats" },
-          ],
-        },
-      ],
-      "/examples/": [
-        {
-          text: "Examples",
-          items: [
-            {
-              text: "Quick Start Templates",
-              link: "/examples/quick-templates",
-            },
-            { text: "Basic Header/Footer", link: "/examples/basic" },
-            { text: "Two-Logo Header", link: "/examples/two-logo" },
-            { text: "Corporate Letterhead", link: "/examples/corporate" },
-            { text: "Academic Paper", link: "/examples/academic" },
-            { text: "Custom Variables", link: "/examples/custom-variables" },
-          ],
-        },
-      ],
+      "/advanced/": sidebarAdvanced(),
+      "/reference/": sidebarAdvanced(),
     },
 
-    socialLinks: [
-      { icon: "github", link: "https://github.com/matinfo/markdown-pdf-export" },
-    ],
+    socialLinks: [{ icon: "github", link: "https://github.com/matinfo/markdown-pdf-export" }],
 
-    footer: {
-      message: "Released under the MIT License.",
-      copyright: "Copyright © 2026",
-    },
+    footer: { message: "Released under the MIT License." },
 
-    search: {
-      provider: "local",
-    },
+    search: { provider: "local" },
 
     editLink: {
-      pattern:
-        "https://github.com/matinfo/markdown-pdf-export/edit/main/docs/:path",
-      text: "Edit this page on GitHub",
+      pattern: "https://github.com/matinfo/markdown-pdf-export/edit/main/docs/:path",
+      text: "Improve this page on GitHub",
     },
   },
 });
+
+function sidebarAdvanced() {
+  return [
+    {
+      text: "Advanced",
+      items: [
+        { text: "Overview", link: "/advanced/" },
+        { text: "Settings file", link: "/advanced/settings-file" },
+        { text: "Per-document options", link: "/advanced/per-document" },
+        { text: "Header and footer", link: "/advanced/header-footer" },
+        { text: "Styles, fonts and code", link: "/advanced/styling" },
+        { text: "Maths, contents, emoji", link: "/advanced/content" },
+        { text: "Recipes", link: "/advanced/recipes" },
+      ],
+    },
+    {
+      text: "Tools",
+      items: [
+        { text: "Command line", link: "/advanced/cli" },
+        { text: "AI assistant tools", link: "/advanced/assistant-tools" },
+        { text: "Browser", link: "/advanced/browser" },
+      ],
+    },
+    {
+      text: "Reference",
+      items: [
+        { text: "All settings", link: "/reference/settings" },
+        { text: "Placeholders and dates", link: "/reference/placeholders" },
+        { text: "Structured header and footer", link: "/reference/header-footer" },
+      ],
+    },
+  ];
+}
