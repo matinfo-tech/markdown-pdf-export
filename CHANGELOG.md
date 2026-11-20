@@ -6,6 +6,8 @@ All notable changes to `markdown-pdf-export`. The format follows
 
 ## [Unreleased]
 
+## [2.0.2] - 2026-11-20
+
 ### Added
 
 - Copilot CLI: `setup copilot-cli` and a tab in Studio's "Add to my editor", which now shows one tab per
@@ -23,6 +25,8 @@ All notable changes to `markdown-pdf-export`. The format follows
 - Release workflow waits until a new version is visible on npm before registering it in the MCP
   Registry.
 - Docs site: Google Search Console verification.
+- README and link previews: new banner image.
+- The "Your editor" page explains each editor in order: set up once, then use.
 
 ## [2.0.1] - 2026-11-20
 
@@ -121,7 +125,8 @@ MCP server, usable from any editor or AI assistant.
 - First release, as a Zed extension: Markdown to PDF with Chromium, syntax highlighting,
   structured headers and footers, placeholders and date formats.
 
-[Unreleased]: https://github.com/matinfo/markdown-pdf-export/compare/npm-v2.0.1...HEAD
+[Unreleased]: https://github.com/matinfo/markdown-pdf-export/compare/npm-v2.0.2...HEAD
+[2.0.2]: https://github.com/matinfo/markdown-pdf-export/compare/npm-v2.0.1...npm-v2.0.2
 [2.0.1]: https://github.com/matinfo/markdown-pdf-export/compare/npm-v2.0.0...npm-v2.0.1
 [2.0.0]: https://github.com/matinfo/markdown-pdf-export/compare/v0.2.0...npm-v2.0.0
 [0.2.0]: https://github.com/matinfo/markdown-pdf-export/compare/v0.1.4...v0.2.0

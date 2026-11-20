@@ -8,6 +8,10 @@
 Turn Markdown files into clean PDFs from VS Code, Zed, Cursor, Claude or any AI assistant, or from
 the command line.
 
+<p align="center">
+  <img src="https://raw.githubusercontent.com/matinfo/markdown-pdf-export/main/docs/public/img/banner.jpeg" alt="Markdown PDF Export: Markdown to polished PDFs from VS Code, Copilot, Cursor, any MCP client or the command line" width="100%">
+</p>
+
 Full documentation: <https://matinfo.github.io/markdown-pdf-export/>
 
 ![Studio: page style, fonts, paper, header and footer on the left, a live preview of the PDF on the right](https://raw.githubusercontent.com/matinfo/markdown-pdf-export/main/docs/public/img/studio.png)

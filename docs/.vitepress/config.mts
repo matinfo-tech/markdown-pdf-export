@@ -18,11 +18,11 @@ export default defineConfig({
     ["meta", { name: "google-site-verification", content: "KBXM8qqqdgKLdS68uTL07unkLjflV0tz33rCykkgiPc" }],
     ["meta", { property: "og:type", content: "website" }],
     ["meta", { property: "og:site_name", content: "Markdown PDF Export" }],
-    ["meta", { property: "og:image", content: `${SITE}banner.jpeg` }],
+    ["meta", { property: "og:image", content: `${SITE}img/banner.jpeg` }],
     ["meta", { property: "og:image:width", content: "1456" }],
     ["meta", { property: "og:image:height", content: "720" }],
     ["meta", { name: "twitter:card", content: "summary_large_image" }],
-    ["meta", { name: "twitter:image", content: `${SITE}banner.jpeg` }],
+    ["meta", { name: "twitter:image", content: `${SITE}img/banner.jpeg` }],
   ],
 
   sitemap: { hostname: SITE },
