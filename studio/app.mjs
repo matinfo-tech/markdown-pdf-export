@@ -492,7 +492,7 @@ async function openEditors() {
   const dialog = $("editors");
   const list = $("editors-list");
   list.replaceChildren(el("p", { class: "hint", text: "Looking for your editors…" }));
-  dialog.showModal();
+  if (!dialog.open) dialog.showModal();
   let editors;
   try {
     editors = await api("/api/editors");
@@ -509,16 +509,7 @@ async function openEditors() {
       EDITOR_NOTES[editor.id] ? el("p", { class: "editor-note", text: EDITOR_NOTES[editor.id] }) : null,
       ...editor.items.map((item, index) => {
         const result = el("div", { class: "result", role: "status" });
-        const copy = el("button", {
-          type: "button",
-          class: "btn small",
-          text: "Copy",
-          onclick: async () => {
-            await navigator.clipboard.writeText(item.snippet);
-            copy.textContent = "Copied";
-            setTimeout(() => (copy.textContent = "Copy"), 1500);
-          },
-        });
+        const copy = copyButton(item.snippet);
         const auto =
           item.write === "print"
             ? null
@@ -596,8 +587,125 @@ async function openEditors() {
     tabs.append(button);
   });
 
-  list.replaceChildren(tabs, panel);
+  const found = sorted.filter((e) => e.detected);
+  const manual = el(
+    "details",
+    { class: "manual", open: found.length === 0 },
+    el("summary", { text: found.length ? "All editors and manual steps" : "Pick your editor" }),
+    tabs,
+    panel,
+  );
+  list.replaceChildren(quickSetup(found), manual);
   select(current);
+}
+
+function copyButton(text) {
+  const button = el("button", {
+    type: "button",
+    class: "btn small",
+    text: "Copy",
+    onclick: async () => {
+      await navigator.clipboard.writeText(text);
+      button.textContent = "Copied";
+      setTimeout(() => (button.textContent = "Copy"), 1500);
+    },
+  });
+  return button;
+}
+
+const KIND_LABEL = { task: "export task", mcp: "AI tools" };
+
+/**
+ * Editors found on this computer, one switch each (on by default). Already
+ * set-up parts are skipped; files that exist are never edited — the person
+ * gets the snippet to paste instead.
+ */
+function quickSetup(found) {
+  const box = el("section", { class: "quick", "aria-label": "Editors found on this computer" });
+  if (found.length === 0) {
+    box.append(el("p", { class: "hint", text: "No editor found on this computer. Pick yours below." }));
+    return box;
+  }
+  box.append(el("h3", { text: "Found on this computer" }));
+
+  const rows = found.map((editor) => {
+    const todo = editor.items.map((item, index) => ({ item, index })).filter((x) => x.item.pending);
+    const result = el("div", { class: "quick-result", role: "status" });
+    if (todo.length === 0) {
+      const row = el(
+        "div",
+        { class: "quick-row done" },
+        el("span", { class: "tick", "aria-hidden": "true", text: "✓" }),
+        el("span", { class: "quick-name", text: editor.name }),
+        el("span", { class: "quick-what", text: "Already set up" }),
+      );
+      return { row, toggle: null };
+    }
+    const id = `quick-${editor.id}`;
+    const toggle = el("input", { type: "checkbox", role: "switch", class: "switch", id, checked: true });
+    const what = [...new Set(todo.map((x) => KIND_LABEL[x.item.kind]))].join(" + ");
+    const row = el(
+      "div",
+      { class: "quick-row" },
+      toggle,
+      el("label", { for: id, class: "quick-name", text: editor.name }),
+      el("span", { class: "quick-what", text: what }),
+      result,
+    );
+    return { row, toggle, editor, todo, result };
+  });
+
+  const pending = rows.filter((r) => r.toggle);
+  box.append(...rows.map((r) => r.row));
+  if (pending.length === 0) {
+    box.append(el("p", { class: "hint", text: "Everything found here is set up." }));
+    return box;
+  }
+
+  const go = el("button", { type: "button", class: "btn primary" });
+  const selected = () => pending.filter((r) => r.toggle.checked && !r.toggle.disabled);
+  const refresh = () => {
+    const n = selected().length;
+    go.textContent = n ? `Set up ${n} editor${n > 1 ? "s" : ""}` : "Nothing selected";
+    go.disabled = n === 0;
+  };
+  for (const r of pending) r.toggle.addEventListener("change", refresh);
+
+  const line = (ok, text, title) => el("p", { class: ok ? "ok" : "bad", text: `${ok ? "✓" : "✗"} ${text}`, title });
+  const paste = (item, why) =>
+    el(
+      "div",
+      { class: "paste" },
+      el("div", { class: "step-head" }, el("span", { text: why }), copyButton(item.snippet)),
+      el("pre", { text: item.snippet }),
+    );
+
+  go.addEventListener("click", async () => {
+    go.disabled = true;
+    for (const r of selected()) {
+      r.toggle.disabled = true;
+      r.result.replaceChildren();
+      for (const { item, index } of r.todo) {
+        const label = KIND_LABEL[item.kind];
+        if (item.write === "print") {
+          r.result.append(paste(item, `${label}: paste this into ${item.file}`));
+          continue;
+        }
+        try {
+          const { done, message } = await api("/api/editors/apply", { method: "POST", json: { id: r.editor.id, index } });
+          r.result.append(line(done, done ? `${label} added` : `${label}: ${message}`, message));
+          if (!done) r.result.append(paste(item, "Run or add this yourself:"));
+        } catch (error) {
+          r.result.append(line(false, `${label}: ${error.message}`), paste(item, "Run or add this yourself:"));
+        }
+      }
+    }
+    refresh();
+    if (selected().length === 0) go.textContent = "Done";
+  });
+  refresh();
+  box.append(el("div", { class: "quick-foot" }, go));
+  return box;
 }
 
 // ── start ───────────────────────────────────────────────────────────────────

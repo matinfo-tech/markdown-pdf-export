@@ -55,4 +55,19 @@ Or export straight from the terminal. Put the path of your file at the end:
 
 The PDF appears next to your file, with the same name.
 
+<details>
+<summary>Something wrong? Two commands that help</summary>
+
+**Check everything.** Shows the version, the browser, your settings file and which editors are set up,
+with the fix for anything missing:
+
+<CopyCommand command="npx -y markdown-pdf-export doctor" />
+
+**Set up my editors.** Finds the editors on your computer and asks, one by one, whether to add the
+export command and the AI tools. [More on editors](/editors).
+
+<CopyCommand command="npx -y markdown-pdf-export setup" />
+
+</details>
+
 [Something did not work? Help](/help){.more}

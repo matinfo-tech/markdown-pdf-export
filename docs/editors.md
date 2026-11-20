@@ -8,7 +8,7 @@ title: Your editor
 <p class="lead">Export the file you are writing with one keystroke, or ask your AI assistant. One-time setup, then nothing more.</p>
 
 The easy way: open [Studio](/studio) and press **Add to my editor**. Or paste this in a terminal; it
-finds your editors and shows what to add:
+finds your editors and asks, one by one, whether to set them up:
 
 <CopyCommand command="npx -y markdown-pdf-export setup" />
 
@@ -65,7 +65,7 @@ copilot mcp add markdown-pdf -- npx -y markdown-pdf-export mcp
 **1. Set up, once.** Press **Add to my editor** in Studio, or run this in a terminal:
 
 ```sh
-claude mcp add markdown-pdf -- npx -y markdown-pdf-export mcp
+claude mcp add --scope user markdown-pdf -- npx -y markdown-pdf-export mcp
 ```
 
 **2. Use it.** Start `claude` and type *Export report.md to PDF*.
@@ -138,16 +138,36 @@ Claude Desktop:
 }
 ```
 
-*A key for the export (optional).* In `keymap.json`:
-
-```json
-[{ "context": "Workspace", "bindings": { "cmd-alt-e": ["task::Spawn", { "task_name": "Markdown: Export to PDF" }] } }]
-```
-
 **2. Use it.**
 
 - **Export:** open a Markdown file, then **task: spawn → Markdown: Export to PDF**, or your key.
 - **Ask:** in the Agent panel, type *Export this file to PDF*.
+
+<details>
+<summary>Zed tips: a keyboard shortcut and more</summary>
+
+**A keyboard shortcut.** Add this to `~/.config/zed/keymap.json`:
+
+```json
+[
+  {
+    "context": "Editor && extension == md",
+    "bindings": {
+      "cmd-shift-o": ["task::Spawn", { "task_name": "Markdown: Export to PDF" }]
+    }
+  }
+]
+```
+
+- The `context` line limits the key to Markdown files, so it keeps its usual job elsewhere.
+- On a Mac, `cmd` is ⌘ and `alt` is the Option key ⌥. On Windows and Linux, use `ctrl` instead of `cmd`.
+- To check a key is free, open the keymap editor (⌘K ⌘S) and search for it.
+
+**Export again.** **task: rerun** repeats the last export without picking it from the list.
+
+**One project only.** Put the task in `.zed/tasks.json` inside the project instead of `~/.config/zed/tasks.json`.
+
+</details>
 
 </template>
 <template #other>
