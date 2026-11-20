@@ -97,6 +97,9 @@ function pickLayout(id: string) {
   const l = LAYOUTS.find((x) => x.id === id)!;
   draft.header = l.header();
   draft.footer = l.footer();
+  // Online there is no file picker: a logo spot uses the default path so the sheet shows it.
+  for (const a of ["header", "footer"] as const)
+    for (const z of ZONES) if (draft[a][z].kind === "image" && !draft[a][z].image) draft[a][z].image = LOGO_PATH;
 }
 
 function spotText(s: any) {
@@ -178,7 +181,13 @@ const hasLogo = computed(() =>
           <div class="seg" role="radiogroup" aria-label="Orientation">
             <button v-for="[v, t] in [['portrait', 'Portrait'], ['landscape', 'Landscape']]" :key="v" type="button"
               role="radio" :aria-checked="draft.orientation === v" :class="{ on: draft.orientation === v }"
-              @click="draft.orientation = v">{{ t }}</button>
+              @click="draft.orientation = v">
+              <svg class="ico" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true">
+                <rect v-if="v === 'portrait'" x="4" y="2" width="8" height="12" rx="1.2"/>
+                <rect v-else x="2" y="4" width="12" height="8" rx="1.2"/>
+              </svg>
+              {{ t }}
+            </button>
           </div>
         </div>
         <span class="label">Margins</span>
@@ -219,7 +228,7 @@ const hasLogo = computed(() =>
         <div class="seg">
           <button type="button" :class="{ on: slot.kind !== 'image' }" @click="setKind('text')">Text</button>
           <button type="button" :class="{ on: slot.kind === 'image' }" @click="setKind('image')">Logo</button>
-          <button type="button" @click="setKind('none')">Clear</button>
+          <button type="button" class="clear" @click="setKind('none')"><svg class="ico" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4.5h11M6 4.5V3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v1.5M4 4.5l.6 8.1a1 1 0 0 0 1 .9h4.8a1 1 0 0 0 1-.9l.6-8.1M6.7 7v4M9.3 7v4"/></svg>Clear</button>
         </div>
         <template v-if="slot.kind !== 'image'">
           <input v-model="slot.text" type="text" placeholder="Type here, or pick something below"
@@ -258,8 +267,12 @@ const hasLogo = computed(() =>
       <div class="result">
         <h2>Your settings file</h2>
         <div class="actions">
-          <button type="button" class="primary" @click="download">Download settings.json</button>
-          <button type="button" @click="copy">{{ copied ? "Copied" : "Copy" }}</button>
+          <button type="button" class="primary" @click="download"><svg class="ico" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2v8M4.5 6.5 8 10l3.5-3.5M3 13h10"/></svg>Download settings.json</button>
+          <button type="button" @click="copy">
+            <svg v-if="copied" class="ico" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 8.5 3.5 3.5L13 4.5"/></svg>
+            <svg v-else class="ico" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5.5" y="5.5" width="8" height="8" rx="1.5"/><path d="M10.5 5.5V4A1.5 1.5 0 0 0 9 2.5H4A1.5 1.5 0 0 0 2.5 4v5A1.5 1.5 0 0 0 4 10.5h1.5"/></svg>
+            {{ copied ? "Copied" : "Copy" }}
+          </button>
         </div>
         <p>Put it here. Every export from your editor, AI assistant or terminal then uses it.</p>
         <PickTabs group="os" tabs="mac:macOS,windows:Windows,linux:Linux">
@@ -298,7 +311,7 @@ h2 {
 }
 .looks {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 6px;
 }
 .looks button {
@@ -339,7 +352,7 @@ h2 {
 select,
 input[type="text"] {
   width: 100%;
-  padding: 7px 10px;
+  padding: 4px 10px;
   border: 1px solid var(--mpe-line);
   border-radius: 6px;
   background: var(--mpe-surface);
@@ -356,6 +369,7 @@ input[type="text"] {
 }
 .seg {
   display: flex;
+  flex: 1 1 0;
   gap: 4px;
 }
 .seg.wrap {
@@ -371,6 +385,20 @@ input[type="text"] {
   font-weight: 600;
   background: var(--mpe-surface);
   color: var(--mpe-text);
+  flex: 1 1 0;
+  white-space: nowrap;
+}
+.seg button.clear {
+  flex: 0 0 80px;
+}
+.seg button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.seg .ico {
+  flex: none;
 }
 .mini {
   margin: 16px 0 12px;
@@ -457,7 +485,7 @@ input[type="text"] {
 }
 input[type="color"] {
   width: 34px;
-  height: 30px;
+  height: 34px;
   padding: 0 2px;
   border: 1px solid var(--mpe-line);
   border-radius: 6px;
@@ -483,6 +511,15 @@ input[type="color"] {
 .actions {
   display: flex;
   gap: 8px;
+}
+.actions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.actions .ico {
+  flex: none;
 }
 .actions .primary {
   border-color: transparent;
