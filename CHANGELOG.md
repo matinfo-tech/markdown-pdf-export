@@ -26,7 +26,7 @@ All notable changes to `markdown-pdf-export`. The format follows
   Registry.
 - Docs site: Google Search Console verification.
 - README and link previews: new banner image.
-- Design online and the "Your editor" page explain each step in order: set up once, then use.
+- The "Your editor" page explains each editor in order: set up once, then use.
 
 ## [2.0.1] - 2026-11-20
 
