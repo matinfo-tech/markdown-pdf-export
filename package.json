@@ -89,7 +89,7 @@
     "type": "git",
     "url": "git+https://github.com/matinfo-tech/markdown-pdf-export.git"
   },
-  "homepage": "https://matinfo-tech.github.io/markdown-pdf-export/",
+  "homepage": "https://markdown-pdf.matinfo.tech/",
   "bugs": {
     "url": "https://github.com/matinfo-tech/markdown-pdf-export/issues"
   },

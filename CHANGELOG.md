@@ -12,7 +12,7 @@ All notable changes to `markdown-pdf-export`. The format follows
 
 - The project moved to the GitHub organisation `matinfo-tech`:
   <https://github.com/matinfo-tech/markdown-pdf-export>. The documentation is now at
-  <https://matinfo-tech.github.io/markdown-pdf-export/>, and the settings `$schema` URL changed with it.
+  <https://markdown-pdf.matinfo.tech/>, and the settings `$schema` URL changed with it.
 - The MCP Registry name is now `io.github.matinfo-tech/markdown-pdf-export`.
 
 ## [2.0.2] - 2026-11-20

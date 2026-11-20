@@ -37,7 +37,7 @@ The PDF is saved next to the Markdown file. If something does not work, run
 
 ## Next
 
-- [Get started](https://matinfo-tech.github.io/markdown-pdf-export/start)
-- [Editors](https://matinfo-tech.github.io/markdown-pdf-export/editors)
-- [Studio](https://matinfo-tech.github.io/markdown-pdf-export/studio)
-- [Help](https://matinfo-tech.github.io/markdown-pdf-export/help)
+- [Get started](https://markdown-pdf.matinfo.tech/start)
+- [Editors](https://markdown-pdf.matinfo.tech/editors)
+- [Studio](https://markdown-pdf.matinfo.tech/studio)
+- [Help](https://markdown-pdf.matinfo.tech/help)

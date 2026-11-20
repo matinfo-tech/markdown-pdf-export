@@ -1,8 +1,8 @@
 import { fileURLToPath } from "node:url";
 import { defineConfig } from "vitepress";
 
-const BASE = "/markdown-pdf-export/";
-const SITE = "https://matinfo-tech.github.io/markdown-pdf-export/";
+const BASE = "/";
+const SITE = "https://markdown-pdf.matinfo.tech/";
 const DESCRIPTION = "Turn Markdown into a PDF worth sending, with your header, footer, page numbers and logo.";
 
 export default defineConfig({
