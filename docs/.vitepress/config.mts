@@ -2,7 +2,7 @@ import { fileURLToPath } from "node:url";
 import { defineConfig } from "vitepress";
 
 const BASE = "/markdown-pdf-export/";
-const SITE = "https://matinfo.github.io/markdown-pdf-export/";
+const SITE = "https://matinfo-tech.github.io/markdown-pdf-export/";
 const DESCRIPTION = "Turn Markdown into a PDF worth sending, with your header, footer, page numbers and logo.";
 
 export default defineConfig({
@@ -73,14 +73,14 @@ export default defineConfig({
       "/reference/": sidebarAdvanced(),
     },
 
-    socialLinks: [{ icon: "github", link: "https://github.com/matinfo/markdown-pdf-export" }],
+    socialLinks: [{ icon: "github", link: "https://github.com/matinfo-tech/markdown-pdf-export" }],
 
     footer: { message: "Released under the MIT License." },
 
     search: { provider: "local" },
 
     editLink: {
-      pattern: "https://github.com/matinfo/markdown-pdf-export/edit/main/docs/:path",
+      pattern: "https://github.com/matinfo-tech/markdown-pdf-export/edit/main/docs/:path",
       text: "Improve this page on GitHub",
     },
   },

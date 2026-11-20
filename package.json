@@ -1,9 +1,9 @@
 {
   "name": "markdown-pdf-export",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "Markdown to PDF with your header, footer, page numbers and logo. Design pages in Studio, export from VS Code, Zed, Cursor, Claude or any MCP client, or the command line.",
   "type": "module",
-  "mcpName": "io.github.matinfo/markdown-pdf-export",
+  "mcpName": "io.github.matinfo-tech/markdown-pdf-export",
   "main": "export.mjs",
   "exports": {
     ".": "./export.mjs",
@@ -87,11 +87,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/matinfo/markdown-pdf-export.git"
+    "url": "git+https://github.com/matinfo-tech/markdown-pdf-export.git"
   },
-  "homepage": "https://matinfo.github.io/markdown-pdf-export/",
+  "homepage": "https://matinfo-tech.github.io/markdown-pdf-export/",
   "bugs": {
-    "url": "https://github.com/matinfo/markdown-pdf-export/issues"
+    "url": "https://github.com/matinfo-tech/markdown-pdf-export/issues"
   },
   "packageManager": "npm@11.12.1",
   "devDependencies": {

@@ -1,5 +1,5 @@
 {
-  "$schema": "https://matinfo.github.io/markdown-pdf-export/schema/settings.schema.json",
+  "$schema": "https://matinfo-tech.github.io/markdown-pdf-export/schema/settings.schema.json",
   "footer": {
     "center_text": "Page {page} of {pages}"
   }

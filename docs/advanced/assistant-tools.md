@@ -43,7 +43,7 @@ After `npm install -g markdown-pdf-export`, use `"command": "markdown-pdf-export
 `"args": ["mcp"]`. If the editor is started from the dock or start menu and cannot find `npx`, use
 the full path to `npx` (or to `node` and `cli.mjs`); `setup` writes these paths for you.
 
-In MCP registries the server is listed as `io.github.matinfo/markdown-pdf-export`.
+In MCP registries the server is listed as `io.github.matinfo-tech/markdown-pdf-export`.
 
 The server reads the same [settings files](/advanced/settings-file) as the command line. An `env`
 object in the entry can set `MARKDOWN_PDF_SETTINGS`, `MARKDOWN_PDF_BROWSER` or

@@ -48,5 +48,5 @@ once with `npm install -g markdown-pdf-export` and use `markdown-pdf-export` ins
 
 ## Still stuck?
 
-[Open an issue on GitHub](https://github.com/matinfo/markdown-pdf-export/issues) and paste what
+[Open an issue on GitHub](https://github.com/matinfo-tech/markdown-pdf-export/issues) and paste what
 `doctor` prints.
