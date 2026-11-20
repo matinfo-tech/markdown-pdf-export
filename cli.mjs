@@ -6,6 +6,7 @@
  *   markdown-pdf-export studio                design pages in the browser (live preview)
  *   markdown-pdf-export doctor [file.md]      check browser + settings
  *   markdown-pdf-export init [--template t]   create the settings file
+ *   markdown-pdf-export init --from file      install a settings file (e.g. from the online designer)
  *   markdown-pdf-export setup [editor]        print editor task + MCP snippets
  *   markdown-pdf-export install-browser       download Playwright's Chromium (~200 MB)
  *   markdown-pdf-export mcp                   run as an MCP server on stdio
@@ -18,6 +19,7 @@
  */
 import { spawn } from "node:child_process";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import process from "node:process";
 import readline from "node:readline/promises";
@@ -79,6 +81,7 @@ Usage:
   ${BIN} studio [--project] [--file <doc.md>]   design pages in the browser
   ${BIN} doctor [file.md] [--json]
   ${BIN} init [--look <n>] [--font <n>] [--template <n>] [--project] [--force] [--list]
+  ${BIN} init --from <file> [--project] [--force]
   ${BIN} setup [${EDITOR_IDS.join("|")}|all] [--write]
   ${BIN} install-browser
   ${BIN} mcp
@@ -483,6 +486,77 @@ async function promptInit(templates) {
   }
 }
 
+/** Image paths a settings object refers to in its header and footer, as written. */
+function referencedImages(data) {
+  const found = [];
+  const walk = (node, key) => {
+    if (typeof node === "string") {
+      if (key === "src" || key?.endsWith("_image")) found.push(node);
+    } else if (Array.isArray(node)) {
+      for (const item of node) walk(item, key);
+    } else if (node && typeof node === "object") {
+      for (const [k, v] of Object.entries(node)) walk(v, k);
+    }
+  };
+  walk(data.header);
+  walk(data.footer);
+  return [...new Set(found)];
+}
+
+/** Where an image reference of a settings file at `dir` points on disk. */
+function imageLocation(ref, data, dir) {
+  if (ref.startsWith("@/")) return path.resolve(dir, data.assets_directory ?? ".", ref.slice(2));
+  if (ref.startsWith("~/")) return path.join(os.homedir(), ref.slice(2));
+  return path.resolve(dir, ref);
+}
+
+/** `init --from`: validate a settings file (for example the one downloaded from the online designer) and install it. */
+function installSettingsFile(from, target, force) {
+  const source = path.resolve(from);
+  let text;
+  try {
+    text = fs.readFileSync(source, "utf8").replace(/^\uFEFF/, "");
+  } catch (error) {
+    throw new UsageError(`Cannot read ${source}: ${error.message}`);
+  }
+  let data;
+  try {
+    data = JSON.parse(text);
+  } catch (error) {
+    throw new UsageError(`${source} is not valid JSON: ${error.message}`);
+  }
+  if (!data || typeof data !== "object" || Array.isArray(data)) {
+    throw new UsageError(`${source}: the top level must be a JSON object.`);
+  }
+  const { warnings } = applyPresets(data);
+  for (const warning of warnings) process.stderr.write(`${source}: ${warning}\n`);
+
+  const exists = fs.existsSync(target);
+  if (path.resolve(target) === source) {
+    process.stderr.write(`${BIN}: ${target} is already the settings file.\n`);
+    return 0;
+  }
+  if (exists && !force) {
+    process.stderr.write(`${BIN}: ${target} already exists — not overwriting (use --force).\n`);
+    return 1;
+  }
+  fs.mkdirSync(path.dirname(target), { recursive: true });
+  if (exists) {
+    fs.copyFileSync(target, `${target}.bak`);
+    process.stderr.write(`Kept the previous file as ${target}.bak\n`);
+  }
+  fs.writeFileSync(target, text.endsWith("\n") ? text : `${text}\n`);
+  process.stderr.write("Installed your settings to:\n");
+  process.stdout.write(`${target}\n`);
+
+  const dir = path.dirname(target);
+  for (const ref of referencedImages(data)) {
+    const where = imageLocation(ref, data, dir);
+    if (!fs.existsSync(where)) process.stderr.write(`Put your logo at ${where}  (settings say "${ref}")\n`);
+  }
+  return 0;
+}
+
 async function runInit(argv) {
   const flags = parseSubArgs(argv, {
     template: "string",
@@ -491,12 +565,16 @@ async function runInit(argv) {
     project: "boolean",
     force: "boolean",
     list: "boolean",
+    from: "string",
   });
   if (flags.help) {
     process.stdout.write(
-      `Usage: ${BIN} init [--look <n>] [--font <n>] [--template <n>] [--project] [--force] [--list]\n\n` +
+      `Usage: ${BIN} init [--look <n>] [--font <n>] [--template <n>] [--project] [--force] [--list]\n` +
+        `       ${BIN} init --from <file> [--project] [--force]\n\n` +
         `Creates ${userSettingsPath()}\n` +
-        `(or ./${PROJECT_SETTINGS_FILENAME} with --project) from a template.\n`,
+        `(or ./${PROJECT_SETTINGS_FILENAME} with --project) from a template.\n` +
+        "--from installs a settings file you already have, such as the one downloaded from\n" +
+        "the online designer. It is checked first; an existing file is kept as .bak with --force.\n",
     );
     return 0;
   }
@@ -510,6 +588,12 @@ async function runInit(argv) {
   const target = flags.project
     ? path.resolve(PROJECT_SETTINGS_FILENAME)
     : userSettingsPath();
+  if (flags.from !== undefined) {
+    if (flags.template || flags.look || flags.font) {
+      throw new UsageError("--from cannot be combined with --template, --look or --font.");
+    }
+    return installSettingsFile(flags.from, target, flags.force);
+  }
   if (fs.existsSync(target) && !flags.force) {
     process.stderr.write(
       `${BIN}: ${target} already exists — not overwriting (use --force).\n`,

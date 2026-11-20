@@ -13,7 +13,7 @@ A settings file is a small JSON file. This one is complete:
 }
 ```
 
-Studio and `init` write this file for you. Every export reads it: the command line, editor tasks and
+Studio and `init` write this file for you, and `init --from` installs one you downloaded. Every export reads it: the command line, editor tasks and
 the AI assistant tools.
 
 ## Where it lives
@@ -58,6 +58,26 @@ npx -y markdown-pdf-export init --template corporate --project
 
 With `--look` or `--font`, `init` writes the short form shown at the top of this page. With
 `--template` alone, it copies the whole template so you can edit every line.
+
+### Install a file you already have
+
+If you designed your settings in [Design online](/online), or got a settings file from a colleague,
+`init --from` checks it and puts it where the tool looks for it:
+
+```sh
+npx -y markdown-pdf-export init --from ~/Downloads/settings.json
+npx -y markdown-pdf-export init --from ~/Downloads/settings.json --project
+```
+
+| Behaviour | Detail |
+|---|---|
+| Destination | The user file, or `.markdown-pdf.json` in the current folder with `--project`. |
+| Check | The file must be a JSON object. Invalid JSON stops with an error and writes nothing. An unknown preset name (such as `"look": "fancy"`) prints a warning; the file is still installed. |
+| Content | Copied as written (nothing is rewritten). A byte order mark is removed. |
+| Existing file | Refused unless you add `--force`. With `--force`, the old file is kept next to it as `settings.json.bak`. |
+| Logo | Image paths are relative to the destination file. If a logo the file mentions does not exist, `init` prints where to put it, for example `…/markdown-pdf-export/assets/logo.png`. |
+
+`--from` cannot be combined with `--look`, `--font` or `--template`.
 
 ## Project settings
 

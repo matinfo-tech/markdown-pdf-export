@@ -8,6 +8,9 @@ All notable changes to `markdown-pdf-export`. The format follows
 
 ### Added
 
+- `init --from <file>` installs a settings file you already have, such as the one downloaded from
+  Design online. It checks the file, refuses to overwrite without `--force` (and then keeps a `.bak`
+  copy) and says where to put a missing logo. Design online now shows this command.
 - More ways to start a new page: the classes `page-break`, `pagebreak`, `page_break`, `new-page`,
   `newpage` and `break-page` (besides `page`), and the comments `<!-- page-break -->`,
   `<!-- pagebreak -->`, `<!-- new-page -->` and `<!-- page -->`. They also work when the default

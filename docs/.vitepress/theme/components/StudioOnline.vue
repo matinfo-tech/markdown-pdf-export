@@ -10,6 +10,7 @@ import {
 } from "../../../../studio/model.mjs";
 import Sheet from "./Sheet.vue";
 import PickTabs from "./PickTabs.vue";
+import CopyCommand from "./CopyCommand.vue";
 
 const SCHEMA = "https://matinfo.github.io/markdown-pdf-export/schema/settings.schema.json";
 const LOGO_PATH = "assets/logo.png";
@@ -274,12 +275,24 @@ const hasLogo = computed(() =>
             {{ copied ? "Copied" : "Copy" }}
           </button>
         </div>
-        <p>Put it here. Every export from your editor, AI assistant or terminal then uses it.</p>
+        <p>Use it with one command. It checks the file and puts it where every export looks for it.</p>
         <PickTabs group="os" tabs="mac:macOS,windows:Windows,linux:Linux">
-          <template #mac><code class="path">~/.config/markdown-pdf-export/settings.json</code></template>
-          <template #windows><code class="path">%APPDATA%\markdown-pdf-export\settings.json</code></template>
-          <template #linux><code class="path">~/.config/markdown-pdf-export/settings.json</code></template>
+          <template #mac><CopyCommand command="npx -y markdown-pdf-export init --from ~/Downloads/settings.json" /></template>
+          <template #windows><CopyCommand command="npx -y markdown-pdf-export init --from $HOME\Downloads\settings.json" /></template>
+          <template #linux><CopyCommand command="npx -y markdown-pdf-export init --from ~/Downloads/settings.json" /></template>
         </PickTabs>
+        <p class="hint">
+          The file must be in your Downloads folder, as <code>settings.json</code>. Windows: use PowerShell.
+          Already have a settings file? Add <code>--force</code>; the old one is kept as a <code>.bak</code> copy.
+        </p>
+        <details>
+          <summary>Or copy it by hand</summary>
+          <PickTabs group="os" tabs="mac:macOS,windows:Windows,linux:Linux">
+            <template #mac><code class="path">~/.config/markdown-pdf-export/settings.json</code></template>
+            <template #windows><code class="path">%APPDATA%\markdown-pdf-export\settings.json</code></template>
+            <template #linux><code class="path">~/.config/markdown-pdf-export/settings.json</code></template>
+          </PickTabs>
+        </details>
         <p v-if="hasLogo" class="logo-note">
           Logo: put your image in a folder named <code>assets</code> next to the file, as <code>logo.png</code>.
         </p>
@@ -528,6 +541,10 @@ input[type="color"] {
 }
 .actions .primary:hover {
   background: var(--mpe-accent-hover);
+}
+.hint {
+  font-size: 14px;
+  color: var(--mpe-muted);
 }
 .path {
   display: block;
