@@ -36,7 +36,7 @@ Most clients (Claude Desktop, Cursor and many others) use this JSON:
 
 ```sh
 code --add-mcp '{"name":"markdown-pdf","command":"npx","args":["-y","markdown-pdf-export","mcp"]}'
-claude mcp add markdown-pdf -- npx -y markdown-pdf-export mcp
+claude mcp add --scope user markdown-pdf -- npx -y markdown-pdf-export mcp
 ```
 
 After `npm install -g markdown-pdf-export`, use `"command": "markdown-pdf-export"` with

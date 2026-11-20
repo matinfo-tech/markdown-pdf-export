@@ -874,6 +874,7 @@ export async function doctorMarkdownPdf(args) {
   );
 
   return {
+    version: SERVER_VERSION,
     browser: browserInfo,
     settings_sources: doc.sources,
     settings: {

@@ -40,8 +40,17 @@ import {
   userSettingsPath,
 } from "./lib/settings-loader.mjs";
 import { formatDoctor } from "./lib/doctor-report.mjs";
+import { makeStyle } from "./lib/term-style.mjs";
 import { LOOKS, FONTS, applyPresets } from "./lib/looks.mjs";
-import { EDITOR_IDS, applySetupItem, buildEditorSetup, launchSpec } from "./lib/editor-setup.mjs";
+import {
+  EDITOR_IDS,
+  ITEM_LABELS,
+  applySetupItem,
+  buildEditorSetup,
+  editorStatus,
+  launchSpec,
+  pendingItems,
+} from "./lib/editor-setup.mjs";
 
 const BIN = "markdown-pdf-export";
 const CLI_PATH = fileURLToPath(import.meta.url);
@@ -275,12 +284,15 @@ async function main(argv) {
   if (fromArg) setSettings(fromArg.data, fromArg.file);
 
   if (isDoctor) {
-    const report = await doctorMarkdownPdf({ input_path: positional[0] });
+    const report = {
+      ...(await doctorMarkdownPdf({ input_path: positional[0] })),
+      editors: editorStatus(),
+    };
     if (asJson) {
       process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
       return report.browser.available ? 0 : 1;
     }
-    const { text, ok } = formatDoctor(report, { bin: BIN });
+    const { text, ok } = formatDoctor(report, { bin: BIN, style: makeStyle() });
     process.stdout.write(text);
     return ok ? 0 : 1;
   }
@@ -322,7 +334,8 @@ async function runMenu() {
     if (pick === "1") return runSetup([]);
     if (pick === "2") return runStudio([]);
     if (pick === "3") {
-      const { text, ok } = formatDoctor(await doctorMarkdownPdf({}), { bin: BIN });
+      const report = { ...(await doctorMarkdownPdf({})), editors: editorStatus() };
+      const { text, ok } = formatDoctor(report, { bin: BIN, style: makeStyle() });
       process.stdout.write(text);
       return ok ? 0 : 1;
     }
@@ -661,14 +674,90 @@ async function runInit(argv) {
 
 // ── setup ────────────────────────────────────────────────────────────────────
 
+/**
+ * Ask editor by editor; skip what is already set up. Returns an exit code
+ * (130 when the person aborts with Ctrl+C / Ctrl+D).
+ */
+async function setupInteractive(setups, c) {
+  const out = process.stdout;
+  const status = Object.fromEntries(editorStatus().map((e) => [e.id, e]));
+  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+  let aborted = false;
+  rl.on("SIGINT", () => {
+    aborted = true;
+    rl.close();
+  });
+  const ask = async (question) => {
+    try {
+      const answer = (await rl.question(question)).trim().toLowerCase();
+      return answer === "" || answer === "y" || answer === "yes" || answer === "o" || answer === "oui";
+    } catch {
+      aborted = true; // input closed
+      return false;
+    }
+  };
+
+  out.write(`\n${c.bold(`Set up ${BIN} ${SERVER_VERSION}`)}\n`);
+  out.write(c.dim(`Found: ${setups.map((s) => s.name).join(", ")}`) + "\n\n");
+  try {
+    for (const setup of setups) {
+      const todo = pendingItems(setup, status[setup.id]);
+      if (todo.length === 0) {
+        out.write(`${c.green("✓")} ${c.bold(setup.name)}: already set up\n`);
+        continue;
+      }
+      const what = todo.map((i) => ITEM_LABELS[i.kind]).join(" + ");
+      const yes = await ask(`${c.cyan("?")} Set up ${c.bold(setup.name)} (${what})? ${c.dim("[Y/n]")} `);
+      if (aborted) {
+        out.write(`\n${c.yellow("Setup stopped.")}\n`);
+        return 130;
+      }
+      if (!yes) {
+        out.write(`  ${c.dim("· skipped")}\n`);
+        continue;
+      }
+      for (const item of todo) {
+        const label = ITEM_LABELS[item.kind];
+        if (item.write === "print") {
+          out.write(
+            `  ${c.yellow("→")} ${label}: add this to ${item.file}` +
+              `${fs.existsSync(item.file) ? " (merge with what is there)" : ""}:\n` +
+              `${item.snippet.replace(/^/gm, "      ")}\n`,
+          );
+          continue;
+        }
+        const { done, message } = applySetupItem(item, { stdio: "pipe" });
+        if (done) {
+          out.write(`  ${c.green("✓")} ${label}: ${c.green(message)}\n`);
+        } else {
+          out.write(
+            `  ${c.red("✗")} ${label}: ${message}\n` +
+              `${item.snippet.replace(/^/gm, "      ")}\n`,
+          );
+        }
+      }
+    }
+  } finally {
+    rl.close();
+  }
+  const others = EDITOR_IDS.filter((id) => !setups.some((s) => s.id === id));
+  if (others.length) {
+    out.write(c.dim(`\nOther editors: ${BIN} setup <${others.join("|")}>`) + "\n");
+  }
+  return 0;
+}
+
 async function runSetup(argv) {
-  const flags = parseSubArgs(argv, { write: "boolean" });
+  const flags = parseSubArgs(argv, { write: "boolean", print: "boolean" });
   if (flags.help) {
     process.stdout.write(
-      `Usage: ${BIN} setup [${EDITOR_IDS.join("|")}|all] [--write]\n\n` +
-        "Prints the task and MCP snippets for your editors (detected ones by default).\n" +
-        "--write creates config files that do not exist yet and runs editor CLIs;\n" +
-        "existing files are never modified.\n",
+      `Usage: ${BIN} setup [${EDITOR_IDS.join("|")}|all] [--write|--print]\n\n` +
+        "Sets up the export task and AI tools in your editors (the ones found by default).\n" +
+        "In a terminal it asks editor by editor and skips what is already set up.\n" +
+        "--write  set up everything without asking (scripts)\n" +
+        "--print  only show what to add\n" +
+        "Files that do not exist yet are created and editor CLIs are run;\n" +
+        "existing files are never modified: you get the snippet to paste.\n",
     );
     return 0;
   }
@@ -688,28 +777,47 @@ async function runSetup(argv) {
   }
 
   const out = process.stdout;
-  for (const setup of setups) {
-    out.write(`\n━━ ${setup.name}${setup.detected ? "" : " (not detected)"} ━━\n`);
+  const c = makeStyle();
+  const interactive =
+    !flags.write && !flags.print && process.stdin.isTTY && process.stdout.isTTY;
+  if (interactive) {
+    const code = await setupInteractive(setups, c);
+    if (code !== 0) return code;
+  }
+  const status = flags.write ? Object.fromEntries(editorStatus().map((e) => [e.id, e])) : {};
+  for (const setup of interactive ? [] : setups) {
+    const todo = flags.write ? new Set(pendingItems(setup, status[setup.id])) : null;
+    out.write(
+      `\n${c.bold(`━━ ${setup.name} ━━`)}${setup.detected ? "" : c.dim(" (not detected)")}\n`,
+    );
     for (const item of setup.items) {
-      out.write(`\n▸ ${item.label}\n`);
-      if (item.file) out.write(`  file: ${item.file}\n`);
+      out.write(`\n${c.cyan(`▸ ${item.label}`)}\n`);
+      if (item.file) out.write(c.dim(`  file: ${item.file}`) + "\n");
       out.write(`${item.snippet}\n`);
       if (!flags.write) continue;
+      if (!todo.has(item)) {
+        const set = status[setup.id]?.[item.kind] === true;
+        out.write(`  ${set ? c.green("✓") : c.dim("·")} ${set ? "already set up" : "not needed here"}\n`);
+        continue;
+      }
 
       const { done, message } = applySetupItem(item);
-      out.write(`  ${done ? "✓" : item.write === "print" ? "→" : "✗"} ${message}\n`);
+      const mark = done ? c.green("✓") : item.write === "print" ? c.yellow("→") : c.red("✗");
+      out.write(`  ${mark} ${done ? c.green(message) : message}\n`);
     }
   }
 
+  const settingsFile = userSettingsPath();
   out.write(
-    `\nSettings file: ${userSettingsPath()}` +
-      `${fs.existsSync(userSettingsPath()) ? "" : ` (missing — create it with: ${BIN} init)`}\n`,
+    fs.existsSync(settingsFile)
+      ? `\n${c.green("✓")} Settings file: ${settingsFile}\n`
+      : `\n${c.yellow("·")} No settings file yet (built-in look is used). Design your pages: ${c.cyan(`${BIN} studio`)}\n`,
   );
   const report = await doctorMarkdownPdf({});
   out.write(
     report.browser.available
-      ? `Browser: ${report.browser.version} ✓\n`
-      : `Browser: not found — ${report.browser.hint}\n`,
+      ? `${c.green("✓")} Browser: ${report.browser.version}\n`
+      : `${c.red("✗")} Browser: not found — ${report.browser.hint}\n`,
   );
   return report.browser.available ? 0 : 1;
 }

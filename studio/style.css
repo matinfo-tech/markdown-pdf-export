@@ -481,7 +481,8 @@ dialog .hint { margin: 0 0 6px; }
 .step { margin-bottom: 12px; }
 .step-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
 .step-file { font: 11.5px var(--mono); color: var(--quiet); overflow-wrap: anywhere; margin: 2px 0 5px; }
-.step pre {
+.step pre,
+.quick-result pre {
   margin: 0;
   max-height: 150px;
   overflow: auto;
@@ -492,6 +493,48 @@ dialog .hint { margin: 0 0 6px; }
   font: 12px/1.45 var(--mono);
 }
 .step .result { margin-top: 5px; color: var(--ok); }
+
+/* quick setup: editors found here, one switch each */
+.quick { margin: 14px 0 4px; }
+.quick h3 { margin: 0 0 8px; font: 600 12px var(--ui); letter-spacing: 0.06em; text-transform: uppercase; color: var(--quiet); }
+.quick-row {
+  display: grid; grid-template-columns: 40px auto 1fr; align-items: center; gap: 4px 12px;
+  padding: 10px 12px; margin-bottom: 8px;
+  background: var(--surface); border: 1px solid var(--rule); border-radius: 8px;
+}
+.quick-name { font-weight: 600; cursor: pointer; }
+.quick-row.done .quick-name { cursor: default; }
+.quick-what { color: var(--quiet); font-size: 13px; text-align: right; }
+.quick-row.done .quick-what { color: var(--ok); }
+.quick-row .tick { color: var(--ok); font-weight: 700; text-align: center; }
+.quick-result { grid-column: 2 / -1; }
+.quick-result:empty { display: none; }
+.quick-result p { margin: 4px 0 0; font-size: 13px; }
+.quick-result .ok { color: var(--ok); }
+.quick-result .bad { color: var(--error); }
+.quick-result .paste { margin-top: 8px; }
+.quick-result .step-head { margin-bottom: 6px; font-size: 13px; color: var(--quiet); overflow-wrap: anywhere; }
+.quick-foot { display: flex; justify-content: flex-end; margin-top: 4px; }
+
+.switch {
+  appearance: none; position: relative; margin: 0;
+  width: 34px; height: 20px; border-radius: 999px; cursor: pointer;
+  background: var(--rule); transition: background 0.15s;
+}
+.switch::before {
+  content: ""; position: absolute; top: 3px; left: 3px;
+  width: 14px; height: 14px; border-radius: 50%;
+  background: var(--text); transition: transform 0.15s;
+}
+.switch:checked { background: var(--ok); }
+.switch:checked::before { transform: translateX(14px); background: var(--accent-ink); }
+.switch:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.switch:disabled { opacity: 0.5; cursor: default; }
+
+details.manual { margin-top: 18px; border-top: 1px solid var(--rule); padding-top: 12px; }
+details.manual > summary { cursor: pointer; font-weight: 600; color: var(--quiet); }
+details.manual > summary:hover { color: var(--text); }
+details.manual[open] > summary { margin-bottom: 4px; }
 .step .result.bad { color: var(--error); }
 
 /* ── small screens: form first, preview below ───────────────────────────── */
@@ -506,4 +549,5 @@ dialog .hint { margin: 0 0 6px; }
 
 @media (prefers-reduced-motion: reduce) {
   .status.busy::before { animation: none; }
+  .switch, .switch::before { transition: none; }
 }

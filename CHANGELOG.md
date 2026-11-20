@@ -6,6 +6,32 @@ All notable changes to `markdown-pdf-export`. The format follows
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-11-20
+
+### Added
+
+- `setup` now asks, editor by editor, whether to set it up, and skips what is already set up. `--write`
+  sets everything up without asking (for scripts) and the new `--print` only shows what to add. It also
+  accepts the short names `claude`, `code` and `copilot`.
+- `doctor` shows the version and, for each editor found, whether its export command and AI tools are set
+  up, with the command that fixes a missing one. It warns when a task sets `MARKDOWN_PDF_SETTINGS`, which
+  replaces your settings file. `doctor --json` includes `version` and `editors`.
+- Studio's "Add to my editor" lists the editors found on this computer with one switch each, already on.
+  Steps that are already done are skipped; the per-editor tabs stay under "All editors and manual steps".
+- Coloured terminal output for `doctor` and `setup` (green for ready, red for broken, yellow for worth a
+  look). It is off when the output is piped or `NO_COLOR` is set; `FORCE_COLOR` turns it on.
+- Documentation: Zed keyboard shortcut tips, and `doctor` and `setup` in Get started.
+
+### Fixed
+
+- `setup --write` now creates a missing `tasks.json` for VS Code, Cursor and Zed instead of asking you to
+  paste it. It still never changes an existing file.
+- `setup vscode --write` finds the `code` command inside the VS Code app on macOS when it is not on the PATH.
+- `setup claude-code` adds the server with `--scope user`, so it works in every folder, not only the one
+  you ran it from.
+- Cursor: `setup` offers the export command only when the Cursor app is installed. The Cursor Agent
+  command-line tool on its own gets just the AI tools.
+
 ## [2.0.3] - 2026-11-20
 
 ### Changed
@@ -134,7 +160,8 @@ MCP server, usable from any editor or AI assistant.
 - First release, as a Zed extension: Markdown to PDF with Chromium, syntax highlighting,
   structured headers and footers, placeholders and date formats.
 
-[Unreleased]: https://github.com/matinfo-tech/markdown-pdf-export/compare/npm-v2.0.3...HEAD
+[Unreleased]: https://github.com/matinfo-tech/markdown-pdf-export/compare/npm-v2.1.0...HEAD
+[2.1.0]: https://github.com/matinfo-tech/markdown-pdf-export/compare/npm-v2.0.3...npm-v2.1.0
 [2.0.3]: https://github.com/matinfo-tech/markdown-pdf-export/compare/npm-v2.0.2...npm-v2.0.3
 [2.0.2]: https://github.com/matinfo-tech/markdown-pdf-export/compare/npm-v2.0.1...npm-v2.0.2
 [2.0.1]: https://github.com/matinfo-tech/markdown-pdf-export/compare/npm-v2.0.0...npm-v2.0.1
