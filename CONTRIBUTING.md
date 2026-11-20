@@ -103,7 +103,8 @@ cd docs && bun install && bun run dev
 `.github/workflows/npm-publish.yml` publishes to npm and to the MCP Registry when a tag
 `npm-v<version>` is pushed. It uses npm trusted publishing (OIDC), so no token is stored.
 
-1. Bump `version` in `package.json` (and `server.json`; `npm run smoke:pack` checks they match).
+1. Bump `version` in `package.json` (and `server.json`; `npm run smoke:pack` checks they match),
+   and move the `Unreleased` notes in `CHANGELOG.md` under the new version.
 2. Push the tag: `git tag npm-v<version> && git push origin npm-v<version>`.
 
 The first version had to be published by hand before trusted publishing could be set up on npmjs.com.
