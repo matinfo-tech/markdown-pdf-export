@@ -29,6 +29,7 @@ import {
   userSettingsPath,
 } from "./lib/settings-loader.mjs";
 import { applyPresets } from "./lib/looks.mjs";
+import { PAGE_BREAK_CSS, pageBreakComments } from "./lib/page-breaks.mjs";
 import {
   createPlaceholderResolver,
   createRenderContext,
@@ -690,6 +691,8 @@ async function createMarkdown(options) {
     highlight: highlightFn,
   });
 
+  md.use(pageBreakComments);
+
   if (options.emoji) {
     try {
       const emoji = await getEmojiPlugin();
@@ -1273,6 +1276,9 @@ async function renderMarkdownToHtmlWithBody(inputPath, body, title, options) {
       debugLog(`Could not load highlight style: ${options.highlight_style}`);
     }
   }
+
+  // Page break markers work with or without the default stylesheet.
+  styleBlocks += `<style>${PAGE_BREAK_CSS}</style>\n    `;
 
   // Custom stylesheet
   const stylesheetPath = resolveStylesheetPath(

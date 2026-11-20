@@ -193,10 +193,6 @@ ol {
   padding-left: 2em;
 }
 
-.page {
-  page-break-after: always;
-}
-
 /* Auto-generated table of contents (markdown-it-toc-done-right) */
 .markdown-toc {
   margin: 0 0 2em;

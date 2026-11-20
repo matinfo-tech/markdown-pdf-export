@@ -6,6 +6,13 @@ All notable changes to `markdown-pdf-export`. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- More ways to start a new page: the classes `page-break`, `pagebreak`, `page_break`, `new-page`,
+  `newpage` and `break-page` (besides `page`), and the comments `<!-- page-break -->`,
+  `<!-- pagebreak -->`, `<!-- new-page -->` and `<!-- page -->`. They also work when the default
+  stylesheet is off.
+
 ### Changed
 
 - Release workflow waits until a new version is visible on npm before registering it in the MCP
