@@ -203,6 +203,40 @@ export const DOCTOR_INPUT_SCHEMA = {
   },
 };
 
+export const INSTALL_BROWSER_INPUT_SCHEMA = {
+  type: "object",
+  additionalProperties: false,
+  properties: {
+    force: {
+      type: "boolean",
+      description:
+        "Download even when a working browser is already found. Default: false.",
+    },
+  },
+};
+
+export const OPEN_STUDIO_INPUT_SCHEMA = {
+  type: "object",
+  additionalProperties: false,
+  properties: {
+    file: {
+      type: "string",
+      description:
+        "Markdown file to preview instead of the built-in sample. Use an absolute path.",
+    },
+    project_folder: {
+      type: "string",
+      description:
+        "Edit the settings of this folder only (its .markdown-pdf.json) instead of the user settings used by every document. Use an absolute path.",
+    },
+    open_browser: {
+      type: "boolean",
+      description:
+        "Open Studio in the default browser. Default: true. The private link is returned either way.",
+    },
+  },
+};
+
 export const TOOLS = [
   {
     name: "export_markdown_pdf",
@@ -217,5 +251,25 @@ export const TOOLS = [
     description:
       "Inspect browser setup and current settings.",
     inputSchema: DOCTOR_INPUT_SCHEMA,
+  },
+  {
+    name: "install_browser_markdown_pdf",
+    title: "Install browser for Markdown PDF",
+    description:
+      "Download Playwright's Chromium (about 200 MB), the browser that draws the PDF. " +
+      "Only needed when doctor_markdown_pdf reports no browser (no Chrome or Edge on this computer). " +
+      "Ask the user before calling it. Returns status \"installing\" if the download is still running; " +
+      "call doctor_markdown_pdf a minute later to check.",
+    inputSchema: INSTALL_BROWSER_INPUT_SCHEMA,
+  },
+  {
+    name: "open_studio_markdown_pdf",
+    title: "Open Markdown PDF Studio",
+    description:
+      "Open Studio, a local page with a live PDF preview, to choose the page style, font, " +
+      "header, footer and logo. Saved choices apply to every later export. " +
+      "Use when the user wants to change how their PDFs look in general; for a one-off change, " +
+      "pass arguments to export_markdown_pdf instead.",
+    inputSchema: OPEN_STUDIO_INPUT_SCHEMA,
   },
 ];

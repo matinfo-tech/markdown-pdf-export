@@ -77,6 +77,26 @@ Reports whether a browser was found and which one, which settings files were loa
 effective settings. Optional argument: `input_path`, to include the project settings of that
 document.
 
+### install_browser_markdown_pdf
+
+Downloads Chromium (about 200 MB), the browser that draws the PDF. The assistant uses it when no
+Chrome or Edge is found, after asking you. If a browser already works, nothing is downloaded
+unless `force` is `true`. A long download keeps running in the background: the tool answers
+`installing`, and `doctor_markdown_pdf` tells when it is done.
+
+### open_studio_markdown_pdf
+
+Opens [Studio](/studio) in your browser and returns its private link. Choices you save there apply
+to the next export, without restarting the server.
+
+| Argument | Value |
+|---|---|
+| `file` | A Markdown file to preview instead of the sample. |
+| `project_folder` | Edit that folder's `.markdown-pdf.json` instead of your user settings. |
+| `open_browser` | `false` to only return the link. |
+
+Studio runs in its own process and stops by itself a few minutes after you close its page.
+
 ## Example prompts
 
 ```text
@@ -85,6 +105,8 @@ Export docs/guide.md to PDF in landscape on Letter paper, with a table of conten
 Export report.md with the monokai code theme and "Page {page} of {pages}" in the footer.
 Export this file to PDF with maths, and save it as build/notes.pdf.
 Run doctor_markdown_pdf and tell me which browser and settings are used.
+Open Studio so I can design my pages.
+Open Studio with report.md as the preview, for this project only.
 ```
 
 The assistant turns your request into tool arguments. Everything else comes from your settings files.
