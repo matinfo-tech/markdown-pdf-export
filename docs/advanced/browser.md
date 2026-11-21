@@ -20,7 +20,8 @@ download Chromium once:
 npx -y markdown-pdf-export install-browser
 ```
 
-The download is about 200 MB and happens once.
+The download is about 200 MB and happens once. From an assistant, ask it to install the browser:
+it calls the `install_browser_markdown_pdf` tool, so no terminal is needed.
 
 ## Choose a browser
 

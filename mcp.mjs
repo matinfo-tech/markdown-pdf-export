@@ -1,11 +1,13 @@
 /**
  * Markdown PDF MCP server (stdio).
  *
- * Thin transport around export.mjs: framing, JSON-RPC dispatch, two tools.
+ * Thin transport around export.mjs: framing, JSON-RPC dispatch, four tools
+ * (export, doctor, and two setup helpers from lib/mcp-setup.mjs).
  * Settings: user file (~/.config/markdown-pdf-export/settings.json) or the
  * MARKDOWN_PDF_SETTINGS env var, plus the nearest .markdown-pdf.json — see
  * lib/settings-loader.mjs.
  */
+import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 
@@ -15,8 +17,19 @@ import {
   debugLog,
   exportMarkdownPdf,
   doctorMarkdownPdf,
+  installBrowser,
+  launchBrowser,
+  reloadSettings,
 } from "./export.mjs";
+import { createBrowserInstaller, launchStudio } from "./lib/mcp-setup.mjs";
 import { TOOLS } from "./tool-schemas.mjs";
+
+const CLI_PATH = path.join(path.dirname(fileURLToPath(import.meta.url)), "cli.mjs");
+const NO_BROWSER = "No usable Chrome/Chromium browser found";
+const MCP_BROWSER_HINT =
+  "No Chrome or Edge found. Ask the user, then call install_browser_markdown_pdf " +
+  "to download Chromium (about 200 MB).";
+const browserInstaller = createBrowserInstaller(() => installBrowser());
 
 debugLog(`server starting — pid=${process.pid} node=${process.execPath}`);
 debugLog(`argv=${JSON.stringify(process.argv)}`);
@@ -232,19 +245,92 @@ async function callTool(name, args) {
   try {
     switch (name) {
       case "export_markdown_pdf":
+        // Pick up edits made in Studio (or by hand) since the server started.
+        reloadSettings();
         return toolResult(await exportMarkdownPdf(args));
 
       case "doctor_markdown_pdf":
-        return toolResult(await doctorMarkdownPdf(args));
+        reloadSettings();
+        return toolResult(await doctor(args));
+
+      case "install_browser_markdown_pdf":
+        return toolResult(await installBrowserTool(args));
+
+      case "open_studio_markdown_pdf":
+        return toolResult(await openStudioTool(args));
 
       default:
         throw new Error(`Unknown tool: ${name}`);
     }
   } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
+    let message = error instanceof Error ? error.message : String(error);
+    if (message.includes(NO_BROWSER)) message += `\n\n${MCP_BROWSER_HINT}`;
     debugLog(`callTool(${name}) error: ${message}`);
     return toolError(message);
   }
+}
+
+async function doctor(args) {
+  const report = await doctorMarkdownPdf(args);
+  if (report.browser && !report.browser.available) {
+    report.browser.hint =
+      browserInstaller.status() === "installing"
+        ? "Chromium is downloading. Check again in a minute."
+        : MCP_BROWSER_HINT;
+    if (browserInstaller.status() === "failed") {
+      report.browser.last_install_error = browserInstaller.lastError();
+    }
+  }
+  return report;
+}
+
+async function installBrowserTool(args) {
+  if (!args.force && browserInstaller.status() !== "installing") {
+    try {
+      const browser = await launchBrowser();
+      const version = browser.version();
+      await browser.close();
+      return {
+        status: "already_available",
+        browser: version,
+        message: "A browser already works; nothing was downloaded. Pass force: true to download Chromium anyway.",
+      };
+    } catch {
+      // none found → download below
+    }
+  }
+  const status = await browserInstaller.run();
+  return status === "installed"
+    ? { status, message: "Chromium is installed. PDFs can be exported now." }
+    : {
+        status,
+        message: "The download is still running (about 200 MB). Call doctor_markdown_pdf in a minute to check.",
+      };
+}
+
+async function openStudioTool(args) {
+  const studio = await launchStudio({
+    cliPath: CLI_PATH,
+    file: args.file,
+    projectFolder: args.project_folder,
+    openBrowser: args.open_browser !== false,
+  });
+  const result = {
+    url: studio.url,
+    settings_file: studio.settingsPath,
+    message:
+      (args.open_browser === false
+        ? "Studio is running. Give the user this private link."
+        : "Studio is open in the browser. If no page appeared, give the user this private link.") +
+      " Choices saved in Studio apply to the next export. Studio stops by itself a few minutes after its page is closed.",
+  };
+  const env = (process.env.MARKDOWN_PDF_SETTINGS ?? "").trim();
+  if (env && env !== "{}" && !args.project_folder) {
+    result.warning =
+      "This server reads its settings from MARKDOWN_PDF_SETTINGS, not from the file Studio edits, " +
+      "so Studio changes will not apply to exports until that variable is removed.";
+  }
+  return result;
 }
 
 function toolResult(data) {

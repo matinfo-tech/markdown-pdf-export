@@ -9,6 +9,8 @@ title: Studio
 
 <CopyCommand />
 
+From an assistant connected to the exporter, ask "Open Studio" instead: no terminal needed.
+
 ![Studio: choices on the left, the real PDF on the right](/img/studio.png)
 
 ## What you choose

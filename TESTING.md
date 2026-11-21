@@ -139,6 +139,22 @@ Example prompts:
 - "Check the Markdown PDF setup"
 - "Verify the PDF exporter is working"
 
+### `install_browser_markdown_pdf`
+
+Downloads Playwright's Chromium (~200 MB) when no Chrome/Edge is found. Skips the download if a
+browser already works (unless `force: true`). Returns `installing` after ~50 s if the download is
+still running; it continues in the background.
+
+- "Install the browser for PDF export"
+
+### `open_studio_markdown_pdf`
+
+Starts Studio in a separate process (`cli.mjs studio`) and returns its private URL. Arguments:
+`file`, `project_folder`, `open_browser`. Settings are re-read on every export/doctor call, so
+Studio changes apply without restarting the server.
+
+- "Open Studio so I can design my pages"
+
 ## Troubleshooting
 
 ### No usable Chrome/Chromium browser found
