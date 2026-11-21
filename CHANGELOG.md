@@ -6,6 +6,11 @@ All notable changes to `markdown-pdf-export`. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- Release tags are now `v<version>` instead of `npm-v<version>`, so tools that look for a tag
+  matching the published version find it. Earlier `npm-v*` tags stay in place.
+
 ## [2.1.1] - 2026-11-20
 
 ### Added
