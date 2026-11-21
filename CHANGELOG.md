@@ -6,8 +6,23 @@ All notable changes to `markdown-pdf-export`. The format follows
 
 ## [Unreleased]
 
+## [2.2.0] - 2026-11-21
+
+### Added
+
+- MCP tool `install_browser_markdown_pdf`: an assistant can download Chromium when no Chrome or Edge
+  is found, without a terminal. Nothing is downloaded if a browser already works. A long download
+  keeps running in the background and `doctor_markdown_pdf` tells when it is done.
+- MCP tool `open_studio_markdown_pdf`: an assistant can open Studio, optionally with your own
+  document as the preview or for one project folder only. Studio runs in its own process and stops
+  by itself a few minutes after its page is closed.
+
 ### Changed
 
+- The MCP server re-reads the settings file on every export and doctor call, so changes saved in
+  Studio (or by hand) apply without restarting the server.
+- When no browser is found, the MCP error and the doctor hint point the assistant to
+  `install_browser_markdown_pdf` instead of an `npx` command.
 - Release tags are now `v<version>` instead of `npm-v<version>`, so tools that look for a tag
   matching the published version find it. Earlier `npm-v*` tags stay in place.
 
@@ -176,7 +191,8 @@ MCP server, usable from any editor or AI assistant.
 - First release, as a Zed extension: Markdown to PDF with Chromium, syntax highlighting,
   structured headers and footers, placeholders and date formats.
 
-[Unreleased]: https://github.com/matinfo-tech/markdown-pdf-export/compare/npm-v2.1.1...HEAD
+[Unreleased]: https://github.com/matinfo-tech/markdown-pdf-export/compare/v2.2.0...HEAD
+[2.2.0]: https://github.com/matinfo-tech/markdown-pdf-export/compare/v2.1.1...v2.2.0
 [2.1.1]: https://github.com/matinfo-tech/markdown-pdf-export/compare/npm-v2.1.0...npm-v2.1.1
 [2.1.0]: https://github.com/matinfo-tech/markdown-pdf-export/compare/npm-v2.0.3...npm-v2.1.0
 [2.0.3]: https://github.com/matinfo-tech/markdown-pdf-export/compare/npm-v2.0.2...npm-v2.0.3
