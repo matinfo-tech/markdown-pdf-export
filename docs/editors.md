@@ -141,7 +141,8 @@ Claude Desktop:
 **2. Use it.**
 
 - **Export:** open a Markdown file, then **task: spawn → Markdown: Export to PDF**, or your key.
-- **Ask:** in the Agent panel, type *Export this file to PDF*.
+- **Ask:** in the Agent panel, type *Export this file to PDF*. The Agent can also *open Studio* to
+  design your pages, and *install the PDF browser* if Chrome and Edge are missing.
 
 <details>
 <summary>Zed tips: a keyboard shortcut and more</summary>
