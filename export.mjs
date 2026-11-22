@@ -31,9 +31,11 @@ import {
 import { accentCss, applyPresets, normalizeAccentColor } from "./lib/looks.mjs";
 import { PAGE_BREAK_CSS, pageBreakComments } from "./lib/page-breaks.mjs";
 import { githubAlerts } from "./lib/alerts.mjs";
+import { insertDiagrams, mermaidFences, renderMermaid } from "./lib/mermaid.mjs";
 import {
   SANITIZE_MODES,
   cssForStyleElement,
+  sanitizeHtmlFragment,
   sanitizeRawHtml,
 } from "./lib/html-sanitizer.mjs";
 import {
@@ -122,6 +124,8 @@ export const DEFAULT_SETTINGS = {
     level: [1, 2, 3],
     list_type: "ul",
   },
+  // diagrams
+  mermaid: true,
   // header / footer
   display_header_footer: false,
 };
@@ -351,6 +355,7 @@ export function normalizeSettings(raw) {
     ),
     toc: normalizeBoolean(safe.toc, DEFAULT_SETTINGS.toc),
     toc_options: normalizeTocOptions(safe.toc_options),
+    mermaid: normalizeBoolean(safe.mermaid, DEFAULT_SETTINGS.mermaid),
     display_header_footer: normalizeBoolean(
       safe.display_header_footer,
       DEFAULT_SETTINGS.display_header_footer,
@@ -563,6 +568,7 @@ function buildEffectiveOptions(args = {}, settings) {
       args.toc_options && typeof args.toc_options === "object"
         ? normalizeTocOptions(args.toc_options, settings.toc_options)
         : settings.toc_options,
+    mermaid: typeof args.mermaid === "boolean" ? args.mermaid : settings.mermaid,
     display_header_footer:
       typeof args.display_header_footer === "boolean"
         ? args.display_header_footer
@@ -737,6 +743,7 @@ async function createMarkdown(options) {
   md.use(gfm.footnote);
   md.use(gfm.taskLists);
   md.use(githubAlerts);
+  if (options.mermaid) md.use(mermaidFences);
 
   if (options.emoji) {
     try {
@@ -1101,6 +1108,7 @@ export async function exportMarkdownPdf(args, trusted = {}) {
       mergedConfig.heading_anchors ?? options.heading_anchors,
     toc: mergedConfig.toc ?? options.toc,
     toc_options: mergedConfig.toc_options ?? options.toc_options,
+    mermaid: mergedConfig.mermaid ?? options.mermaid,
     display_header_footer:
       hasHeaderFooter ||
       mergedConfig.display_header_footer ||
@@ -1113,21 +1121,26 @@ export async function exportMarkdownPdf(args, trusted = {}) {
     docSettings,
   );
 
-  // ── Step 4: Render Markdown to HTML ───────────────────────────────────────
-  const { html, removedHtml } = await renderMarkdownToHtmlWithBody(
-    inputPath,
-    markdownBody,
-    title,
-    effectiveOptions,
-  );
-
   const browser = await launchBrowser();
 
   let displayHeaderFooterResult;
+  let removedHtml;
+  let diagramErrors;
 
   try {
-    // Safe mode: the page needs no JavaScript (math, code colours and the TOC
-    // are rendered beforehand), so none runs, whatever the document contains.
+    // ── Step 4: Render Markdown to HTML ─────────────────────────────────────
+    // Diagrams are drawn in their own page, before the document page loads.
+    let html;
+    ({ html, removedHtml, diagramErrors } = await renderMarkdownToHtmlWithBody(
+      inputPath,
+      markdownBody,
+      title,
+      effectiveOptions,
+      { renderDiagrams: (sources) => renderMermaid(browser, sources) },
+    ));
+
+    // Safe mode: the page needs no JavaScript (math, code colours, the TOC
+    // and diagrams are rendered beforehand), so none runs, whatever the document contains.
     const page = await browser.newPage({ javaScriptEnabled: !safeMode });
 
     // Render from a uniquely-named temp file in the OS tmpdir: relative assets
@@ -1290,6 +1303,7 @@ export async function exportMarkdownPdf(args, trusted = {}) {
     display_header_footer: displayHeaderFooterResult,
     sanitize: options.sanitize,
     removed_html: removedHtml,
+    diagram_errors: diagramErrors,
     settings_files: settingsSources
       .filter((source) => source.loaded && source.path)
       .map((source) => source.path),
@@ -1354,11 +1368,34 @@ const SAFE_MODE_CSP =
  * Used by the new structured header/footer pipeline where front matter
  * is already parsed.
  */
-async function renderMarkdownToHtmlWithBody(inputPath, body, title, options) {
+async function renderMarkdownToHtmlWithBody(
+  inputPath,
+  body,
+  title,
+  options,
+  { renderDiagrams } = {},
+) {
   const markdown = await createMarkdown(options);
-  const env = {};
-  const rendered = markdown.render(body, env);
+  const env = options.mermaid ? { mermaid: [] } : {};
   const safeMode = options.sanitize !== "none";
+  let rendered = markdown.render(body, env);
+
+  // Mermaid: swap placeholders for SVG (or the code block if drawing failed).
+  let diagramErrors = [];
+  if (env.mermaid?.length) {
+    let results = renderDiagrams
+      ? await renderDiagrams(env.mermaid.map((d) => d.source))
+      : null;
+    if (results && safeMode) {
+      // Mermaid's strict mode already cleans labels; filter once more anyway.
+      const removed = env.removedHtml ?? new Set();
+      results = results.map((r) =>
+        r.svg ? { svg: sanitizeHtmlFragment(r.svg, removed) } : r,
+      );
+      if (removed.size) env.removedHtml = removed;
+    }
+    ({ html: rendered, errors: diagramErrors } = insertDiagrams(rendered, env, results));
+  }
 
   // Build style blocks
   let styleBlocks = "";
@@ -1438,6 +1475,7 @@ async function renderMarkdownToHtmlWithBody(inputPath, body, title, options) {
 
   return {
     removedHtml: [...(env.removedHtml ?? [])],
+    diagramErrors,
     html: `<!doctype html>
 <html lang="en">
   <head>

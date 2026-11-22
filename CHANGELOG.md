@@ -8,6 +8,11 @@ All notable changes to `markdown-pdf-export`. The format follows
 
 ### Added
 
+- Mermaid diagrams: a ` ```mermaid ` code block is drawn as a diagram (flowchart, sequence,
+  Gantt, class, state, pie and the rest). On by default, works offline; set `"mermaid": false`
+  or `--no-mermaid` to print the code instead. Diagrams are drawn in a separate page before
+  printing, so the document page still runs no JavaScript. A diagram with a mistake stays a
+  code block and is listed in the new `diagram_errors` result field.
 - Task lists (`- [x]`), footnotes (`[^1]`) and GitHub alerts (`> [!NOTE]`, `[!TIP]`,
   `[!IMPORTANT]`, `[!WARNING]`, `[!CAUTION]`) now render instead of printing as plain text.
   Always on, no setting.

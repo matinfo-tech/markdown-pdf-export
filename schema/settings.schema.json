@@ -236,6 +236,10 @@
         }
       }
     },
+    "mermaid": {
+      "type": "boolean",
+      "description": "Draw ```mermaid code blocks as diagrams. A diagram that fails to parse stays a code block and is listed in diagram_errors. On by default."
+    },
     "display_header_footer": {
       "type": "boolean",
       "default": false,

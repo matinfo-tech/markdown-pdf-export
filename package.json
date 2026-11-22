@@ -30,8 +30,9 @@
   "scripts": {
     "check": "node --check export.mjs && node --check mcp.mjs && node --check cli.mjs && node --check tool-schemas.mjs",
     "lint": "eslint .",
-    "build": "npm run check && node scripts/bundle-katex-css.mjs && node scripts/build-settings-schema.mjs --check && node scripts/build-settings-reference.mjs --check",
+    "build": "npm run check && node scripts/bundle-katex-css.mjs && node scripts/bundle-mermaid.mjs && node scripts/build-settings-schema.mjs --check && node scripts/build-settings-reference.mjs --check",
     "build:katex-css": "node scripts/bundle-katex-css.mjs",
+    "build:mermaid": "node scripts/bundle-mermaid.mjs",
     "build:schema": "node scripts/build-settings-schema.mjs && node scripts/build-settings-reference.mjs",
     "build:reference": "node scripts/build-settings-reference.mjs",
     "prepack": "npm run build",
@@ -106,7 +107,8 @@
     "@eslint/js": "^10.0.1",
     "ajv": "^8.20.0",
     "eslint": "^10.15.0",
-    "globals": "^17.14.0"
+    "globals": "^17.14.0",
+    "mermaid": "^12.3.0"
   },
   "overrides": {
     "@vscode/markdown-it-katex": {

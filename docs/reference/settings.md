@@ -52,6 +52,7 @@ The quickest way to set many things at once.
 | `heading_anchors` | Give each heading an id so [text](#heading) links and the table of contents work. On by default. | boolean | `true` |
 | `toc` | Render a `[[toc]]` marker as an auto-generated table of contents (also enables heading anchors). | boolean | `false` |
 | `toc_options` | Table-of-contents rendering options. | object: `level`, `list_type` | level: `[1,2,3]`, list_type: `ul` |
+| `mermaid` | Draw ```mermaid code blocks as diagrams. A diagram that fails to parse stays a code block and is listed in diagram_errors. On by default. | boolean | `true` |
 | `sanitize` | Raw HTML in the Markdown: "safe" removes scripts, frames, event handlers and javascript: links and prints with JavaScript off; "none" keeps raw HTML as written (only for documents you trust). Cannot be set in front matter. | `safe`, `none` | `safe` |
 
 ## Header and footer

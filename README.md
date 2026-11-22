@@ -59,6 +59,7 @@ The PDF is saved next to the Markdown file. To add the task or the assistant too
 - Coloured code blocks, with a choice of colour themes.
 - Maths with KaTeX: `$inline$` and `$$display$$`.
 - A contents list from a `[[toc]]` marker, with links to each heading.
+- Mermaid diagrams, task lists, footnotes and GitHub alerts (`> [!NOTE]`).
 - Settings for one document in its front matter.
 - One settings file used by every editor, the assistant and the terminal.
 - Safe with documents you did not write: scripts, frames and event handlers in raw HTML are
