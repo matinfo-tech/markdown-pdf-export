@@ -132,7 +132,7 @@ export const EXPORT_INPUT_SCHEMA = {
     heading_anchors: {
       type: "boolean",
       description:
-        "Add id slugs to headings (required infrastructure for TOC links).",
+        "Give each heading an id so [text](#heading) links and the table of contents work. On by default.",
     },
     toc: {
       type: "boolean",

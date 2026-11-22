@@ -115,7 +115,7 @@ export const DEFAULT_SETTINGS = {
     macros: {},
   },
   // headings / TOC
-  heading_anchors: false,
+  heading_anchors: true,
   toc: false,
   toc_options: {
     level: [1, 2, 3],

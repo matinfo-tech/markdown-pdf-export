@@ -67,15 +67,18 @@ optional: the default is levels 1 to 3 as a bullet list (`"ul"`); `"ol"` numbers
 
 ## Links to headings
 
-With `"heading_anchors": true` (or `toc`, which turns it on), each heading gets an id you can link
-to inside the PDF:
+Each heading gets an id, so you can link to it inside the PDF:
 
 ```markdown
 See [the results](#results) and [regional figures](#by-region).
 ```
 
 The id is the heading text in lower case, with punctuation removed and spaces replaced by hyphens:
-`## Q3: Next steps` becomes `#q3-next-steps`. Accented letters are kept.
+`## Q3: Next steps` becomes `#q3-next-steps`. Accented letters are kept. Repeated headings get
+`-1`, `-2`: `#notes`, `#notes-1`, `#notes-2`.
+
+To turn ids off, set `"heading_anchors": false` (or pass `--no-heading-anchors`). The table of
+contents (`toc`) needs them and turns them back on.
 
 ## Emoji
 

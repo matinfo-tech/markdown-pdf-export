@@ -6,6 +6,12 @@ All notable changes to `markdown-pdf-export`. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- Headings get an id by default, so `[text](#heading)` links work in the PDF without any setting.
+  Set `"heading_anchors": false` (or `--no-heading-anchors`) to turn it off. A custom stylesheet
+  with `#slug` selectors may now match headings.
+
 ## [2.4.0] - 2026-11-22
 
 ### Security
