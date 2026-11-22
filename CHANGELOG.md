@@ -6,6 +6,8 @@ All notable changes to `markdown-pdf-export`. The format follows
 
 ## [Unreleased]
 
+## [2.5.0] - 2026-11-22
+
 ### Added
 
 - Mermaid diagrams: a ` ```mermaid ` code block is drawn as a diagram (flowchart, sequence,
@@ -280,7 +282,8 @@ MCP server, usable from any editor or AI assistant.
 - First release, as a Zed extension: Markdown to PDF with Chromium, syntax highlighting,
   structured headers and footers, placeholders and date formats.
 
-[Unreleased]: https://github.com/matinfo-tech/markdown-pdf-export/compare/v2.4.0...HEAD
+[Unreleased]: https://github.com/matinfo-tech/markdown-pdf-export/compare/v2.5.0...HEAD
+[2.5.0]: https://github.com/matinfo-tech/markdown-pdf-export/compare/v2.4.0...v2.5.0
 [2.4.0]: https://github.com/matinfo-tech/markdown-pdf-export/compare/v2.3.1...v2.4.0
 [2.3.1]: https://github.com/matinfo-tech/markdown-pdf-export/compare/v2.3.0...v2.3.1
 [2.3.0]: https://github.com/matinfo-tech/markdown-pdf-export/compare/v2.2.2...v2.3.0
