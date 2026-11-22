@@ -312,6 +312,14 @@
       ],
       "description": "Header/footer preset. Explicit header/footer keys in this file override it."
     },
+    "sanitize": {
+      "type": "string",
+      "enum": [
+        "safe",
+        "none"
+      ],
+      "description": "Raw HTML in the Markdown: \"safe\" removes scripts, frames, event handlers and javascript: links and prints with JavaScript off; \"none\" keeps raw HTML as written (only for documents you trust). Cannot be set in front matter."
+    },
     "output_directory": {
       "type": "string",
       "description": "Folder for the PDFs, relative to each Markdown file. Default: next to it."

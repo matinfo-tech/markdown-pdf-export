@@ -6,6 +6,27 @@ All notable changes to `markdown-pdf-export`. The format follows
 
 ## [Unreleased]
 
+### Security
+
+- Raw HTML in the Markdown can no longer run code or load other pages while the PDF is printed.
+  By default (`"sanitize": "safe"`) `<script>`, `<iframe>`, `<object>`, `<applet>`, `<frameset>`,
+  `<noembed>` and `<noframes>` are removed with their content; `<embed>`, `<frame>`, `<meta>`,
+  `<base>`, `<link>`, `<form>`, `<title>`, `<textarea>`, `<xmp>` and `<plaintext>` are shown as
+  text; `on*` event handlers and `javascript:` / `vbscript:` / non-image `data:` links are
+  disarmed. The page is also printed with JavaScript off, under a Content Security Policy that
+  blocks scripts, frames and plugins, and an export that tries to navigate away is stopped.
+  `<style>`, inline styles, images and page breaks keep working; code blocks are never changed.
+- `font_family`, `heading_font_family` and the custom stylesheet can no longer close the
+  `<style>` element they are placed in.
+
+### Changed
+
+- **Behaviour change:** documents that relied on raw `<script>` or `<iframe>` lose them. Set
+  `"sanitize": "none"` in a settings file, or pass `--sanitize none`, for documents you trust.
+  Front matter and the MCP tool cannot change this setting.
+- The export result has `sanitize` and `removed_html` (what the filter took out); the command
+  line prints the latter. `doctor` shows the `sanitize` setting.
+
 ## [2.3.1] - 2026-11-22
 
 ### Fixed

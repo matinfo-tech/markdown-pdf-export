@@ -31,6 +31,11 @@ import {
 import { accentCss, applyPresets, normalizeAccentColor } from "./lib/looks.mjs";
 import { PAGE_BREAK_CSS, pageBreakComments } from "./lib/page-breaks.mjs";
 import {
+  SANITIZE_MODES,
+  cssForStyleElement,
+  sanitizeRawHtml,
+} from "./lib/html-sanitizer.mjs";
+import {
   createPlaceholderResolver,
   createRenderContext,
   ensureDateFnsLoaded,
@@ -100,6 +105,8 @@ export const DEFAULT_SETTINGS = {
   highlight_style: "github.css",
   breaks: false,
   emoji: true,
+  // raw HTML in the Markdown body: "safe" (filtered, no scripts) or "none"
+  sanitize: "safe",
   // math (KaTeX)
   math: false,
   math_options: {
@@ -289,6 +296,12 @@ function normalizeTocOptions(raw, fallback = DEFAULT_SETTINGS.toc_options) {
   return { level, list_type };
 }
 
+/** Anything but an explicit "none" keeps the safe default. */
+function normalizeSanitize(value, fallback = DEFAULT_SETTINGS.sanitize) {
+  const mode = typeof value === "string" ? value.trim().toLowerCase() : "";
+  return SANITIZE_MODES.includes(mode) ? mode : fallback;
+}
+
 export function normalizeSettings(raw) {
   const safe = raw && typeof raw === "object" ? raw : {};
   return {
@@ -328,6 +341,7 @@ export function normalizeSettings(raw) {
         : DEFAULT_SETTINGS.highlight_style,
     breaks: normalizeBoolean(safe.breaks, DEFAULT_SETTINGS.breaks),
     emoji: normalizeBoolean(safe.emoji, DEFAULT_SETTINGS.emoji),
+    sanitize: normalizeSanitize(safe.sanitize),
     math: normalizeBoolean(safe.math, DEFAULT_SETTINGS.math),
     math_options: normalizeMathOptions(safe.math_options),
     heading_anchors: normalizeBoolean(
@@ -530,6 +544,10 @@ function buildEffectiveOptions(args = {}, settings) {
         : settings.highlight_style,
     breaks: typeof args.breaks === "boolean" ? args.breaks : settings.breaks,
     emoji: typeof args.emoji === "boolean" ? args.emoji : settings.emoji,
+    // Never from the call arguments: an MCP call (or a prompt-injected agent)
+    // must not be able to switch off the raw HTML filter. Settings files and
+    // the CLI --sanitize flag (exportMarkdownPdf's `trusted`) can.
+    sanitize: settings.sanitize,
     math: typeof args.math === "boolean" ? args.math : settings.math,
     math_options:
       args.math_options && typeof args.math_options === "object"
@@ -695,6 +713,7 @@ async function createMarkdown(options) {
   });
 
   md.use(pageBreakComments);
+  if (options.sanitize !== "none") md.use(sanitizeRawHtml);
 
   if (options.emoji) {
     try {
@@ -896,6 +915,7 @@ export async function doctorMarkdownPdf(args) {
       highlight_style: doc.settings.highlight_style,
       breaks: doc.settings.breaks,
       emoji: doc.settings.emoji,
+      sanitize: doc.settings.sanitize,
       display_header_footer: doc.settings.display_header_footer,
       font_family: doc.settings.font_family,
       heading_font_family: doc.settings.heading_font_family,
@@ -938,7 +958,14 @@ async function sweepLegacyTempFiles(dir) {
   }
 }
 
-export async function exportMarkdownPdf(args) {
+/**
+ * Export one Markdown file to PDF.
+ * @param {object} args  Export options (MCP tool arguments / CLI flags).
+ * @param {object} [trusted]  Options only the local user may set, never an
+ *   MCP call or the document: `sanitize` ("safe" | "none") overrides the
+ *   settings files (CLI --sanitize).
+ */
+export async function exportMarkdownPdf(args, trusted = {}) {
   await ensureDependencies();
   const inputPath = await resolveInputPath(args.input_path);
   debugLog(`exportMarkdownPdf args: ${JSON.stringify(args)}`);
@@ -986,6 +1013,8 @@ export async function exportMarkdownPdf(args) {
     resolveDocumentSettings(path.dirname(inputPath));
   debugLog(`settings sources: ${JSON.stringify(settingsSources)}`);
   const options = buildEffectiveOptions(args, docSettings);
+  options.sanitize = normalizeSanitize(trusted.sanitize, options.sanitize);
+  const safeMode = options.sanitize !== "none";
   debugLog(
     `exportMarkdownPdf options.display_header_footer: ${options.display_header_footer}`,
   );
@@ -1062,7 +1091,7 @@ export async function exportMarkdownPdf(args) {
   );
 
   // ── Step 4: Render Markdown to HTML ───────────────────────────────────────
-  const { html } = await renderMarkdownToHtmlWithBody(
+  const { html, removedHtml } = await renderMarkdownToHtmlWithBody(
     inputPath,
     markdownBody,
     title,
@@ -1074,7 +1103,9 @@ export async function exportMarkdownPdf(args) {
   let displayHeaderFooterResult;
 
   try {
-    const page = await browser.newPage();
+    // Safe mode: the page needs no JavaScript (math, code colours and the TOC
+    // are rendered beforehand), so none runs, whatever the document contains.
+    const page = await browser.newPage({ javaScriptEnabled: !safeMode });
 
     // Render from a uniquely-named temp file in the OS tmpdir: relative assets
     // resolve through the <base href> baked into the HTML, so the file does not
@@ -1088,14 +1119,22 @@ export async function exportMarkdownPdf(args) {
     await fs.writeFile(tempHtmlPath, html, "utf8");
 
     try {
+      let renderedUrl = pathToFileURL(tempHtmlPath).href;
       try {
-        await page.goto(pathToFileURL(tempHtmlPath).href, { waitUntil: "networkidle" });
+        await page.goto(renderedUrl, { waitUntil: "networkidle" });
       } catch (error) {
         debugLog(
           `tmpdir render failed (${error instanceof Error ? error.message : error}); retrying next to the source`,
         );
         await fs.writeFile(fallbackHtmlPath, html, "utf8");
-        await page.goto(pathToFileURL(fallbackHtmlPath).href, { waitUntil: "networkidle" });
+        renderedUrl = pathToFileURL(fallbackHtmlPath).href;
+        await page.goto(renderedUrl, { waitUntil: "networkidle" });
+      }
+      // Print the document, never a page it redirected to.
+      if (safeMode && !sameFileUrl(page.url(), renderedUrl)) {
+        throw new Error(
+          `The document tried to open another page (${page.url()}); export stopped.`,
+        );
       }
     } finally {
       for (const tempPath of [tempHtmlPath, fallbackHtmlPath]) {
@@ -1226,6 +1265,8 @@ export async function exportMarkdownPdf(args) {
     margin: effectiveOptions.margin,
     open_after_export: effectiveOptions.open_after_export,
     display_header_footer: displayHeaderFooterResult,
+    sanitize: options.sanitize,
+    removed_html: removedHtml,
     settings_files: settingsSources
       .filter((source) => source.loaded && source.path)
       .map((source) => source.path),
@@ -1281,6 +1322,9 @@ function resolveStylesheetPath(baseDirectory, stylesheetPath) {
 }
 
 // ── HTML rendering ────────────────────────────────────────────────────────────
+const SAFE_MODE_CSP =
+  "script-src 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; " +
+  "worker-src 'none'; form-action 'none'";
 
 /**
  * Render Markdown to HTML with pre-parsed body and title.
@@ -1289,7 +1333,9 @@ function resolveStylesheetPath(baseDirectory, stylesheetPath) {
  */
 async function renderMarkdownToHtmlWithBody(inputPath, body, title, options) {
   const markdown = await createMarkdown(options);
-  const rendered = markdown.render(body);
+  const env = {};
+  const rendered = markdown.render(body, env);
+  const safeMode = options.sanitize !== "none";
 
   // Build style blocks
   let styleBlocks = "";
@@ -1342,7 +1388,7 @@ async function renderMarkdownToHtmlWithBody(inputPath, body, title, options) {
   if (stylesheetPath) {
     try {
       const customCss = await fs.readFile(stylesheetPath, "utf8");
-      styleBlocks += `<style>${customCss}</style>\n    `;
+      styleBlocks += `<style>${cssForStyleElement(customCss)}</style>\n    `;
     } catch {
       debugLog(`Could not load stylesheet: ${stylesheetPath}`);
     }
@@ -1351,22 +1397,28 @@ async function renderMarkdownToHtmlWithBody(inputPath, body, title, options) {
   // Font choices come last: an explicit font must win over the root stack of
   // default.css and over a page style (look) that brings its own fonts.
   if (options.font_family) {
-    styleBlocks += `<style>:root { font-family: ${options.font_family}; }</style>\n    `;
+    styleBlocks += `<style>:root { font-family: ${cssForStyleElement(options.font_family)}; }</style>\n    `;
   }
   if (options.heading_font_family) {
-    styleBlocks += `<style>h1, h2, h3, h4, h5, h6 { font-family: ${options.heading_font_family}; }</style>\n    `;
+    styleBlocks += `<style>h1, h2, h3, h4, h5, h6 { font-family: ${cssForStyleElement(options.heading_font_family)}; }</style>\n    `;
   }
   // Accent colour: only page styles that read --accent change with it.
   const accent = accentCss(options.accent_color);
   if (accent) styleBlocks += `<style>${accent}</style>\n    `;
 
   const baseHref = `${pathToFileURL(path.dirname(inputPath)).href}/`;
+  // Safe mode: no scripts, frames, plugins or form posts, even if something
+  // slipped past the raw HTML filter. Images and styles stay allowed.
+  const csp = safeMode
+    ? `\n    <meta http-equiv="Content-Security-Policy" content="${SAFE_MODE_CSP}">`
+    : "";
 
   return {
+    removedHtml: [...(env.removedHtml ?? [])],
     html: `<!doctype html>
 <html lang="en">
   <head>
-    <meta charset="utf-8">
+    <meta charset="utf-8">${csp}
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>${escapeHtml(title)}</title>
     <base href="${baseHref}">
@@ -1422,6 +1474,18 @@ async function openFile(filePath) {
 }
 
 // ── Misc utilities ────────────────────────────────────────────────────────────
+/** True when both are file: URLs of the same file (the browser may re-encode the URL). */
+function sameFileUrl(actual, expected) {
+  if (actual === expected) return true;
+  try {
+    const a = fileURLToPath(actual);
+    const b = fileURLToPath(expected);
+    return process.platform === "win32" ? a.toLowerCase() === b.toLowerCase() : a === b;
+  } catch {
+    return false;
+  }
+}
+
 function escapeHtml(value) {
   return String(value)
     .replaceAll("&", "&amp;")
