@@ -994,7 +994,9 @@ async function sweepLegacyTempFiles(dir) {
  * @param {object} args  Export options (MCP tool arguments / CLI flags).
  * @param {object} [trusted]  Options only the local user may set, never an
  *   MCP call or the document: `sanitize` ("safe" | "none") overrides the
- *   settings files (CLI --sanitize).
+ *   settings files (CLI --sanitize); `source` is Markdown text to export in
+ *   place of what `input_path` holds on disk (an editor's unsaved text), the
+ *   file still giving the name and the folder that images are found from.
  */
 export async function exportMarkdownPdf(args, trusted = {}) {
   await ensureDependencies();
@@ -1005,7 +1007,8 @@ export async function exportMarkdownPdf(args, trusted = {}) {
   );
 
   // ── Step 1: Read source and parse front matter ────────────────────────────
-  const source = await fs.readFile(inputPath, "utf8");
+  const source =
+    typeof trusted.source === "string" ? trusted.source : await fs.readFile(inputPath, "utf8");
   const filename = path.basename(inputPath);
 
   const {

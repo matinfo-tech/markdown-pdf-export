@@ -130,7 +130,7 @@ h2 {
   padding-left: 18px;
 }
 .more-body .hint { margin: 0; flex: 1; }
-.more-body .btn[hidden] { display: none; }
+.btn[hidden] { display: none; }
 
 .row {
   display: flex;

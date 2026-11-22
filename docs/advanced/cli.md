@@ -16,7 +16,7 @@ simply `markdown-pdf-export`. Node.js 20 or newer is needed.
 |---|---|
 | `markdown-pdf-export <file.md> [options]` | Export one file. |
 | `markdown-pdf-export` | In a terminal: a short menu (set up an editor, open Studio, check, help). |
-| `markdown-pdf-export studio [--project] [--file <doc.md>] [--no-project-settings] [--port <n>] [--no-open]` | Open [Studio](/studio). `--project` edits `./.markdown-pdf.json`; `--file` previews your own document (with the `.markdown-pdf.json` near it, unless `--no-project-settings`); `--no-open` only prints the link. |
+| `markdown-pdf-export studio [--project] [--file <doc.md>] [--no-project-settings] [--port <n>] [--no-open] [--embedded]` | Open [Studio](/studio). `--project` edits `./.markdown-pdf.json`; `--file` previews your own document (with the `.markdown-pdf.json` near it, unless `--no-project-settings`); `--no-open` only prints the link; `--embedded` is for [editors that show Studio in their own panel](#studio-inside-an-editor). |
 | `markdown-pdf-export init [--look <n>] [--font <n>] [--template <n>] [--project] [--force] [--list]` | Create the settings file. See [Settings file](/advanced/settings-file#create-it-with-init). |
 | `markdown-pdf-export init --from <file> [--project] [--force]` | Install a settings file you already have, such as the one from [Design online](/online). See [Install a file you already have](/advanced/settings-file#install-a-file-you-already-have). |
 | `markdown-pdf-export setup [zed\|vscode\|cursor\|claude-code\|claude-desktop\|copilot-cli\|all] [--write\|--print]` | Set up the export task and AI tools in the editors found. In a terminal it asks editor by editor and skips what is already set up. `--write` sets up everything without asking; `--print` only shows what to add. Missing files are created and the editor's own command is run. In an existing file only the new entry is added (comments and formatting are kept, a copy is saved as `<file>.markdown-pdf.bak`); a file that cannot be read is left alone and you get the snippet to paste. In Zed it also adds a keyboard shortcut, ⌘K ⌘E (Ctrl+K Ctrl+E). |
@@ -61,6 +61,7 @@ line wins over the settings files; front matter wins over both.
 | `--sanitize <safe or none>` | Raw HTML in the document: `safe` (default) or `none`, see [Raw HTML and safety](/advanced/content#raw-html-and-safety). |
 | `--no-project-settings` | Ignore `.markdown-pdf.json` files. For documents you do not trust: a project file can turn off [raw HTML safety](/advanced/content#raw-html-and-safety). |
 | `--watch` | Export again when the file or a settings file changes. |
+| `--json` | Print the result as JSON instead of the PDF path, see [Output and exit codes](#output-and-exit-codes). Not with `--watch`. |
 
 Yes/no options accept `--toc`, `--toc=true`, `--toc=false` and `--no-toc`. JSON values need single
 quotes in a POSIX shell.
@@ -98,11 +99,49 @@ Markdown file or a settings file it uses. Stop with Ctrl+C.
 On success, the only thing printed on standard output is the PDF path. Messages and errors go to
 standard error.
 
+With `--json`, standard output is one JSON object instead, for scripts and editors:
+
+```json
+{
+  "input_path": "/work/notes.md",
+  "output_path": "/work/notes.pdf",
+  "page_format": "A4",
+  "sanitize": "safe",
+  "removed_html": ["<script>"],
+  "diagram_errors": [],
+  "settings_files": ["/home/me/.config/markdown-pdf-export/settings.json"]
+}
+```
+
+`removed_html` lists the raw HTML that [safe mode](/advanced/content#raw-html-and-safety) took
+out, `diagram_errors` the Mermaid diagrams left as code, and `settings_files` the settings files
+that were used. The object has a few more keys (margins, orientation, scale).
+
 | Code | Meaning |
 |---|---|
 | `0` | Success. |
 | `1` | The export failed (file not found, no browser, rendering error). `doctor` also returns `1` when something needs fixing. |
 | `2` | Wrong usage: unknown option, bad value, missing file. |
+
+## Studio inside an editor
+
+An editor extension can show [Studio](/studio) in its own panel instead of a browser tab. Start it
+with `markdown-pdf-export studio --embedded`: no browser opens, the private link is printed on
+standard output as usual, and the *Add to my editor* steps are off.
+
+The extension keeps the token of that link to itself and sends Studio's `/api/...` requests on
+behalf of the page. Three things exist for it:
+
+- **Which document to draw.** A `POST /api/preview` body may carry
+  `"source": { "file": "/absolute/doc.md", "text": "…" }` next to `settings`. `file` is the
+  document to preview; `text`, when given, is drawn in place of what the file holds on disk (text
+  not saved yet). The answer has an `X-Preview-Name` header. A Studio started without `--embedded`
+  refuses `source`.
+- **What the preview changed.** Every preview answer has an `X-Preview-Report` header:
+  URL-encoded JSON with `removed_html` and `diagram_errors`, as in `--json` above.
+- **Page hooks.** A `studio:refresh` event on `window` draws the preview again. If
+  `window.studioHost.showPdf(blob)` exists before Studio's script runs, it is called with each
+  PDF, in place of the built-in viewer frames, and returns a promise.
 
 ## Scripts
 
