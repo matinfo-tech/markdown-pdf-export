@@ -32,6 +32,7 @@ import { accentCss, applyPresets, normalizeAccentColor } from "./lib/looks.mjs";
 import { PAGE_BREAK_CSS, pageBreakComments } from "./lib/page-breaks.mjs";
 import { githubAlerts } from "./lib/alerts.mjs";
 import { insertDiagrams, mermaidFences, renderMermaid } from "./lib/mermaid.mjs";
+import { openWithOs } from "./lib/open-external.mjs";
 import {
   SANITIZE_MODES,
   cssForStyleElement,
@@ -1287,7 +1288,7 @@ export async function exportMarkdownPdf(args, trusted = {}) {
   await sweepLegacyTempFiles(path.dirname(inputPath));
 
   if (effectiveOptions.open_after_export) {
-    void openFile(outputPath);
+    openWithOs(outputPath);
   }
 
   return {
@@ -1508,30 +1509,6 @@ async function fileExists(filePath) {
   } catch {
     return false;
   }
-}
-
-// ── Open file with OS default application ─────────────────────────────────────
-async function openFile(filePath) {
-  const { spawn } = await import("node:child_process");
-
-  let command;
-  let args;
-
-  if (process.platform === "darwin") {
-    command = "open";
-    args = [filePath];
-  } else if (process.platform === "win32") {
-    command = "cmd";
-    args = ["/C", "start", "", filePath];
-  } else {
-    command = "xdg-open";
-    args = [filePath];
-  }
-
-  spawn(command, args, {
-    detached: true,
-    stdio: "ignore",
-  }).unref();
 }
 
 // ── Misc utilities ────────────────────────────────────────────────────────────

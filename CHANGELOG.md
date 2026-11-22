@@ -6,6 +6,30 @@ All notable changes to `markdown-pdf-export`. The format follows
 
 ## [Unreleased]
 
+### Security
+
+- Windows: opening the PDF (`open_after_export`) no longer goes through `cmd /C start`. A file
+  name with `&` (for example `a&calc&.md`) could start another program. Files now open through
+  `explorer.exe`, which does not read the name as commands. Studio's link still opens as before.
+
+### Added
+
+- `--no-project-settings`: ignore `.markdown-pdf.json` files, for documents you do not trust (a
+  project file can set `"sanitize": "none"`, a stylesheet or an output folder). Works with export,
+  `--watch`, `doctor` and `studio --file`. Command line only, like `--sanitize`.
+
+### Changed
+
+- Editor setup (`setup` and Studio's *Add to my editor*) run from inside an Electron app used as
+  Node, such as an upcoming VS Code extension, now writes the `npx -y markdown-pdf-export` command
+  instead of that app's internal binary, which other editors cannot run.
+
+### Fixed
+
+- `open_after_export` no longer crashes the command line when the system has no opener (no
+  `xdg-open` on a server); the PDF was already written.
+- Opening the PDF or Studio no longer passes `ELECTRON_RUN_AS_NODE` to the opened app.
+
 ## [2.5.0] - 2026-11-22
 
 ### Added

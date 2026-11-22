@@ -104,7 +104,7 @@ function sidebarAdvanced() {
       text: "Tools",
       items: [
         { text: "Command line", link: "/advanced/cli" },
-        { text: "AI assistant tools", link: "/advanced/assistant-tools" },
+        { text: "AI assistant tools (MCP)", link: "/advanced/assistant-tools" },
         { text: "Browser", link: "/advanced/browser" },
       ],
     },

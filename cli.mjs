@@ -17,7 +17,6 @@
  * Exit codes: 0 success · 1 runtime error · 2 usage error.
  * On success the output PDF path is printed on stdout (everything else → stderr).
  */
-import { spawn } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -31,6 +30,7 @@ import {
   exportMarkdownPdf,
   installBrowser,
   reloadSettings,
+  setProjectDiscovery,
   setSettings,
 } from "./export.mjs";
 import { EXPORT_INPUT_SCHEMA } from "./tool-schemas.mjs";
@@ -41,6 +41,7 @@ import {
 } from "./lib/settings-loader.mjs";
 import { formatDoctor } from "./lib/doctor-report.mjs";
 import { makeStyle } from "./lib/term-style.mjs";
+import { openWithOs } from "./lib/open-external.mjs";
 import { LOOKS, FONTS, applyPresets } from "./lib/looks.mjs";
 import {
   EDITOR_IDS,
@@ -103,6 +104,8 @@ ${lines.join("\n")}
                                     frames and event handlers; "none" keeps it as written.
                                     Only for documents you trust.
   --margin <10mm>                   --margin also accepts one value for all four sides.
+  --no-project-settings             Ignore ${PROJECT_SETTINGS_FILENAME} files (for documents you
+                                    do not trust).
   --watch                           Re-export when the file or a settings file changes.
 
 Booleans: --flag, --flag=false or --no-flag.
@@ -164,6 +167,7 @@ function parseArgs(argv) {
   const options = {};
   let settings;
   let sanitize;
+  let projectSettings = true;
   let watch = false;
 
   for (let i = 0; i < argv.length; i++) {
@@ -188,6 +192,12 @@ function parseArgs(argv) {
     if (key === "version" || key === "v") return { version: true, positional, options };
     if (key === "watch" && isLong) {
       watch = true;
+      continue;
+    }
+    // CLI only, like --sanitize: for callers that export files they do not
+    // trust (the VS Code extension in Restricted Mode).
+    if (key === "no-project-settings" && isLong && value === undefined) {
+      projectSettings = false;
       continue;
     }
 
@@ -227,7 +237,7 @@ function parseArgs(argv) {
     options[name] = negate ? false : coerce(name, def, value);
   }
 
-  return { positional, options, settings, sanitize, watch };
+  return { positional, options, settings, sanitize, projectSettings, watch };
 }
 
 function loadSettingsArg(value) {
@@ -282,7 +292,7 @@ async function main(argv) {
 
   const isDoctor = first === "doctor";
   const asJson = isDoctor && rest.includes("--json");
-  const { positional, options, settings, sanitize, watch, help, version } = parseArgs(
+  const { positional, options, settings, sanitize, projectSettings, watch, help, version } = parseArgs(
     isDoctor ? rest.filter((a) => a !== "--json") : argv,
   );
   if (help) {
@@ -296,6 +306,7 @@ async function main(argv) {
 
   const fromArg = loadSettingsArg(settings);
   if (fromArg) setSettings(fromArg.data, fromArg.file);
+  if (!projectSettings) setProjectDiscovery(false);
 
   if (isDoctor) {
     const report = {
@@ -366,39 +377,28 @@ async function runMenu() {
 
 // ── studio ───────────────────────────────────────────────────────────────────
 
-function openInBrowser(url) {
-  const [cmd, args] =
-    process.platform === "darwin"
-      ? ["open", [url]]
-      : process.platform === "win32"
-        ? ["cmd", ["/C", "start", "", url]]
-        : ["xdg-open", [url]];
-  try {
-    const child = spawn(cmd, args, { detached: true, stdio: "ignore" });
-    child.on("error", () => {});
-    child.unref();
-  } catch {
-    // the link is printed below either way
-  }
-}
-
 async function runStudio(argv) {
   const flags = parseSubArgs(argv, {
     project: "boolean",
     file: "string",
     port: "string",
     "no-open": "boolean",
+    "no-project-settings": "boolean",
   });
   if (flags.help) {
     process.stdout.write(
-      `Usage: ${BIN} studio [--project] [--file <doc.md>] [--port <n>] [--no-open]\n\n` +
+      `Usage: ${BIN} studio [--project] [--file <doc.md>] [--no-project-settings] [--port <n>] [--no-open]\n\n` +
         "Opens a page in your browser to choose the page style, font, header and\n" +
         "footer, with a live preview of the real PDF. Saves to\n" +
         `  ${userSettingsPath()}\n` +
         `or, with --project, to ./${PROJECT_SETTINGS_FILENAME} for this folder only.\n` +
-        "--file previews one of your own documents instead of the sample.\n",
+        "--file previews one of your own documents instead of the sample.\n" +
+        `--no-project-settings leaves out the ${PROJECT_SETTINGS_FILENAME} near that document.\n`,
     );
     return 0;
+  }
+  if (flags.project && flags["no-project-settings"]) {
+    throw new UsageError("--project edits the project settings file; it cannot be used with --no-project-settings");
   }
   const port = flags.port === undefined ? 0 : Number(flags.port);
   if (!Number.isInteger(port) || port < 0 || port > 65535) {
@@ -414,6 +414,7 @@ async function runStudio(argv) {
   studio = await startStudio({
     scope: flags.project ? "project" : "user",
     file: flags.file ?? flags._[0],
+    projectSettings: !flags["no-project-settings"],
     port,
     onIdle: () => void stop("Studio page closed. Stopping."),
   });
@@ -428,7 +429,7 @@ async function runStudio(argv) {
   );
   process.stdout.write(`${studio.url}\n`);
   process.stderr.write("\nPress Ctrl+C here when you are done.\n");
-  if (!flags["no-open"]) openInBrowser(studio.url);
+  if (!flags["no-open"]) openWithOs(studio.url);
   return null;
 }
 

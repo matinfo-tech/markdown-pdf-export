@@ -16,7 +16,7 @@ simply `markdown-pdf-export`. Node.js 20 or newer is needed.
 |---|---|
 | `markdown-pdf-export <file.md> [options]` | Export one file. |
 | `markdown-pdf-export` | In a terminal: a short menu (set up an editor, open Studio, check, help). |
-| `markdown-pdf-export studio [--project] [--file <doc.md>] [--port <n>] [--no-open]` | Open [Studio](/studio). `--project` edits `./.markdown-pdf.json`; `--file` previews your own document; `--no-open` only prints the link. |
+| `markdown-pdf-export studio [--project] [--file <doc.md>] [--no-project-settings] [--port <n>] [--no-open]` | Open [Studio](/studio). `--project` edits `./.markdown-pdf.json`; `--file` previews your own document (with the `.markdown-pdf.json` near it, unless `--no-project-settings`); `--no-open` only prints the link. |
 | `markdown-pdf-export init [--look <n>] [--font <n>] [--template <n>] [--project] [--force] [--list]` | Create the settings file. See [Settings file](/advanced/settings-file#create-it-with-init). |
 | `markdown-pdf-export init --from <file> [--project] [--force]` | Install a settings file you already have, such as the one from [Design online](/online). See [Install a file you already have](/advanced/settings-file#install-a-file-you-already-have). |
 | `markdown-pdf-export setup [zed\|vscode\|cursor\|claude-code\|claude-desktop\|copilot-cli\|all] [--write\|--print]` | Set up the export task and AI tools in the editors found. In a terminal it asks editor by editor and skips what is already set up. `--write` sets up everything without asking; `--print` only shows what to add. Missing files are created and the editor's own command is run. In an existing file only the new entry is added (comments and formatting are kept, a copy is saved as `<file>.markdown-pdf.bak`); a file that cannot be read is left alone and you get the snippet to paste. In Zed it also adds a keyboard shortcut, ⌘K ⌘E (Ctrl+K Ctrl+E). |
@@ -59,6 +59,7 @@ line wins over the settings files; front matter wins over both.
 | `--open-after-export` | Open the PDF when done. |
 | `--settings <file.json or json>` | Use these settings instead of the user file. |
 | `--sanitize <safe or none>` | Raw HTML in the document: `safe` (default) or `none`, see [Raw HTML and safety](/advanced/content#raw-html-and-safety). |
+| `--no-project-settings` | Ignore `.markdown-pdf.json` files. For documents you do not trust: a project file can turn off [raw HTML safety](/advanced/content#raw-html-and-safety). |
 | `--watch` | Export again when the file or a settings file changes. |
 
 Yes/no options accept `--toc`, `--toc=true`, `--toc=false` and `--no-toc`. JSON values need single
@@ -77,6 +78,7 @@ file's folder, not to the current folder. Missing folders are created.
 `--settings` takes a JSON file or inline JSON. It replaces the user file (and
 `MARKDOWN_PDF_SETTINGS`); a project `.markdown-pdf.json` still applies on top. It reads the same
 keys as a settings file, presets `look`, `font`, `heading_font` and `template` included.
+Add `--no-project-settings` to skip the project file too.
 
 ### --watch
 
