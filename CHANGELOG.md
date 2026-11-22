@@ -6,6 +6,8 @@ All notable changes to `markdown-pdf-export`. The format follows
 
 ## [Unreleased]
 
+## [2.4.0] - 2026-11-22
+
 ### Security
 
 - Raw HTML in the Markdown can no longer run code or load other pages while the PDF is printed.
@@ -261,7 +263,9 @@ MCP server, usable from any editor or AI assistant.
 - First release, as a Zed extension: Markdown to PDF with Chromium, syntax highlighting,
   structured headers and footers, placeholders and date formats.
 
-[Unreleased]: https://github.com/matinfo-tech/markdown-pdf-export/compare/v2.3.0...HEAD
+[Unreleased]: https://github.com/matinfo-tech/markdown-pdf-export/compare/v2.4.0...HEAD
+[2.4.0]: https://github.com/matinfo-tech/markdown-pdf-export/compare/v2.3.1...v2.4.0
+[2.3.1]: https://github.com/matinfo-tech/markdown-pdf-export/compare/v2.3.0...v2.3.1
 [2.3.0]: https://github.com/matinfo-tech/markdown-pdf-export/compare/v2.2.2...v2.3.0
 [2.2.2]: https://github.com/matinfo-tech/markdown-pdf-export/compare/v2.2.1...v2.2.2
 [2.2.1]: https://github.com/matinfo-tech/markdown-pdf-export/compare/v2.2.0...v2.2.1
