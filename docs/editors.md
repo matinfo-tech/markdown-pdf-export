@@ -112,9 +112,21 @@ Claude Desktop:
 </template>
 <template #zed>
 
-**1. Set up, once.** Press **Add to my editor** in Studio, or do it by hand:
+**1. Set up, once.** Press **Add to my editor** in Studio, or run
+`npx -y markdown-pdf-export setup zed`. It adds three things to the files in `~/.config/zed/`
+(`%APPDATA%\Zed\` on Windows) and leaves everything else in them as it was, comments included. A
+copy of each changed file is kept as `<file>.markdown-pdf.bak`.
 
-*For the export command.* Add to `~/.config/zed/tasks.json`:
+| What | File | Gives you |
+|---|---|---|
+| Export task | `tasks.json` | **task: spawn → Markdown: Export to PDF** |
+| Keyboard shortcut | `keymap.json` | **⌘K ⌘E** on a Mac, **Ctrl+K Ctrl+E** on Windows and Linux, in Markdown files |
+| AI tools | `settings.json` | the tools in the Agent panel (skipped when the *Markdown PDF Export* extension is installed: it provides them) |
+
+<details>
+<summary>Or add them by hand</summary>
+
+`tasks.json`:
 
 ```json
 [
@@ -128,7 +140,20 @@ Claude Desktop:
 ]
 ```
 
-*For the Agent panel.* Add to Zed's `settings.json`:
+`keymap.json` (use `ctrl-k ctrl-e` on Windows and Linux):
+
+```json
+[
+  {
+    "context": "Editor && extension == md",
+    "bindings": {
+      "cmd-k cmd-e": ["task::Spawn", { "task_name": "Markdown: Export to PDF" }]
+    }
+  }
+]
+```
+
+`settings.json`:
 
 ```json
 {
@@ -138,31 +163,20 @@ Claude Desktop:
 }
 ```
 
+</details>
+
 **2. Use it.**
 
-- **Export:** open a Markdown file, then **task: spawn → Markdown: Export to PDF**, or your key.
+- **Export:** in a Markdown file, press **⌘K ⌘E** (**Ctrl+K Ctrl+E**), or **task: spawn → Markdown: Export to PDF**.
 - **Ask:** in the Agent panel, type *Export this file to PDF*. The Agent can also *open Studio* to
   design your pages, and *install the PDF browser* if Chrome and Edge are missing.
 
 <details>
-<summary>Zed tips: a keyboard shortcut and more</summary>
+<summary>Zed tips</summary>
 
-**A keyboard shortcut.** Add this to `~/.config/zed/keymap.json`:
-
-```json
-[
-  {
-    "context": "Editor && extension == md",
-    "bindings": {
-      "cmd-shift-o": ["task::Spawn", { "task_name": "Markdown: Export to PDF" }]
-    }
-  }
-]
-```
-
-- The `context` line limits the key to Markdown files, so it keeps its usual job elsewhere.
-- On a Mac, `cmd` is ⌘ and `alt` is the Option key ⌥. On Windows and Linux, use `ctrl` instead of `cmd`.
-- To check a key is free, open the keymap editor (⌘K ⌘S) and search for it.
+**Another key.** Change `cmd-k cmd-e` in `keymap.json`. The `context` line limits it to Markdown
+files, so the key keeps its usual job elsewhere. Avoid ⌘⇧O / Ctrl+Shift+O: in Zed it opens the
+outline of the file. To check a key is free, open the keymap editor (⌘K ⌘S) and search for it.
 
 **Export again.** **task: rerun** repeats the last export without picking it from the list.
 
