@@ -6,6 +6,12 @@ All notable changes to `markdown-pdf-export`. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- Task lists (`- [x]`), footnotes (`[^1]`) and GitHub alerts (`> [!NOTE]`, `[!TIP]`,
+  `[!IMPORTANT]`, `[!WARNING]`, `[!CAUTION]`) now render instead of printing as plain text.
+  Always on, no setting.
+
 ### Changed
 
 - Headings get an id by default, so `[text](#heading)` links work in the PDF without any setting.
