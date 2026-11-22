@@ -107,6 +107,8 @@ ${lines.join("\n")}
   --no-project-settings             Ignore ${PROJECT_SETTINGS_FILENAME} files (for documents you
                                     do not trust).
   --watch                           Re-export when the file or a settings file changes.
+  --json                            Print the result as JSON (PDF path, settings files used,
+                                    what was removed or left as code) instead of the PDF path.
 
 Booleans: --flag, --flag=false or --no-flag.
 Objects take JSON, e.g. --margin '{"top":"10mm"}'.
@@ -169,6 +171,7 @@ function parseArgs(argv) {
   let sanitize;
   let projectSettings = true;
   let watch = false;
+  let json = false;
 
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
@@ -192,6 +195,10 @@ function parseArgs(argv) {
     if (key === "version" || key === "v") return { version: true, positional, options };
     if (key === "watch" && isLong) {
       watch = true;
+      continue;
+    }
+    if (key === "json" && isLong && value === undefined) {
+      json = true;
       continue;
     }
     // CLI only, like --sanitize: for callers that export files they do not
@@ -237,7 +244,7 @@ function parseArgs(argv) {
     options[name] = negate ? false : coerce(name, def, value);
   }
 
-  return { positional, options, settings, sanitize, projectSettings, watch };
+  return { positional, options, settings, sanitize, projectSettings, watch, json };
 }
 
 function loadSettingsArg(value) {
@@ -291,9 +298,8 @@ async function main(argv) {
   if (first === "setup") return runSetup(rest);
 
   const isDoctor = first === "doctor";
-  const asJson = isDoctor && rest.includes("--json");
-  const { positional, options, settings, sanitize, projectSettings, watch, help, version } = parseArgs(
-    isDoctor ? rest.filter((a) => a !== "--json") : argv,
+  const { positional, options, settings, sanitize, projectSettings, watch, json: asJson, help, version } = parseArgs(
+    isDoctor ? rest : argv,
   );
   if (help) {
     process.stdout.write(usage());
@@ -333,6 +339,7 @@ async function main(argv) {
   const args = { ...options, input_path: positional[0] };
   const trusted = { sanitize };
   if (watch) {
+    if (asJson) throw new UsageError("--json cannot be used with --watch");
     return runWatch(
       args,
       () => (fromArg ? setSettings(loadSettingsArg(settings).data, fromArg.file) : reloadSettings()),
@@ -341,6 +348,10 @@ async function main(argv) {
   }
 
   const result = await exportMarkdownPdf(args, trusted);
+  if (asJson) {
+    process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
+    return 0;
+  }
   reportWarnings(result);
   process.stdout.write(`${result.output_path}\n`);
   return 0;
@@ -384,16 +395,19 @@ async function runStudio(argv) {
     port: "string",
     "no-open": "boolean",
     "no-project-settings": "boolean",
+    embedded: "boolean",
   });
   if (flags.help) {
     process.stdout.write(
-      `Usage: ${BIN} studio [--project] [--file <doc.md>] [--no-project-settings] [--port <n>] [--no-open]\n\n` +
+      `Usage: ${BIN} studio [--project] [--file <doc.md>] [--no-project-settings] [--port <n>] [--no-open] [--embedded]\n\n` +
         "Opens a page in your browser to choose the page style, font, header and\n" +
         "footer, with a live preview of the real PDF. Saves to\n" +
         `  ${userSettingsPath()}\n` +
         `or, with --project, to ./${PROJECT_SETTINGS_FILENAME} for this folder only.\n` +
         "--file previews one of your own documents instead of the sample.\n" +
-        `--no-project-settings leaves out the ${PROJECT_SETTINGS_FILENAME} near that document.\n`,
+        `--no-project-settings leaves out the ${PROJECT_SETTINGS_FILENAME} near that document.\n` +
+        "--embedded is for an editor that shows the page in its own panel: no browser is\n" +
+        "opened, and each preview may name the document to draw.\n",
     );
     return 0;
   }
@@ -404,6 +418,7 @@ async function runStudio(argv) {
   if (!Number.isInteger(port) || port < 0 || port > 65535) {
     throw new UsageError(`--port needs a number between 0 and 65535, got "${flags.port}"`);
   }
+  const noOpen = Boolean(flags["no-open"] || flags.embedded);
   const { startStudio } = await import("./lib/studio-server.mjs");
   let studio = null;
   const stop = async (message) => {
@@ -415,6 +430,7 @@ async function runStudio(argv) {
     scope: flags.project ? "project" : "user",
     file: flags.file ?? flags._[0],
     projectSettings: !flags["no-project-settings"],
+    embedded: Boolean(flags.embedded),
     port,
     onIdle: () => void stop("Studio page closed. Stopping."),
   });
@@ -423,13 +439,13 @@ async function runStudio(argv) {
 
   process.stderr.write(
     `\nStudio is running. It edits this settings file:\n  ${studio.settingsPath}\n\n` +
-      (flags["no-open"]
+      (noOpen
         ? "Open this private link in your browser:\n"
         : "Your browser should open now. If it does not, use this private link:\n"),
   );
   process.stdout.write(`${studio.url}\n`);
   process.stderr.write("\nPress Ctrl+C here when you are done.\n");
-  if (!flags["no-open"]) openWithOs(studio.url);
+  if (!noOpen) openWithOs(studio.url);
   return null;
 }
 

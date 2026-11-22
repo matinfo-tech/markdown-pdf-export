@@ -13,7 +13,7 @@ import {
   matchLayout,
   renderText,
   settingsToDraft,
-} from "/model.mjs";
+} from "./model.mjs";
 
 const $ = (id) => document.getElementById(id);
 
@@ -36,6 +36,17 @@ if (fromHash) {
   history.replaceState(null, "", location.pathname);
 }
 const TOKEN = sessionStorage.getItem("studio-token") ?? "";
+
+/**
+ * An editor can show this page inside its own panel (Studio started with
+ * --embedded). Two hooks exist for it, and nothing else here knows about it:
+ *   - window.studioHost.showPdf(blob): set before this script runs, it draws
+ *     each preview in place of the two <iframe>s, for panels with no built-in
+ *     PDF viewer. It returns a promise that settles when the pages are shown.
+ *   - a "studio:refresh" event on window draws the preview again, for when the
+ *     document changed.
+ */
+const host = window.studioHost ?? null;
 
 async function api(path, { method = "GET", json, body, raw = false } = {}) {
   const headers = { "x-studio-token": TOKEN };
@@ -424,6 +435,25 @@ function schedulePreview() {
   previewTimer = setTimeout(drawPreview, 350);
 }
 
+/** Load the PDF in the hidden frame, then swap the two: no blank moment between previews. */
+function showInFrame(blob, run) {
+  const url = URL.createObjectURL(blob);
+  const incoming = backFrame;
+  const swap = () => {
+    if (run !== previewRun || incoming === frontFrame) return;
+    incoming.classList.remove("back");
+    incoming.removeAttribute("tabindex");
+    frontFrame.classList.add("back");
+    frontFrame.setAttribute("tabindex", "-1");
+    if (frontUrl) URL.revokeObjectURL(frontUrl);
+    frontUrl = url;
+    [frontFrame, backFrame] = [incoming, frontFrame];
+  };
+  incoming.addEventListener("load", swap, { once: true });
+  setTimeout(swap, 900); // some PDF viewers never fire load
+  incoming.src = `${url}#toolbar=0&navpanes=0&view=Fit`;
+}
+
 async function drawPreview() {
   const run = ++previewRun;
   const status = $("status");
@@ -433,24 +463,18 @@ async function drawPreview() {
     const res = await api("/api/preview", { method: "POST", json: { settings: currentSettings() }, raw: true });
     const blob = await res.blob();
     if (run !== previewRun) return;
-    const url = URL.createObjectURL(blob);
-    const incoming = backFrame;
-    const swap = () => {
-      if (run !== previewRun || incoming === frontFrame) return;
-      incoming.classList.remove("back");
-      incoming.removeAttribute("tabindex");
-      frontFrame.classList.add("back");
-      frontFrame.setAttribute("tabindex", "-1");
-      if (frontUrl) URL.revokeObjectURL(frontUrl);
-      frontUrl = url;
-      [frontFrame, backFrame] = [incoming, frontFrame];
-    };
-    incoming.addEventListener("load", swap, { once: true });
-    setTimeout(swap, 900); // some PDF viewers never fire load
-    incoming.src = `${url}#toolbar=0&navpanes=0&view=Fit`;
+    if (typeof host?.showPdf === "function") {
+      await host.showPdf(blob);
+      if (run !== previewRun) return;
+    } else {
+      showInFrame(blob, run);
+    }
     $("problem").hidden = true;
     const seconds = (Number(res.headers.get("x-render-ms")) / 1000).toFixed(1);
-    status.textContent = `This is the real PDF of ${server.preview.sample ? "a sample document" : server.preview.name}, drawn in ${seconds} s.`;
+    // An embedded Studio is told by its editor which document each preview draws.
+    const named = res.headers.get("x-preview-name");
+    const name = named ? decodeURIComponent(named) : server.preview.sample ? "a sample document" : server.preview.name;
+    status.textContent = `This is the real PDF of ${name}, drawn in ${seconds} s.`;
     status.className = "status";
   } catch (error) {
     if (run !== previewRun || error.status === 409) return;
@@ -760,8 +784,11 @@ async function start() {
   loadedJson = JSON.stringify(currentSettings());
   savedJson = server.exists && !server.fileError ? loadedJson : "";
   build();
+  // The editor showing this page is set up already.
+  $("editors-open").hidden = server.embedded;
   sync();
   drawPreview();
+  addEventListener("studio:refresh", schedulePreview);
   setInterval(() => api("/api/ping", { method: "POST" }).catch(() => {}), 30000);
 }
 

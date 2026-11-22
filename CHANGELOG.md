@@ -6,6 +6,21 @@ All notable changes to `markdown-pdf-export`. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- `--json` on export: prints the result as JSON (PDF path, settings files used, raw HTML removed,
+  diagrams left as code) instead of the PDF path, for scripts and editors.
+- `studio --embedded`, for an editor extension that shows Studio in its own panel. A preview
+  request can then name the document to draw and carry its unsaved text; the page draws again on
+  a `studio:refresh` event and hands each PDF to `window.studioHost.showPdf` when the panel
+  provides one. See [Studio inside an editor](https://markdown-pdf.matinfo.tech/advanced/cli#studio-inside-an-editor).
+- Every Studio preview answer has an `X-Preview-Report` header with the raw HTML removed and the
+  diagrams left as code.
+
+### Changed
+
+- Studio's page script imports its model with a relative path, so the page can be bundled.
+
 ## [2.6.0] - 2026-11-22
 
 ### Security
