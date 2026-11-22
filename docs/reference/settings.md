@@ -49,7 +49,7 @@ The quickest way to set many things at once.
 | `emoji` | Render :emoji: shortcodes as Unicode characters. | boolean | `true` |
 | `math` | Render LaTeX math via KaTeX. Use $inline$ and $$display$$ syntax. | boolean | `false` |
 | `math_options` | KaTeX rendering options. | object: `throw_on_error`, `error_color`, `macros` | throw_on_error: `false`, error_color: `#cc0000` |
-| `heading_anchors` | Add id slugs to headings (required infrastructure for TOC links). | boolean | `false` |
+| `heading_anchors` | Give each heading an id so [text](#heading) links and the table of contents work. On by default. | boolean | `true` |
 | `toc` | Render a `[[toc]]` marker as an auto-generated table of contents (also enables heading anchors). | boolean | `false` |
 | `toc_options` | Table-of-contents rendering options. | object: `level`, `list_type` | level: `[1,2,3]`, list_type: `ul` |
 | `sanitize` | Raw HTML in the Markdown: "safe" removes scripts, frames, event handlers and javascript: links and prints with JavaScript off; "none" keeps raw HTML as written (only for documents you trust). Cannot be set in front matter. | `safe`, `none` | `safe` |

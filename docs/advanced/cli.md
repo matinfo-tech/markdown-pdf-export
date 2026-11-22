@@ -52,7 +52,7 @@ line wins over the settings files; front matter wins over both.
 | `--math-options <json>` | `'{"macros":{"\\RR":"\\mathbb{R}"}}'` |
 | `--toc` | Replace `[[toc]]` with a table of contents. |
 | `--toc-options <json>` | `'{"level":[2,3],"list_type":"ol"}'` |
-| `--heading-anchors` | Give headings ids for links. |
+| `--no-heading-anchors` | Do not give headings ids (on by default). |
 | `--header <json>`, `--footer <json>` | Replace the header or footer, for example `'{"center_text":"Page {page}"}'`. |
 | `--display-header-footer` | Show the header and footer area. Not needed when a header or footer is set. |
 | `--open-after-export` | Open the PDF when done. |
