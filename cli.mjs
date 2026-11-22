@@ -99,6 +99,9 @@ Options (for export):
   -o, --output <file.pdf>           Output PDF path (alias of --output-path).
 ${lines.join("\n")}
   --settings <json|file.json>       Default settings (same shape as the MCP "settings" block).
+  --sanitize <safe|none>            Raw HTML in the Markdown: "safe" (default) removes scripts,
+                                    frames and event handlers; "none" keeps it as written.
+                                    Only for documents you trust.
   --margin <10mm>                   --margin also accepts one value for all four sides.
   --watch                           Re-export when the file or a settings file changes.
 
@@ -160,6 +163,7 @@ function parseArgs(argv) {
   const positional = [];
   const options = {};
   let settings;
+  let sanitize;
   let watch = false;
 
   for (let i = 0; i < argv.length; i++) {
@@ -202,6 +206,16 @@ function parseArgs(argv) {
       continue;
     }
 
+    // Not an export option on purpose: the MCP tool must not offer it.
+    if (name === "sanitize" && isLong) {
+      if (value === undefined) value = argv[++i];
+      if (value !== "safe" && value !== "none") {
+        throw new UsageError(`--sanitize expects safe or none, got "${value ?? ""}"`);
+      }
+      sanitize = value;
+      continue;
+    }
+
     const def = SCHEMA_PROPS[name];
     if (!def || name === "input_path") {
       throw new UsageError(`Unknown option: ${arg}`);
@@ -213,7 +227,7 @@ function parseArgs(argv) {
     options[name] = negate ? false : coerce(name, def, value);
   }
 
-  return { positional, options, settings, watch };
+  return { positional, options, settings, sanitize, watch };
 }
 
 function loadSettingsArg(value) {
@@ -268,7 +282,7 @@ async function main(argv) {
 
   const isDoctor = first === "doctor";
   const asJson = isDoctor && rest.includes("--json");
-  const { positional, options, settings, watch, help, version } = parseArgs(
+  const { positional, options, settings, sanitize, watch, help, version } = parseArgs(
     isDoctor ? rest.filter((a) => a !== "--json") : argv,
   );
   if (help) {
@@ -306,13 +320,17 @@ async function main(argv) {
   }
 
   const args = { ...options, input_path: positional[0] };
+  const trusted = { sanitize };
   if (watch) {
-    return runWatch(args, () =>
-      fromArg ? setSettings(loadSettingsArg(settings).data, fromArg.file) : reloadSettings(),
+    return runWatch(
+      args,
+      () => (fromArg ? setSettings(loadSettingsArg(settings).data, fromArg.file) : reloadSettings()),
+      trusted,
     );
   }
 
-  const result = await exportMarkdownPdf(args);
+  const result = await exportMarkdownPdf(args, trusted);
+  reportRemovedHtml(result);
   process.stdout.write(`${result.output_path}\n`);
   return 0;
 }
@@ -823,9 +841,18 @@ async function runSetup(argv) {
   return report.browser.available ? 0 : 1;
 }
 
+/** Tell the user what the raw HTML filter took out of the document. */
+function reportRemovedHtml(result) {
+  if (!result.removed_html?.length) return;
+  process.stderr.write(
+    `Removed unsafe HTML from ${path.basename(result.input_path)}: ${result.removed_html.join(", ")}\n` +
+      `  (trusted document? use --sanitize none or "sanitize": "none" in a settings file)\n`,
+  );
+}
+
 // ── watch ────────────────────────────────────────────────────────────────────
 
-async function runWatch(args, reload) {
+async function runWatch(args, reload, trusted = {}) {
   const watchers = new Map();
   let timer = null;
   let running = false;
@@ -850,7 +877,8 @@ async function runWatch(args, reload) {
     running = true;
     try {
       reload();
-      const result = await exportMarkdownPdf(args);
+      const result = await exportMarkdownPdf(args, trusted);
+      reportRemovedHtml(result);
       process.stderr.write(`[${new Date().toLocaleTimeString()}] ✓ ${result.output_path}\n`);
       for (const file of result.settings_files ?? []) watchFile(file);
     } catch (error) {

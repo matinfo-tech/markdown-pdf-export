@@ -36,7 +36,7 @@
     "build:reference": "node scripts/build-settings-reference.mjs",
     "prepack": "npm run build",
     "test": "node --test lib/__tests__/*.test.mjs",
-    "test:export": "node test-fixtures/test-export.mjs",
+    "test:export": "node test-fixtures/test-export.mjs && node test-fixtures/test-sanitize.mjs",
     "test:all": "npm run test && npm run test:export",
     "install-browser": "node cli.mjs install-browser",
     "smoke:pack": "node scripts/smoke-pack.mjs",

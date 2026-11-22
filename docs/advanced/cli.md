@@ -57,6 +57,7 @@ line wins over the settings files; front matter wins over both.
 | `--display-header-footer` | Show the header and footer area. Not needed when a header or footer is set. |
 | `--open-after-export` | Open the PDF when done. |
 | `--settings <file.json or json>` | Use these settings instead of the user file. |
+| `--sanitize <safe or none>` | Raw HTML in the document: `safe` (default) or `none`, see [Raw HTML and safety](/advanced/content#raw-html-and-safety). |
 | `--watch` | Export again when the file or a settings file changes. |
 
 Yes/no options accept `--toc`, `--toc=true`, `--toc=false` and `--no-toc`. JSON values need single

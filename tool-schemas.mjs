@@ -242,7 +242,7 @@ export const TOOLS = [
     name: "export_markdown_pdf",
     title: "Export Markdown PDF",
     description:
-      "Render a Markdown file to HTML and convert it to PDF with Playwright/Chromium.",
+      "Render a Markdown file to HTML and convert it to PDF with Playwright/Chromium. Raw HTML in the Markdown is filtered (no scripts, frames or event handlers) unless the user's settings file says otherwise; removed_html in the result lists what was taken out.",
     inputSchema: EXPORT_INPUT_SCHEMA,
   },
   {

@@ -40,6 +40,13 @@ assistant is in agent mode. Then follow the steps for your editor again: [Your e
 Use PNG, JPG or SVG. In Studio, drop the image on a spot again and press **Save**. Images in your
 document are found next to the Markdown file: `![Chart](images/chart.png)`.
 
+## Some of my HTML is shown as text or missing
+
+Raw HTML that can run code or load other pages (`<script>`, `<iframe>`, `<object>`, `<meta>`,
+`<link>`, `onclick`…) is filtered out of the document by default. See
+[Raw HTML and safety](/advanced/content#raw-html-and-safety) for the full list and how to turn it
+off for documents you trust.
+
 ## The first export is slow
 
 The first run downloads the tool, later runs start from a cache. For the fastest start, install it

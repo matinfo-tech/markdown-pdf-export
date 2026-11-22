@@ -20,7 +20,7 @@ const GROUPS = [
   ["Short presets", "The quickest way to set many things at once.", ["look", "font", "heading_font", "template"]],
   ["Page", "", ["page_format", "orientation", "margin", "scale", "page_ranges", "print_background"]],
   ["Text, fonts and code", "", ["font_family", "heading_font_family", "accent_color", "stylesheet_path", "include_default_styles", "highlight", "highlight_style"]],
-  ["Content", "", ["breaks", "emoji", "math", "math_options", "heading_anchors", "toc", "toc_options"]],
+  ["Content", "", ["breaks", "emoji", "math", "math_options", "heading_anchors", "toc", "toc_options", "sanitize"]],
   ["Header and footer", "See [Header and footer](/advanced/header-footer).", ["header", "footer", "display_header_footer"]],
   ["Files", "", ["output_directory", "assets_directory", "open_after_export"]],
 ];

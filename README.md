@@ -61,6 +61,8 @@ The PDF is saved next to the Markdown file. To add the task or the assistant too
 - A contents list from a `[[toc]]` marker, with links to each heading.
 - Settings for one document in its front matter.
 - One settings file used by every editor, the assistant and the terminal.
+- Safe with documents you did not write: scripts, frames and event handlers in raw HTML are
+  filtered out ([Raw HTML and safety](https://markdown-pdf.matinfo.tech/advanced/content#raw-html-and-safety)).
 
 ## Go further
 

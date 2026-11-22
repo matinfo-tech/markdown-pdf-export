@@ -90,8 +90,39 @@ backslash. To make every new line a line break, as in a chat message, set `"brea
 
 ## Other Markdown details
 
-- HTML in the Markdown is kept, so `<div>`, `<br>` or `<sup>` work.
+- HTML in the Markdown is kept, so `<div>`, `<br>` or `<sup>` work, apart from the few tags
+  listed in [Raw HTML and safety](#raw-html-and-safety).
 - Bare web addresses become links.
 - Straight quotes become curly quotes, and `--` and `...` become dashes and ellipses.
 - Images in the document are relative to the Markdown file.
 - Code blocks are coloured when they name a language; see [Styling](/advanced/styling#code-colours).
+
+## Raw HTML and safety
+
+A Markdown file is not always written by you: it may come from a cloned project, a download or an
+assistant. So that a document cannot run code or read files while it is printed, raw HTML is
+filtered by default (`"sanitize": "safe"`):
+
+- `<script>`, `<iframe>`, `<object>`, `<applet>`, `<frameset>`, `<noembed>` and `<noframes>` are
+  removed together with their content.
+- `<embed>`, `<frame>`, `<meta>`, `<base>`, `<link>`, `<form>`, `<title>`, `<textarea>`, `<xmp>` and
+  `<plaintext>` are shown as text.
+- Event handlers such as `onclick` or `onerror` do nothing, and `javascript:`, `vbscript:` and
+  `data:` links (other than `data:image/...`) become `#`.
+- The page is printed with JavaScript switched off and a Content Security Policy that blocks
+  scripts, frames and plugins.
+
+Everything else stays: `<div>`, `<span>`, `<img>`, `<sup>`, `<br>`, page breaks, inline `style=""`
+and `<style>` blocks. Code blocks are never changed. When something is removed, the command line
+says so, and the assistant tool lists it in `removed_html`.
+
+For documents you trust that need the old behaviour, turn the filter off in a settings file
+(your user settings or the project's `.markdown-pdf.json`):
+
+```json
+{ "sanitize": "none" }
+```
+
+or for one export from the command line: `--sanitize none`. Front matter and the assistant tool
+cannot turn it off, so a document or a prompt cannot unlock itself.
+
