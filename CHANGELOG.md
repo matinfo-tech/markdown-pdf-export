@@ -6,6 +6,8 @@ All notable changes to `markdown-pdf-export`. The format follows
 
 ## [Unreleased]
 
+## [2.7.0] - 2026-11-22
+
 ### Added
 
 - `--json` on export: prints the result as JSON (PDF path, settings files used, raw HTML removed,
@@ -323,7 +325,8 @@ MCP server, usable from any editor or AI assistant.
 - First release, as a Zed extension: Markdown to PDF with Chromium, syntax highlighting,
   structured headers and footers, placeholders and date formats.
 
-[Unreleased]: https://github.com/matinfo-tech/markdown-pdf-export/compare/v2.6.0...HEAD
+[Unreleased]: https://github.com/matinfo-tech/markdown-pdf-export/compare/v2.7.0...HEAD
+[2.7.0]: https://github.com/matinfo-tech/markdown-pdf-export/compare/v2.6.0...v2.7.0
 [2.6.0]: https://github.com/matinfo-tech/markdown-pdf-export/compare/v2.5.0...v2.6.0
 [2.5.0]: https://github.com/matinfo-tech/markdown-pdf-export/compare/v2.4.0...v2.5.0
 [2.4.0]: https://github.com/matinfo-tech/markdown-pdf-export/compare/v2.3.1...v2.4.0
