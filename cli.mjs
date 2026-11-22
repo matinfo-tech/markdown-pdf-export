@@ -756,8 +756,9 @@ async function runSetup(argv) {
         "In a terminal it asks editor by editor and skips what is already set up.\n" +
         "--write  set up everything without asking (scripts)\n" +
         "--print  only show what to add\n" +
-        "Files that do not exist yet are created and editor CLIs are run;\n" +
-        "existing files are never modified: you get the snippet to paste.\n",
+        "Missing files are created and editor CLIs are run. In an existing file only\n" +
+        "the new entry is added (comments kept, a copy saved as <file>.markdown-pdf.bak);\n" +
+        "a file that cannot be read is left alone and you get the snippet to paste.\n",
     );
     return 0;
   }

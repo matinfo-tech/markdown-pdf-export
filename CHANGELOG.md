@@ -6,6 +6,23 @@ All notable changes to `markdown-pdf-export`. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- Zed: `setup` (and **Add to my editor** in Studio) adds a keyboard shortcut for the export task,
+  ⌘K ⌘E on a Mac and Ctrl+K Ctrl+E on Windows and Linux, in Markdown files only. `doctor` reports it.
+- `setup` now adds its entry to a file that already exists (Zed `tasks.json`, `keymap.json` and
+  `settings.json`, VS Code and Cursor `tasks.json`, Cursor `mcp.json`, Claude Desktop config)
+  instead of asking you to paste it. Only the new entry is added: comments, trailing commas and
+  your formatting stay as they were, and a copy of the file is kept as `<file>.markdown-pdf.bak`.
+  A file that cannot be read is left alone and you get the snippet to paste.
+
+### Changed
+
+- Zed: when the *Markdown PDF Export* extension is installed, `setup` and `doctor` count the AI
+  tools as set up and no longer add a `context_servers` entry, which would replace the extension's.
+- The documented Zed shortcut is no longer ⌘⇧O / Ctrl+Shift+O, which hid Zed's outline.
+- Snippets are written the way config files usually are, with short lists on one line.
+
 ## [2.2.2] - 2026-11-22
 
 ### Fixed

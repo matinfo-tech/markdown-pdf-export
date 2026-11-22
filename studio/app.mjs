@@ -635,12 +635,13 @@ function copyButton(text) {
   return button;
 }
 
-const KIND_LABEL = { task: "export task", mcp: "AI tools" };
+const KIND_LABEL = { task: "export task", key: "keyboard shortcut", mcp: "AI tools" };
 
 /**
  * Editors found on this computer, one switch each (on by default). Already
- * set-up parts are skipped; files that exist are never edited — the person
- * gets the snippet to paste instead.
+ * set-up parts are skipped. Existing files get only the new entry (the server
+ * keeps a backup); a file it cannot read is left alone and the person gets
+ * the snippet to paste instead.
  */
 function quickSetup(found) {
   const box = el("section", { class: "quick", "aria-label": "Editors found on this computer" });
