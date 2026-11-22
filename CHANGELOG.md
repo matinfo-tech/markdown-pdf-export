@@ -6,6 +6,21 @@ All notable changes to `markdown-pdf-export`. The format follows
 
 ## [Unreleased]
 
+## [2.3.1] - 2026-11-22
+
+### Fixed
+
+- The temporary render HTML is written to the system temp folder, no longer next to the
+  Markdown file, so it never shows up in the project (or in the editor's file watcher) and a
+  crash cannot leave it behind there. If the browser cannot read the temp folder, the export
+  falls back to the old location once and still cleans up after itself.
+- Temp render files that earlier versions left behind next to the Markdown file are removed
+  on the next export of that file (only exact `.{uuid}.temp_render.html` names older than an hour).
+
+### Changed
+
+- A settings file path (`MARKDOWN_PDF_SETTINGS`, `--settings`) may start with `~` or `$HOME`.
+
 ## [2.3.0] - 2026-11-22
 
 ### Added
