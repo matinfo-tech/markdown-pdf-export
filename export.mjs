@@ -910,6 +910,34 @@ export async function doctorMarkdownPdf(args) {
   };
 }
 
+/**
+ * Delete temp render files (`.{uuid}.temp_render.html`) that versions up to
+ * 2.3.0 could orphan next to the source on a crash. Only files matching the
+ * exact UUID pattern and older than an hour are touched; a file still in use
+ * by a parallel export of an old version survives. Best effort, never throws.
+ */
+async function sweepLegacyTempFiles(dir) {
+  const LEGACY_TEMP = /^\.[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.temp_render\.html$/i;
+  const MAX_AGE_MS = 60 * 60 * 1000;
+  try {
+    const entries = await fs.readdir(dir);
+    for (const name of entries) {
+      if (!LEGACY_TEMP.test(name)) continue;
+      const fullPath = path.join(dir, name);
+      try {
+        const stat = await fs.stat(fullPath);
+        if (Date.now() - stat.mtimeMs < MAX_AGE_MS) continue;
+        await fs.unlink(fullPath);
+        debugLog(`removed stale temp render file ${fullPath}`);
+      } catch {
+        // ignore: file vanished or is unreadable
+      }
+    }
+  } catch (error) {
+    debugLog(`legacy temp sweep skipped: ${error instanceof Error ? error.message : error}`);
+  }
+}
+
 export async function exportMarkdownPdf(args) {
   await ensureDependencies();
   const inputPath = await resolveInputPath(args.input_path);
@@ -1048,19 +1076,34 @@ export async function exportMarkdownPdf(args) {
   try {
     const page = await browser.newPage();
 
-    // Write HTML to a uniquely-named temp file so parallel exports don't collide
-    const { randomUUID } = await import('node:crypto');
-    const tempHtmlPath = path.join(path.dirname(inputPath), `.${randomUUID()}.temp_render.html`);
-    await fs.writeFile(tempHtmlPath, html, 'utf8');
+    // Render from a uniquely-named temp file in the OS tmpdir: relative assets
+    // resolve through the <base href> baked into the HTML, so the file does not
+    // need to sit next to the source, and a crash leaves orphans only where the
+    // OS cleans them up. A browser that cannot read the tmpdir (sandboxed
+    // installs) gets one retry with the temp file next to the source.
+    const { randomUUID } = await import("node:crypto");
+    const uuid = randomUUID();
+    const tempHtmlPath = path.join(os.tmpdir(), `markdown-pdf-export-${uuid}.html`);
+    const fallbackHtmlPath = path.join(path.dirname(inputPath), `.${uuid}.temp_render.html`);
+    await fs.writeFile(tempHtmlPath, html, "utf8");
 
     try {
-      const tempUrl = pathToFileURL(tempHtmlPath).href;
-      await page.goto(tempUrl, { waitUntil: "networkidle" });
-    } finally {
       try {
-        await fs.unlink(tempHtmlPath);
-      } catch {
-        // ignore cleanup errors
+        await page.goto(pathToFileURL(tempHtmlPath).href, { waitUntil: "networkidle" });
+      } catch (error) {
+        debugLog(
+          `tmpdir render failed (${error instanceof Error ? error.message : error}); retrying next to the source`,
+        );
+        await fs.writeFile(fallbackHtmlPath, html, "utf8");
+        await page.goto(pathToFileURL(fallbackHtmlPath).href, { waitUntil: "networkidle" });
+      }
+    } finally {
+      for (const tempPath of [tempHtmlPath, fallbackHtmlPath]) {
+        try {
+          await fs.unlink(tempPath);
+        } catch {
+          // ignore cleanup errors
+        }
       }
     }
 
@@ -1163,6 +1206,10 @@ export async function exportMarkdownPdf(args) {
   } finally {
     await browser.close();
   }
+
+  // Versions up to 2.3.0 rendered from a temp file next to the source and
+  // could orphan it on a crash. Sweep those leftovers once per export.
+  await sweepLegacyTempFiles(path.dirname(inputPath));
 
   if (effectiveOptions.open_after_export) {
     void openFile(outputPath);
