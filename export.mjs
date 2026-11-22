@@ -30,6 +30,7 @@ import {
 } from "./lib/settings-loader.mjs";
 import { accentCss, applyPresets, normalizeAccentColor } from "./lib/looks.mjs";
 import { PAGE_BREAK_CSS, pageBreakComments } from "./lib/page-breaks.mjs";
+import { githubAlerts } from "./lib/alerts.mjs";
 import {
   SANITIZE_MODES,
   cssForStyleElement,
@@ -676,6 +677,23 @@ async function getEmojiPlugin() {
   return emojiPlugin;
 }
 
+// GitHub-flavoured syntax that would otherwise print as broken text, so it is
+// always on. Unlike the optional plugins, a load failure is a real error.
+let gfmPlugins = null;
+async function getGfmPlugins() {
+  if (!gfmPlugins) {
+    const [footnote, taskLists] = await Promise.all([
+      import("markdown-it-footnote"),
+      import("markdown-it-task-lists"),
+    ]);
+    gfmPlugins = {
+      footnote: footnote.default ?? footnote,
+      taskLists: taskLists.default ?? taskLists,
+    };
+  }
+  return gfmPlugins;
+}
+
 async function createMarkdown(options) {
   await ensureDependencies();
   const MarkdownIt = (await import("markdown-it")).default;
@@ -714,6 +732,11 @@ async function createMarkdown(options) {
 
   md.use(pageBreakComments);
   if (options.sanitize !== "none") md.use(sanitizeRawHtml);
+
+  const gfm = await getGfmPlugins();
+  md.use(gfm.footnote);
+  md.use(gfm.taskLists);
+  md.use(githubAlerts);
 
   if (options.emoji) {
     try {

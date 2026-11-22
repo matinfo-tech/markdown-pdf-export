@@ -193,6 +193,64 @@ ol {
   padding-left: 2em;
 }
 
+/* Task lists: - [ ] / - [x] */
+.contains-task-list {
+  list-style: none;
+  padding-left: 0.25em;
+}
+
+.contains-task-list .contains-task-list {
+  padding-left: 1.5em;
+}
+
+.task-list-item-checkbox {
+  margin: 0 0.4em 0.2em 0;
+  vertical-align: middle;
+}
+
+/* Footnotes: [^1] */
+.footnote-ref a {
+  text-decoration: none;
+}
+
+hr.footnotes-sep {
+  margin: 2rem 0 1rem;
+}
+
+.footnotes {
+  font-size: 0.875em;
+  color: #57606a;
+}
+
+.footnote-backref {
+  text-decoration: none;
+}
+
+/* GitHub alerts: > [!NOTE] … Coloured border and title only, so they print
+   the same with or without print_background. */
+.markdown-alert {
+  border-left: 4px solid var(--alert-color);
+  margin: 0 0 1rem;
+  padding: 0.25em 1em;
+  break-inside: avoid;
+}
+
+.markdown-alert > :last-child {
+  margin-bottom: 0;
+}
+
+.markdown-alert-title {
+  color: var(--alert-color);
+  font-weight: 600;
+  margin: 0 0 0.25em;
+}
+
+.markdown-alert-note { --alert-color: #0969da; }
+.markdown-alert-tip { --alert-color: #1a7f37; }
+.markdown-alert-important { --alert-color: #8250df; }
+.markdown-alert-warning { --alert-color: #9a6700; }
+.markdown-alert-caution { --alert-color: #cf222e; }
+
 /* Auto-generated table of contents (markdown-it-toc-done-right) */
 .markdown-toc {
   margin: 0 0 2em;

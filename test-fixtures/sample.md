@@ -290,8 +290,34 @@ line endings explicitly.
 - [x] Page scale
 - [x] Page ranges
 - [x] Hard line breaks
-- [ ] Table of contents generation
+- [x] Table of contents generation
+- [x] Footnotes, task lists and GitHub alerts
 - [ ] Multi-file export
+
+### Footnotes
+
+Footnotes are numbered in order of use[^first] and collected at the end of
+the document, each with a link back to where it was cited[^second].
+
+[^first]: This is the first footnote.
+[^second]: Footnotes can hold **formatting** and `code`.
+
+### Alerts
+
+> [!NOTE]
+> Useful information that readers should know, even when skimming.
+
+> [!TIP]
+> Helpful advice for doing things better or more easily.
+
+> [!IMPORTANT]
+> Key information readers need to achieve their goal.
+
+> [!WARNING]
+> Urgent info that needs immediate attention to avoid problems.
+
+> [!CAUTION]
+> Advises about risks or negative outcomes of certain actions.
 
 ---
 

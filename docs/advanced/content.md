@@ -86,6 +86,28 @@ Emoji shortcodes are on by default: `:tada:` prints the party popper emoji, draw
 font of the computer. Emoji typed directly also work. Set `"emoji": false` to print shortcodes as
 plain text.
 
+## Task lists, footnotes and alerts
+
+These follow GitHub's syntax and are always on.
+
+```markdown
+- [x] Draft written
+- [ ] Reviewed
+
+The figures are provisional.[^1]
+
+[^1]: Final numbers come out in March.
+
+> [!WARNING]
+> Back up your data before upgrading.
+```
+
+- **Task lists** print as ticked or empty checkboxes.
+- **Footnotes** are numbered in order of use and collected at the end of the document, with a link
+  back to where each was cited.
+- **Alerts** are `[!NOTE]`, `[!TIP]`, `[!IMPORTANT]`, `[!WARNING]` and `[!CAUTION]`. The marker must
+  be alone on the first line of the quote, as on GitHub; anything else stays an ordinary quote.
+
 ## Line breaks
 
 By default Markdown joins the lines of a paragraph. To end a line, finish it with two spaces or a
@@ -94,7 +116,9 @@ backslash. To make every new line a line break, as in a chat message, set `"brea
 ## Other Markdown details
 
 - HTML in the Markdown is kept, so `<div>`, `<br>` or `<sup>` work, apart from the few tags
-  listed in [Raw HTML and safety](#raw-html-and-safety).
+  listed in [Raw HTML and safety](#raw-html-and-safety). Use it where Markdown has no syntax:
+  `H<sub>2</sub>O`, `x<sup>2</sup>`, `<mark>highlighted</mark>`, or
+  `<img src="chart.png" width="300">` for an image at a set size.
 - Bare web addresses become links.
 - Straight quotes become curly quotes, and `--` and `...` become dashes and ellipses.
 - Images in the document are relative to the Markdown file.
