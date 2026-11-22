@@ -1,6 +1,6 @@
 # Content
 
-For people who write maths, want a table of contents, or wonder how emoji and line breaks are handled.
+For people who write maths or diagrams, want a table of contents, or wonder how emoji and line breaks are handled.
 
 Each feature below is switched on in your [settings file](/advanced/settings-file), in a document's
 [front matter](/advanced/per-document) under `pdf:`, or for one export with a command-line flag.
@@ -85,6 +85,27 @@ contents (`toc`) needs them and turns them back on.
 Emoji shortcodes are on by default: `:tada:` prints the party popper emoji, drawn with the emoji
 font of the computer. Emoji typed directly also work. Set `"emoji": false` to print shortcodes as
 plain text.
+
+## Diagrams
+
+A code block marked `mermaid` is drawn as a [Mermaid](https://mermaid.js.org/intro/) diagram:
+flowcharts, sequence diagrams, Gantt charts, class and state diagrams, pie charts and the rest.
+
+````markdown
+```mermaid
+flowchart LR
+  A[Draft] --> B{Reviewed?}
+  B -->|yes| C[Publish]
+  B -->|no| A
+```
+````
+
+Diagrams are on by default and drawn offline, as vector graphics that stay sharp when zoomed. A
+diagram wider than the page is scaled down to fit, and a diagram is never split across two pages.
+
+If a diagram has a mistake, it is printed as a code block instead and the export goes on. The
+command line prints the error; assistants get it in `diagram_errors`. To print every `mermaid`
+block as code, set `"mermaid": false` (or pass `--no-mermaid`).
 
 ## Task lists, footnotes and alerts
 

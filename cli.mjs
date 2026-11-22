@@ -330,7 +330,7 @@ async function main(argv) {
   }
 
   const result = await exportMarkdownPdf(args, trusted);
-  reportRemovedHtml(result);
+  reportWarnings(result);
   process.stdout.write(`${result.output_path}\n`);
   return 0;
 }
@@ -841,13 +841,18 @@ async function runSetup(argv) {
   return report.browser.available ? 0 : 1;
 }
 
-/** Tell the user what the raw HTML filter took out of the document. */
-function reportRemovedHtml(result) {
-  if (!result.removed_html?.length) return;
-  process.stderr.write(
-    `Removed unsafe HTML from ${path.basename(result.input_path)}: ${result.removed_html.join(", ")}\n` +
-      `  (trusted document? use --sanitize none or "sanitize": "none" in a settings file)\n`,
-  );
+/** Tell the user what the raw HTML filter took out and which diagrams failed. */
+function reportWarnings(result) {
+  const name = path.basename(result.input_path);
+  if (result.removed_html?.length) {
+    process.stderr.write(
+      `Removed unsafe HTML from ${name}: ${result.removed_html.join(", ")}\n` +
+        `  (trusted document? use --sanitize none or "sanitize": "none" in a settings file)\n`,
+    );
+  }
+  for (const error of result.diagram_errors ?? []) {
+    process.stderr.write(`Mermaid diagram left as code in ${name}: ${error}\n`);
+  }
 }
 
 // ── watch ────────────────────────────────────────────────────────────────────
@@ -878,7 +883,7 @@ async function runWatch(args, reload, trusted = {}) {
     try {
       reload();
       const result = await exportMarkdownPdf(args, trusted);
-      reportRemovedHtml(result);
+      reportWarnings(result);
       process.stderr.write(`[${new Date().toLocaleTimeString()}] ✓ ${result.output_path}\n`);
       for (const file of result.settings_files ?? []) watchFile(file);
     } catch (error) {

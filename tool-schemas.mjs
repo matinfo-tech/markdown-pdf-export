@@ -156,6 +156,11 @@ export const EXPORT_INPUT_SCHEMA = {
         },
       },
     },
+    mermaid: {
+      type: "boolean",
+      description:
+        "Draw ```mermaid code blocks as diagrams. A diagram that fails to parse stays a code block and is listed in diagram_errors. On by default.",
+    },
     display_header_footer: {
       type: "boolean",
       default: false,
@@ -242,7 +247,7 @@ export const TOOLS = [
     name: "export_markdown_pdf",
     title: "Export Markdown PDF",
     description:
-      "Render a Markdown file to HTML and convert it to PDF with Playwright/Chromium. Raw HTML in the Markdown is filtered (no scripts, frames or event handlers) unless the user's settings file says otherwise; removed_html in the result lists what was taken out.",
+      "Render a Markdown file to HTML and convert it to PDF with Playwright/Chromium. Raw HTML in the Markdown is filtered (no scripts, frames or event handlers) unless the user's settings file says otherwise; removed_html in the result lists what was taken out. ```mermaid blocks are drawn as diagrams; diagram_errors lists any that could not be drawn and were left as code.",
     inputSchema: EXPORT_INPUT_SCHEMA,
   },
   {

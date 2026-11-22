@@ -251,6 +251,18 @@ hr.footnotes-sep {
 .markdown-alert-warning { --alert-color: #9a6700; }
 .markdown-alert-caution { --alert-color: #cf222e; }
 
+/* Mermaid diagrams (drawn to SVG before printing) */
+figure.mermaid {
+  margin: 0 0 1rem;
+  text-align: center;
+  break-inside: avoid;
+}
+
+figure.mermaid svg {
+  max-width: 100%;
+  height: auto;
+}
+
 /* Auto-generated table of contents (markdown-it-toc-done-right) */
 .markdown-toc {
   margin: 0 0 2em;

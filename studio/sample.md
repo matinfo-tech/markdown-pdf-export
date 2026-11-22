@@ -48,6 +48,15 @@ $$
 r = \sqrt[3]{1.148} - 1 \approx 4.7\,\%
 $$
 
+## How a release ships
+
+```mermaid
+flowchart LR
+  A[Draft] --> B{Reviewed?}
+  B -->|yes| C[Publish]
+  B -->|no| A
+```
+
 <div style="page-break-after: always"></div>
 
 ## Next quarter

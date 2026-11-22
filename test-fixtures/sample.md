@@ -292,6 +292,7 @@ line endings explicitly.
 - [x] Hard line breaks
 - [x] Table of contents generation
 - [x] Footnotes, task lists and GitHub alerts
+- [x] Mermaid diagrams
 - [ ] Multi-file export
 
 ### Footnotes
@@ -320,6 +321,18 @@ the document, each with a link back to where it was cited[^second].
 > Advises about risks or negative outcomes of certain actions.
 
 ---
+
+### Diagrams
+
+```mermaid
+sequenceDiagram
+  participant Editor
+  participant Exporter
+  participant Chromium
+  Editor->>Exporter: export file.md
+  Exporter->>Chromium: draw diagrams, print page
+  Chromium-->>Editor: file.pdf
+```
 
 ## Blockquotes
 
