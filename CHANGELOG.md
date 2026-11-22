@@ -6,6 +6,12 @@ All notable changes to `markdown-pdf-export`. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- MCP Registry listing: display title, website, icon, a clearer description, and the
+  `MARKDOWN_PDF_DEBUG` variable. `MARKDOWN_PDF_SETTINGS` is described as a file path or JSON.
+- Editors page, Zed: the Agent can also open Studio and install the PDF browser.
+
 ## [2.2.0] - 2026-11-21
 
 ### Added

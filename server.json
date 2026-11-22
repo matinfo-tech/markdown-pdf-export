@@ -1,11 +1,19 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.matinfo-tech/markdown-pdf-export",
+  "title": "Markdown PDF Export",
   "description": "Export Markdown files to PDF with Chromium: highlighting, KaTeX math, TOC, headers/footers.",
   "repository": {
     "url": "https://github.com/matinfo-tech/markdown-pdf-export",
     "source": "github"
   },
+  "websiteUrl": "https://markdown-pdf.matinfo.tech",
+  "icons": [
+    {
+      "src": "https://markdown-pdf.matinfo.tech/logo.png",
+      "mimeType": "image/png"
+    }
+  ],
   "version": "2.2.0",
   "packages": [
     {
@@ -17,14 +25,21 @@
       "environmentVariables": [
         {
           "name": "MARKDOWN_PDF_SETTINGS",
-          "description": "Default export settings as JSON, e.g. {\"page_format\":\"Letter\"}",
+          "description": "Settings file to use instead of ~/.config/markdown-pdf-export/settings.json, or settings as JSON",
           "isRequired": false,
           "format": "string",
           "isSecret": false
         },
         {
           "name": "MARKDOWN_PDF_BROWSER",
-          "description": "Browser to use: chrome, msedge, chromium, or a path to an executable",
+          "description": "Browser that draws the PDF: chrome, msedge, chromium, or a path to a browser program",
+          "isRequired": false,
+          "format": "string",
+          "isSecret": false
+        },
+        {
+          "name": "MARKDOWN_PDF_DEBUG",
+          "description": "Set to 1 to write a debug log to markdown-pdf-debug.log in the temp folder",
           "isRequired": false,
           "format": "string",
           "isSecret": false
