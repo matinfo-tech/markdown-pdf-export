@@ -6,6 +6,8 @@ All notable changes to `markdown-pdf-export`. The format follows
 
 ## [Unreleased]
 
+## [2.8.0] - 2026-11-24
+
 ### Added
 
 - `author` in a settings file: the name (or list of names) printed by `{author}` when a document's
@@ -332,7 +334,8 @@ MCP server, usable from any editor or AI assistant.
 - First release, as a Zed extension: Markdown to PDF with Chromium, syntax highlighting,
   structured headers and footers, placeholders and date formats.
 
-[Unreleased]: https://github.com/matinfo-tech/markdown-pdf-export/compare/v2.7.0...HEAD
+[Unreleased]: https://github.com/matinfo-tech/markdown-pdf-export/compare/v2.8.0...HEAD
+[2.8.0]: https://github.com/matinfo-tech/markdown-pdf-export/compare/v2.7.0...v2.8.0
 [2.7.0]: https://github.com/matinfo-tech/markdown-pdf-export/compare/v2.6.0...v2.7.0
 [2.6.0]: https://github.com/matinfo-tech/markdown-pdf-export/compare/v2.5.0...v2.6.0
 [2.5.0]: https://github.com/matinfo-tech/markdown-pdf-export/compare/v2.4.0...v2.5.0
