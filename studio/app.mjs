@@ -356,7 +356,14 @@ function syncNotices() {
       el(
         "div",
         { class: "notice" },
-        `The ${areaName} in your file was written by hand with options Studio does not show. It stays untouched.`,
+        `The ${areaName} in your file was written by hand with options Studio does not show. It stays untouched. `,
+        el("a", {
+          class: "help",
+          href: "https://markdown-pdf.matinfo.tech/reference/header-footer",
+          target: "_blank",
+          rel: "noopener noreferrer",
+          text: "Header and footer reference",
+        }),
         el("br"),
         el("button", {
           type: "button",

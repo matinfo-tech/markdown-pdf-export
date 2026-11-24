@@ -41,6 +41,9 @@ the export command for you, or shows what to paste. More in [Your editor](/edito
 - Logos are copied next to the settings file. A logo you replace or remove is deleted when you save.
 - One layout for one project only: start Studio from the project folder with `--project`.
 - Preview your own document instead of the sample: add `--file report.md`.
+- Each section has a **Help** link to its page of this site. *Going further*, at the bottom, links
+  to [per-document settings](/advanced/per-document) and the
+  [header and footer reference](/reference/header-footer).
 - Studio runs only on your computer and closes by itself a few minutes after you close the page.
   Nothing is uploaded.
 

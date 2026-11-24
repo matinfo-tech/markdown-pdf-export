@@ -6,6 +6,14 @@ All notable changes to `markdown-pdf-export`. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- Studio links to the documentation: a **Help** link beside each section title (page style, fonts
+  and paper, header and footer), a *Going further* section with per-document settings, the header
+  and footer reference and all settings, and the header and footer reference in the notice shown
+  for a header or footer written by hand. The links open in a new tab, or in the browser from an
+  editor panel.
+
 ## [2.8.0] - 2026-11-24
 
 ### Added
