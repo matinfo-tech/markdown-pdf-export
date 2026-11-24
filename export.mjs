@@ -19,6 +19,8 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import {
   parseFrontMatter,
   ensureYamlLoaded,
+  normalizeAuthor,
+  resolveAuthor,
 } from "./lib/frontmatter-parser.mjs";
 import { mergeConfig } from "./lib/config-merger.mjs";
 import { createAssetResolver } from "./lib/asset-resolver.mjs";
@@ -93,6 +95,8 @@ export const DEFAULT_SETTINGS = {
   output_directory: null,
   assets_directory: null,
   open_after_export: false,
+  // document
+  author: null, // {author} when the front matter has none
   // page layout
   page_format: "A4",
   orientation: "portrait",
@@ -314,6 +318,7 @@ export function normalizeSettings(raw) {
     stylesheet_path: normalizeNonEmptyString(safe.stylesheet_path),
     output_directory: normalizeNonEmptyString(safe.output_directory),
     assets_directory: normalizeNonEmptyString(safe.assets_directory),
+    author: normalizeAuthor(safe.author),
     open_after_export: normalizeBoolean(
       safe.open_after_export,
       DEFAULT_SETTINGS.open_after_export,
@@ -934,6 +939,7 @@ export async function doctorMarkdownPdf(args) {
       stylesheet_path: doc.settings.stylesheet_path,
       output_directory: doc.settings.output_directory,
       assets_directory: doc.settings.assets_directory,
+      author: doc.settings.author,
       open_after_export: doc.settings.open_after_export,
       page_format: doc.settings.page_format,
       orientation: doc.settings.orientation,
@@ -1214,7 +1220,7 @@ export async function exportMarkdownPdf(args, trusted = {}) {
       const renderContext = createRenderContext({
         inputPath,
         title: title || "",
-        author: author || "",
+        author: resolveAuthor(author, docSettings.author),
         frontMatter: { ...customVariables },
         now: new Date(),
       });

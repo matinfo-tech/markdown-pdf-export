@@ -29,7 +29,7 @@ elements. They are not replaced in the document body.
 | `{page}` | Current page number. | `3` |
 | `{pages}` | Total number of pages. | `12` |
 | `{title}` | Front matter `title`; without it, the first `# heading`; without it, the file name without extension. | `Annual report` |
-| `{author}` | Front matter `author`. A list is joined with commas. Empty when missing. | `Jane Smith` |
+| `{author}` | Front matter `author`; without it, `author` from the settings file; else empty. A list is joined with commas. `author: none` in the front matter prints nothing. | `Jane Smith` |
 | `{filename}` | Markdown file name, with extension. | `report.md` |
 | `{date}` | Export date, format `yyyy-MM-dd`. | `2026-06-14` |
 | `{time}` | Export time, format `HH:mm:ss`. | `14:30:05` |

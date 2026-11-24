@@ -6,6 +6,13 @@ All notable changes to `markdown-pdf-export`. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- `author` in a settings file: the name (or list of names) printed by `{author}` when a document's
+  front matter has none. A document's own `author:` still wins.
+- `author: none` (or an empty `author:`) in a document's front matter prints no author there, even
+  when the settings file sets one.
+
 ## [2.7.0] - 2026-11-22
 
 ### Added

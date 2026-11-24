@@ -73,6 +73,12 @@ See [Header and footer](/advanced/header-footer).
 | `assets_directory` | Folder for "@/name.svg" image references (relative to this settings file). | string |  |
 | `open_after_export` | Open the PDF after export. | boolean | `false` |
 
+## Other
+
+| Setting | What it does | Values | Default |
+|---|---|---|---|
+| `author` | Author printed by {author} when a document's front matter has none, e.g. "Jane Smith" or a list. A document's own "author:" wins; "author: none" there prints no author. |  |  |
+
 ## Inside `header` and `footer`
 
 | Key | What it does | Values |

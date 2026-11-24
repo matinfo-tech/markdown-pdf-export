@@ -324,6 +324,20 @@
       ],
       "description": "Raw HTML in the Markdown: \"safe\" removes scripts, frames, event handlers and javascript: links and prints with JavaScript off; \"none\" keeps raw HTML as written (only for documents you trust). Cannot be set in front matter."
     },
+    "author": {
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      ],
+      "description": "Author printed by {author} when a document's front matter has none, e.g. \"Jane Smith\" or a list. A document's own \"author:\" wins; \"author: none\" there prints no author."
+    },
     "output_directory": {
       "type": "string",
       "description": "Folder for the PDFs, relative to each Markdown file. Default: next to it."
