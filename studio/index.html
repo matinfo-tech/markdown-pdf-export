@@ -19,12 +19,18 @@
       <div id="notices"></div>
 
       <section class="group">
-        <h2>Page style</h2>
+        <div class="group-head">
+          <h2>Page style</h2>
+          <a class="help" href="https://markdown-pdf.matinfo.tech/advanced/styling#page-styles" target="_blank" rel="noopener noreferrer" aria-label="Help: page styles">Help</a>
+        </div>
         <div class="looks" id="looks" role="radiogroup" aria-label="Page style"></div>
       </section>
 
       <section class="group">
-        <h2>Fonts and paper</h2>
+        <div class="group-head">
+          <h2>Fonts and paper</h2>
+          <a class="help" href="https://markdown-pdf.matinfo.tech/advanced/styling#fonts" target="_blank" rel="noopener noreferrer" aria-label="Help: fonts and paper">Help</a>
+        </div>
         <div class="fields">
           <label class="label" for="font">Text font</label>
           <select id="font"></select>
@@ -56,7 +62,10 @@
       </section>
 
       <section class="group">
-        <h2>Header and footer</h2>
+        <div class="group-head">
+          <h2>Header and footer</h2>
+          <a class="help" href="https://markdown-pdf.matinfo.tech/advanced/header-footer" target="_blank" rel="noopener noreferrer" aria-label="Help: header and footer">Help</a>
+        </div>
         <p class="hint">Pick a starting point, then click any spot on the page to change it.</p>
         <div class="seg wrap" id="layouts" aria-label="Starting layout"></div>
 
@@ -83,6 +92,14 @@
             <input type="color" class="color fixed" id="color" aria-label="Text colour" title="Text colour">
           </div>
         </div>
+      </section>
+      <section class="group">
+        <h2>Going further</h2>
+        <ul class="links">
+          <li><a href="https://markdown-pdf.matinfo.tech/advanced/per-document" target="_blank" rel="noopener noreferrer">One document, its own design</a>: a <code>pdf:</code> block at the top of a Markdown file changes only that document.</li>
+          <li><a href="https://markdown-pdf.matinfo.tech/reference/header-footer" target="_blank" rel="noopener noreferrer">Header and footer reference</a>: every option, placeholder and image setting, for the settings file.</li>
+          <li><a href="https://markdown-pdf.matinfo.tech/reference/settings" target="_blank" rel="noopener noreferrer">All settings</a> of the file Studio saves.</li>
+        </ul>
       </section>
     </div>
 
