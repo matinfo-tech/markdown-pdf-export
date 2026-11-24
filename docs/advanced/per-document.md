@@ -72,7 +72,7 @@ Image paths in front matter are relative to the Markdown file.
 | Field | Used for |
 |---|---|
 | `title` | `{title}` and the PDF title. Without it, the first `# heading` is used, then the file name. |
-| `author` | `{author}`. A list of authors is joined with commas. |
+| `author` | `{author}`. A list of authors is joined with commas. It replaces the `author` of your settings file; `author: none` prints no author in this document. |
 | `date` | Nothing in headers or footers: `{date}` always prints the export date. Use a custom variable for a fixed date. |
 
 ## Custom variables
