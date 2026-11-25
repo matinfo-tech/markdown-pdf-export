@@ -12,10 +12,28 @@ finds your editors and asks, one by one, whether to set them up:
 
 <CopyCommand command="npx -y markdown-pdf-export setup" />
 
+In VS Code, install the [Markdown PDF Export extension](https://marketplace.visualstudio.com/items?itemName=matinfo-tech.markdown-pdf-export) instead: the PDF beside
+your Markdown as you type, Studio in the editor, export and the Copilot tools, with no Node.js.
+
 Or pick yours:
 
-<PickTabs group="editor" tabs="vscode:VS Code (Copilot),copilot-cli:Copilot CLI,claude-code:Claude Code,claude-desktop:Claude Desktop,cursor:Cursor,zed:Zed,other:JetBrains and Vim,terminal:Terminal">
+<PickTabs group="editor" tabs="vscode:VS Code,copilot-cli:Copilot CLI,claude-code:Claude Code,claude-desktop:Claude Desktop,cursor:Cursor,zed:Zed,other:JetBrains and Vim,terminal:Terminal">
 <template #vscode>
+
+**The extension (easiest).** Install **Markdown PDF Export** from the
+[Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=matinfo-tech.markdown-pdf-export), or search for it in the Extensions view. Nothing else to install,
+not even Node.js. It brings:
+
+- **Open PDF Preview to the Side:** the real PDF next to your Markdown, drawn again as you type.
+- **Design pages:** Studio inside the editor, on your document.
+- **Export to PDF:** <kbd>Cmd</kbd>+<kbd>K</kbd> <kbd>Cmd</kbd>+<kbd>E</kbd> on a Mac,
+  <kbd>Ctrl</kbd>+<kbd>K</kbd> <kbd>Ctrl</kbd>+<kbd>E</kbd> on Windows and Linux, or the button at the
+  top right of a Markdown file.
+- **Copilot tools:** in Copilot Chat agent mode, ask *Export this file to PDF*.
+
+It is also on [Open VSX](https://open-vsx.org/extension/matinfo-tech/markdown-pdf-export). It uses the same settings file as everything on this page.
+
+**Without the extension**
 
 **1. Set up, once.** Press **Add to my editor** in Studio, or do it by hand:
 

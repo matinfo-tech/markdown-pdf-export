@@ -75,6 +75,11 @@ const logoSrc = (logo: string) => withBase(`/img/editor-logo/${logo}.svg`);
           Paste this in a terminal. It opens Studio in your browser, where you design your pages on
           the real PDF. <a :href="withBase('/start')">First time? Three short steps.</a>
         </p>
+        <p class="hint">
+          Using VS Code?
+          <a href="https://marketplace.visualstudio.com/items?itemName=matinfo-tech.markdown-pdf-export" target="_blank" rel="noopener">Install the extension</a>:
+          no terminal, no Node.js.
+        </p>
         <label class="try" for="demo-source">Or try it here: edit the text, pick a style.</label>
         <textarea id="demo-source" v-model="text" spellcheck="false" rows="12" />
       </div>

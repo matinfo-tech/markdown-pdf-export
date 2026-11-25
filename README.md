@@ -18,7 +18,12 @@ Full documentation: <https://markdown-pdf.matinfo.tech/>
 
 ## Get started
 
-You need:
+> **Using VS Code?** Install the
+> [Markdown PDF Export extension](https://marketplace.visualstudio.com/items?itemName=matinfo-tech.markdown-pdf-export)
+> ([Open VSX](https://open-vsx.org/extension/matinfo-tech/markdown-pdf-export)): the PDF beside your Markdown as you type, Studio in the
+> editor, export and the Copilot tools. No Node.js, no terminal.
+
+Everywhere else, you need:
 
 - **Node.js 20 or newer** (it comes with `npx`).
 - **Google Chrome or Microsoft Edge.** No Chromium browser? Run
@@ -44,6 +49,7 @@ More: [Get started](https://markdown-pdf.matinfo.tech/start) ·
 
 | Where | How |
 |---|---|
+| VS Code, with the extension | <kbd>Cmd</kbd>+<kbd>K</kbd> <kbd>Cmd</kbd>+<kbd>E</kbd> (<kbd>Ctrl</kbd>+<kbd>K</kbd> <kbd>Ctrl</kbd>+<kbd>E</kbd>), or the button at the top right of the file |
 | Your editor | Run the task *Markdown: Export to PDF* on the open file |
 | AI assistant | Ask: "Export this file to PDF" |
 | Terminal | `npx -y markdown-pdf-export report.md` |

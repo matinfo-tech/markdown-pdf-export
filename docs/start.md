@@ -7,6 +7,12 @@ title: Get started
 
 <p class="lead">Three steps, about five minutes. You need nothing else installed except Node.js.</p>
 
+::: tip Using VS Code?
+Install the [Markdown PDF Export extension](https://marketplace.visualstudio.com/items?itemName=matinfo-tech.markdown-pdf-export) instead: no Node.js, no terminal. The PDF
+appears beside your Markdown as you type, and **Design pages** opens Studio inside the editor. It
+is also on [Open VSX](https://open-vsx.org/extension/matinfo-tech/markdown-pdf-export).
+:::
+
 ## 1. Get Node.js
 
 Download it from [nodejs.org](https://nodejs.org) and install it like any other program (choose the
