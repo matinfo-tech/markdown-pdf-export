@@ -6,6 +6,13 @@ All notable changes to `markdown-pdf-export`. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- Maths now prints in KaTeX's own fonts. The bundled KaTeX stylesheet had merged its 20 font rules
+  into one broken rule, so no KaTeX font loaded and formulas fell back to Times: `\mathbb{R}`
+  printed as a plain R, `\mathcal` letters and large brackets were wrong. The end-to-end tests now
+  check that a PDF with maths embeds KaTeX's fonts.
+
 ## [2.9.0] - 2026-11-24
 
 ### Added
