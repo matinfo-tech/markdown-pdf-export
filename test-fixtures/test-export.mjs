@@ -28,6 +28,7 @@ const SERVER_SCRIPT = path.join(
 const SAMPLE_MD = path.join(__dirname, "sample.md");
 const STRUCTURED_HEADER_MD = path.join(__dirname, "structured-header-test.md");
 const CUSTOM_CSS = path.join(__dirname, "custom.css");
+const MATH_MD = path.join(__dirname, "math.md");
 
 const KEEP_OUTPUT = process.argv.includes("--keep");
 const VERBOSE = process.argv.includes("--verbose");
@@ -38,7 +39,7 @@ const VERBOSE = process.argv.includes("--verbose");
 // on top of the server's baseline settings. The server is started once and
 // reused for all scenarios so Chromium is only launched once.
 
-/** @type {Array<{name: string, description: string, args: object, output: string, minSizeBytes: number}>} */
+/** @type {Array<{name: string, description: string, args: object, input?: string, output: string, minSizeBytes: number, mustContain?: string[]}>} */
 const SCENARIOS = [
   {
     name: "01 — Default export",
@@ -126,6 +127,16 @@ const SCENARIOS = [
     input: STRUCTURED_HEADER_MD,
     output: path.join(__dirname, "out-09-structured-header.pdf"),
     minSizeBytes: 30_000,
+  },
+  {
+    name: "10 — Maths in KaTeX's own fonts",
+    description: "math: true — the PDF embeds KaTeX's fonts, not a Times fallback",
+    args: { math: true },
+    input: MATH_MD,
+    output: path.join(__dirname, "out-10-math.pdf"),
+    minSizeBytes: 10_000,
+    // Font names are stored as plain text in the PDF's font dictionaries.
+    mustContain: ["KaTeX_Main", "KaTeX_Math", "KaTeX_AMS"],
   },
 ];
 
@@ -399,8 +410,12 @@ async function main() {
             sizeBytes = stat.size;
             generatedFiles.push(scenario.output);
 
+            const pdfText = scenario.mustContain ? (await fs.readFile(scenario.output)).toString("latin1") : "";
+            const missing = (scenario.mustContain ?? []).filter((needle) => !pdfText.includes(needle));
             if (sizeBytes < scenario.minSizeBytes) {
               failReason = `output too small: ${formatBytes(sizeBytes)} < ${formatBytes(scenario.minSizeBytes)}`;
+            } else if (missing.length) {
+              failReason = `PDF lacks ${missing.join(", ")}`;
             } else {
               passed = true;
             }
