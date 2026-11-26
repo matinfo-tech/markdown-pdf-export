@@ -120,14 +120,18 @@ h2 {
 /* label on the left, control filling the rest */
 .fields {
   display: grid;
-  grid-template-columns: max-content 1fr;
+  grid-template-columns: max-content minmax(0, 1fr);
   align-items: center;
   gap: 10px 14px;
 }
+/* Longer words (another language, a fourth "From file" choice) wrap instead of leaving the rail. */
+.fields .seg { flex-wrap: wrap; }
 .fields .pair { display: flex; gap: 8px; min-width: 0; }
 .fields .pair > * { flex: 1; min-width: 0; }
 .fields .pair > .fixed { flex: 0 0 auto; }
-.fields .pair > select { flex: 0 0 104px; }
+.fields .pair > select { flex: 0 1 104px; min-width: 64px; }
+/* Beside a menu, the choices keep their width: the menu gives way first. */
+.fields .pair > .seg { flex: 1 0 auto; }
 .fields.spaced { margin-top: 14px; }
 
 .label { color: var(--quiet); }

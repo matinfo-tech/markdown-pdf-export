@@ -6,6 +6,21 @@ All notable changes to `markdown-pdf-export`. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- Studio can be shown in another language by an editor that embeds it: `window.studioHost.text`
+  gives Studio's texts, keyed by the English text, and `studio/strings.json` lists them all
+  (generated from the code, checked by a test). With a translation, the starting layouts and the
+  "Page 1 of 9" chip write the footer in that language too (`Page {page} sur {pages}`), and a
+  layout saved in English is still recognised. Without one, Studio is unchanged. Messages from the
+  server and the "Add to my editor" dialog stay in English.
+
+### Fixed
+
+- Studio: longer choices no longer push the design controls out of the side panel. The margin
+  buttons wrap when a fourth one (**From file**) does not fit, and the paper menu gives way to the
+  orientation buttons beside it.
+
 ## [2.9.1] - 2026-11-26
 
 ### Fixed

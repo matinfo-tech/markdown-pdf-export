@@ -23,13 +23,21 @@ export const DEFAULT_COLOR = "#5b6773";
 export const DEFAULT_HIGHLIGHT = "github.css";
 export const LOGO = { baseMm: 12, min: 50, max: 200, step: 5 };
 
+/**
+ * Marks an English text that Studio shows, or writes into a header, so that an editor showing
+ * Studio can translate it (see `studioHost.text` in app.mjs). Returns it unchanged.
+ */
+export const toTranslate = (text) => text;
+
+const PAGE_OF = toTranslate("Page {page} of {pages}");
+
 export const CHIPS = [
-  { label: "Title", insert: "{title}" },
-  { label: "Page number", insert: "{page}" },
-  { label: "Page 1 of 9", insert: "Page {page} of {pages}" },
-  { label: "Date", insert: "{date}" },
-  { label: "Author", insert: "{author}" },
-  { label: "File name", insert: "{filename}" },
+  { label: toTranslate("Title"), insert: "{title}" },
+  { label: toTranslate("Page number"), insert: "{page}" },
+  { label: toTranslate("Page 1 of 9"), insert: PAGE_OF },
+  { label: toTranslate("Date"), insert: "{date}" },
+  { label: toTranslate("Author"), insert: "{author}" },
+  { label: toTranslate("File name"), insert: "{filename}" },
 ];
 
 const slot = (text = "") => ({ kind: text ? "text" : "none", text, image: "", size: 100 });
@@ -46,33 +54,33 @@ const area = (left, center, right, line = false) => ({
 export const LAYOUTS = [
   {
     id: "none",
-    label: "None",
+    label: toTranslate("None"),
     header: () => area(),
     footer: () => area(),
   },
   {
     id: "numbers",
-    label: "Page numbers",
+    label: toTranslate("Page numbers"),
     header: () => area(),
     footer: () => area("", "{page} / {pages}", ""),
   },
   {
     id: "titled",
-    label: "Title and date",
+    label: toTranslate("Title and date"),
     header: () => area("{title}", "", "{date}", true),
-    footer: () => area("", "Page {page} of {pages}", ""),
+    footer: () => area("", PAGE_OF, ""),
   },
   {
     id: "report",
-    label: "Report",
+    label: toTranslate("Report"),
     header: () => area("{title}", "", "{author}", true),
-    footer: () => area("{date}", "", "Page {page} of {pages}", true),
+    footer: () => area("{date}", "", PAGE_OF, true),
   },
   {
     id: "letterhead",
-    label: "Logo",
+    label: toTranslate("Logo"),
     header: () => area(logo(), "", "{title}", true),
-    footer: () => area("", "Page {page} of {pages}", ""),
+    footer: () => area("", PAGE_OF, ""),
   },
 ];
 
@@ -316,10 +324,28 @@ export function draftToSettings(draft, raw = {}, ctx = {}) {
   return out;
 }
 
-/** Which starting layout a draft matches, if any (for highlighting the picker). */
-export function matchLayout(draft) {
+/**
+ * The starting layouts in another language: `say` turns each English label and header text into
+ * its translation ("Page {page} of {pages}" → "Page {page} sur {pages}"). Same ids as LAYOUTS.
+ * @param {(english: string) => string} say
+ */
+export function layoutsIn(say) {
+  const local = (a) => {
+    const out = { ...a };
+    for (const zone of ZONES) out[zone] = a[zone].kind === "text" ? { ...a[zone], text: say(a[zone].text) } : { ...a[zone] };
+    return out;
+  };
+  return LAYOUTS.map((l) => ({ ...l, label: say(l.label), header: () => local(l.header()), footer: () => local(l.footer()) }));
+}
+
+/**
+ * Which starting layout a draft matches, if any (for highlighting the picker).
+ * @param {object} draft
+ * @param {typeof LAYOUTS} [layouts]  LAYOUTS, or the same in another language (layoutsIn)
+ */
+export function matchLayout(draft, layouts = LAYOUTS) {
   const key = (a) => ZONES.map((z) => `${a[z].kind}:${a[z].kind === "text" ? a[z].text : ""}`).join("|") + a.line;
-  for (const l of LAYOUTS) {
+  for (const l of layouts) {
     if (key(l.header()) === key(draft.header) && key(l.footer()) === key(draft.footer)) return l.id;
   }
   return null;

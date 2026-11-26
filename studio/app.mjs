@@ -2,7 +2,6 @@
 import {
   CHIPS,
   FIRST_LAYOUT,
-  LAYOUTS,
   LOGO,
   MARGINS,
   ZONES,
@@ -10,9 +9,11 @@ import {
   emptyDraft,
   lookAccent,
   lookDefaults,
+  layoutsIn,
   matchLayout,
   renderText,
   settingsToDraft,
+  toTranslate,
 } from "./model.mjs";
 
 const $ = (id) => document.getElementById(id);
@@ -39,21 +40,74 @@ const TOKEN = sessionStorage.getItem("studio-token") ?? "";
 
 /**
  * An editor can show this page inside its own panel (Studio started with
- * --embedded). Two hooks exist for it, and nothing else here knows about it:
+ * --embedded). These hooks exist for it, and nothing else here knows about it:
  *   - window.studioHost.showPdf(blob): set before this script runs, it draws
  *     each preview in place of the two <iframe>s, for panels with no built-in
  *     PDF viewer. It returns a promise that settles when the pages are shown.
+ *   - window.studioHost.text: Studio's texts in the editor's language, keyed by
+ *     the English text. studio/strings.json lists them all; one left out shows
+ *     in English. `{0}`, `{1}`… stand for values; other braces, such as
+ *     `{page}`, are header text and stay as they are.
  *   - a "studio:refresh" event on window draws the preview again, for when the
  *     document changed.
  */
 const host = window.studioHost ?? null;
+
+const words = host?.text ?? {};
+
+/**
+ * A text in the editor's language, with `{0}`, `{1}`… replaced by the values
+ * given. The English text is a literal here, or marked with toTranslate where
+ * it is written, so that studio/strings.json can be collected from the code.
+ */
+function say(english, ...values) {
+  const text = typeof words[english] === "string" ? words[english] : english;
+  return text.replace(/\{(\d+)\}/g, (all, index) => (Number(index) < values.length ? String(values[Number(index)]) : all));
+}
+
+/** The starting layouts, with their labels and header text in the editor's language. */
+const layouts = layoutsIn(say);
+
+/** The texts of index.html, in the editor's language. */
+function translatePage() {
+  if (Object.keys(words).length === 0) return;
+  // A sentence around a link or code (data-say): one text, the elements numbered {0}, {1}… in it.
+  for (const node of document.querySelectorAll("[data-say]")) {
+    const parts = [...node.childNodes];
+    const elements = parts.filter((n) => n.nodeType === Node.ELEMENT_NODE);
+    const key = parts
+      .map((n) => (n.nodeType === Node.ELEMENT_NODE ? `{${elements.indexOf(n)}}` : n.nodeType === Node.TEXT_NODE ? n.nodeValue : ""))
+      .join("")
+      .replace(/\s+/g, " ")
+      .trim();
+    if (typeof words[key] !== "string") continue;
+    node.replaceChildren(
+      ...words[key]
+        .split(/(\{\d+\})/)
+        .filter((piece) => piece !== "")
+        .map((piece) => elements[Number(/^\{(\d+)\}$/.exec(piece)?.[1] ?? NaN)] ?? piece),
+    );
+  }
+  const walker = document.createTreeWalker(document.documentElement, NodeFilter.SHOW_TEXT);
+  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+    if (node.parentElement?.closest("code, script, style")) continue;
+    const key = node.nodeValue.replace(/\s+/g, " ").trim();
+    if (key && typeof words[key] === "string") node.nodeValue = node.nodeValue.replace(node.nodeValue.trim(), () => words[key]);
+  }
+  for (const attribute of ["title", "aria-label", "placeholder"]) {
+    for (const node of document.querySelectorAll(`[${attribute}]`)) {
+      const text = words[node.getAttribute(attribute)];
+      if (typeof text === "string") node.setAttribute(attribute, text);
+    }
+  }
+}
 
 async function api(path, { method = "GET", json, body, raw = false } = {}) {
   const headers = { "x-studio-token": TOKEN };
   if (json !== undefined) headers["content-type"] = "application/json";
   const res = await fetch(path, { method, headers, body: json !== undefined ? JSON.stringify(json) : body });
   if (!res.ok) {
-    let message = `Request failed (${res.status}).`;
+    let message = say("Request failed ({0}).", res.status);
     try {
       message = (await res.json()).error ?? message;
     } catch {
@@ -75,15 +129,26 @@ let savedJson = "";
 let loadedJson = ""; // what the page showed on arrival (nothing to lose until it differs)
 const thumbs = new Map(); // image path → object URL of the file just uploaded
 
-const AREA_NAMES = { header: "Top", footer: "Bottom" };
-const SIZE_LABELS = { s: "Small", m: "Medium", l: "Large" };
-const MARGIN_LABELS = { narrow: "Narrow", normal: "Normal", wide: "Wide" };
+/** The six spots of the header and footer, as the page diagram shows them. */
+const SPOTS = {
+  header: { left: toTranslate("Top left"), center: toTranslate("Top center"), right: toTranslate("Top right") },
+  footer: { left: toTranslate("Bottom left"), center: toTranslate("Bottom center"), right: toTranslate("Bottom right") },
+};
+const spotName = (areaName, zone) => say(SPOTS[areaName][zone]);
+const SIZE_LABELS = { s: toTranslate("Small"), m: toTranslate("Medium"), l: toTranslate("Large") };
+const MARGIN_LABELS = { narrow: toTranslate("Narrow"), normal: toTranslate("Normal"), wide: toTranslate("Wide") };
 /** What the theme colour paints, per page style that has one. */
 const ACCENT_HINTS = {
-  technical: "Title rule, section titles, code bars.",
-  report: "Title rule and quote bars.",
+  technical: toTranslate("Title rule, section titles, code bars."),
+  report: toTranslate("Title rule and quote bars."),
 };
-const LOOK_LABELS = { clean: "Clean", report: "Report", academic: "Academic", compact: "Compact", technical: "Technical" };
+const LOOK_LABELS = {
+  clean: toTranslate("Clean"),
+  report: toTranslate("Report"),
+  academic: toTranslate("Academic"),
+  compact: toTranslate("Compact"),
+  technical: toTranslate("Technical"),
+};
 
 const currentSettings = () => draftToSettings(draft, raw, { looks: server.looks });
 const isDirty = () => JSON.stringify(currentSettings()) !== savedJson;
@@ -114,9 +179,9 @@ function build() {
     ...Object.entries(server.looks).map(([name, def]) =>
       el(
         "button",
-        { type: "button", class: "look", role: "radio", "data-value": name, title: def.description, onclick: () => change(() => Object.assign(draft, { look: name }, lookDefaults(name, server.looks))) },
+        { type: "button", class: "look", role: "radio", "data-value": name, title: say(def.description), onclick: () => change(() => Object.assign(draft, { look: name }, lookDefaults(name, server.looks))) },
         el("span", { class: `thumb ${name}` }, el("i", { class: "h" }), el("i"), el("i", { class: "w80" }), el("i", { class: "code" }), el("i"), el("i", { class: "w55" })),
-        el("span", { text: LOOK_LABELS[name] ?? name }),
+        el("span", { text: LOOK_LABELS[name] ? say(LOOK_LABELS[name]) : name }),
       ),
     ),
   );
@@ -125,14 +190,14 @@ function build() {
   for (const [id, key] of [["font", "font"], ["heading-font", "heading_font"]]) {
     const names = Object.keys(server.fonts).filter((n) => n !== "system" || draft[key] === "system");
     const options = [
-      el("option", { value: "look", text: "From the page style" }),
+      el("option", { value: "look", text: say("From the page style") }),
       ...names.map((n) => {
-        const o = el("option", { value: n, text: server.fontLabels[n] ?? n });
+        const o = el("option", { value: n, text: server.fontLabels[n] ? say(server.fontLabels[n]) : n });
         o.style.fontFamily = server.fonts[n];
         return o;
       }),
     ];
-    if (draft[key] === "custom") options.push(el("option", { value: "custom", text: "From your file" }));
+    if (draft[key] === "custom") options.push(el("option", { value: "custom", text: say("From your file") }));
     $(id).replaceChildren(...options);
     $(id).addEventListener("change", (e) => change(() => (draft[key] = e.target.value)));
   }
@@ -145,18 +210,18 @@ function build() {
 
   const themes = [...server.codeThemes];
   if (!themes.some((t) => t.file === draft.highlight)) {
-    themes.push({ file: draft.highlight, label: `${draft.highlight.replace(/\.css$/, "")} (from file)` });
+    themes.push({ file: draft.highlight, label: say("{0} (from file)", draft.highlight.replace(/\.css$/, "")), own: true });
   }
-  $("highlight").replaceChildren(...themes.map((t) => el("option", { value: t.file, text: t.label })));
+  $("highlight").replaceChildren(...themes.map((t) => el("option", { value: t.file, text: t.own ? t.label : say(t.label) })));
   $("highlight").addEventListener("change", (e) => change(() => (draft.highlight = e.target.value)));
-  segmented($("orientation"), [["portrait", "Portrait"], ["landscape", "Landscape"]], () => draft.orientation, (v) => (draft.orientation = v));
+  segmented($("orientation"), [["portrait", say("Portrait")], ["landscape", say("Landscape")]], () => draft.orientation, (v) => (draft.orientation = v));
 
-  const margins = Object.entries(MARGIN_LABELS);
-  if (draft.margin === "custom") margins.push(["custom", "From file"]);
+  const margins = Object.entries(MARGIN_LABELS).map(([value, label]) => [value, say(label)]);
+  if (draft.margin === "custom") margins.push(["custom", say("From file")]);
   segmented($("margin"), margins, () => draft.margin, (v) => (draft.margin = v));
 
   $("layouts").replaceChildren(
-    ...LAYOUTS.map((l) =>
+    ...layouts.map((l) =>
       el("button", {
         type: "button",
         "data-value": l.id,
@@ -173,7 +238,7 @@ function build() {
 
   $("line-header").addEventListener("change", (e) => change(() => (draft.header.line = e.target.checked)));
   $("line-footer").addEventListener("change", (e) => change(() => (draft.footer.line = e.target.checked)));
-  segmented($("size"), Object.entries(SIZE_LABELS), () => draft.text_size, (v) => (draft.text_size = v));
+  segmented($("size"), Object.entries(SIZE_LABELS).map(([value, label]) => [value, say(label)]), () => draft.text_size, (v) => (draft.text_size = v));
   $("color").addEventListener("input", (e) => change(() => (draft.color = e.target.value)));
 
   $("save").addEventListener("click", save);
@@ -201,16 +266,16 @@ function slotButton(areaName, zone) {
   const filled = (slot.kind === "text" && slot.text.trim()) || (slot.kind === "image" && slot.image);
   const text = !filled
     ? slot.kind === "image"
-      ? "Add logo"
+      ? say("Add logo")
       : "+"
     : slot.kind === "image"
-      ? "Logo"
-      : renderText(slot.text, { title: "Quarterly report", author: "Alex Morgan", filename: server.preview.name });
+      ? say("Logo")
+      : renderText(slot.text, { title: say("Quarterly report"), author: "Alex Morgan", filename: server.preview.name });
   const button = el("button", {
     type: "button",
     class: `slot ${zone} ${filled ? "filled" : "empty"}`,
     "aria-pressed": String(isSelected),
-    "aria-label": `${AREA_NAMES[areaName]} ${zone}: ${filled ? text : "empty"}`,
+    "aria-label": filled ? say("{0}: {1}", spotName(areaName, zone), text) : say("{0}: empty", spotName(areaName, zone)),
     text,
     onclick: () => {
       selected = { area: areaName, zone };
@@ -220,7 +285,7 @@ function slotButton(areaName, zone) {
   });
   button.style.color = filled ? draft.color : "";
   const thumb = slot.kind === "image" ? thumbs.get(slot.image) : null;
-  if (thumb) button.replaceChildren(el("img", { src: thumb, alt: "Logo" }));
+  if (thumb) button.replaceChildren(el("img", { src: thumb, alt: say("Logo") }));
   button.addEventListener("dragover", (e) => {
     e.preventDefault();
     button.classList.add("drop");
@@ -241,7 +306,13 @@ function syncBand(areaName) {
   band.className = `band ${area.line ? (areaName === "header" ? "lined-below" : "lined-above") : ""}`;
   if (area.custom) {
     band.replaceChildren(
-      el("div", { class: "slot locked", text: `Your file has a hand-written ${areaName}. Studio keeps it as it is.` }),
+      el("div", {
+        class: "slot locked",
+        text:
+          areaName === "header"
+            ? say("Your file has a hand-written header. Studio keeps it as it is.")
+            : say("Your file has a hand-written footer. Studio keeps it as it is."),
+      }),
     );
     return;
   }
@@ -257,13 +328,13 @@ function sizeRow(slot) {
     max: LOGO.max,
     step: LOGO.step,
     value: slot.size,
-    "aria-label": "Logo size",
+    "aria-label": say("Logo size"),
     oninput: (e) => {
       output.textContent = `${e.target.value}%`;
       change(() => (slot.size = Number(e.target.value)));
     },
   });
-  return el("div", { class: "size-row" }, el("span", { class: "label", text: "Size" }), input, output);
+  return el("div", { class: "size-row" }, el("span", { class: "label", text: say("Size") }), input, output);
 }
 
 let editorKey = "";
@@ -271,7 +342,7 @@ function syncSlotEditor() {
   const host = $("slot-editor");
   if (!selected || draft[selected.area].custom) {
     editorKey = "";
-    host.replaceChildren(el("p", { class: "empty-note", text: "Click a spot on the page above to put text or a logo there." }));
+    host.replaceChildren(el("p", { class: "empty-note", text: say("Click a spot on the page above to put text or a logo there.") }));
     return;
   }
   const { area: areaName, zone } = selected;
@@ -280,7 +351,7 @@ function syncSlotEditor() {
   if (key === editorKey) return; // keep the input (and the caret) while typing
   editorKey = key;
 
-  const title = el("div", { class: "title" }, el("span", { text: `${AREA_NAMES[areaName]} ${zone}` }));
+  const title = el("div", { class: "title" }, el("span", { text: spotName(areaName, zone) }));
   const picker = el("input", { type: "file", accept: ".svg,.png,.jpg,.jpeg,image/*", hidden: true, onchange: (e) => e.target.files[0] && uploadLogo(e.target.files[0], areaName, zone) });
 
   if (slot.kind === "image") {
@@ -292,12 +363,12 @@ function syncSlotEditor() {
         "div",
         { class: "logo-row" },
         preview ? el("img", { src: preview, alt: "" }) : null,
-        el("span", { class: "name", text: slot.image || "No logo chosen yet. Drop an image here or choose a file." }),
-        el("button", { type: "button", class: "btn small", text: slot.image ? "Replace" : "Choose file", onclick: () => picker.click() }),
+        el("span", { class: "name", text: slot.image || say("No logo chosen yet. Drop an image here or choose a file.") }),
+        el("button", { type: "button", class: "btn small", text: slot.image ? say("Replace") : say("Choose file"), onclick: () => picker.click() }),
         el("button", {
           type: "button",
           class: "btn small quiet",
-          text: "Use text",
+          text: say("Use text"),
           onclick: () => change(() => (draft[areaName][zone] = { kind: "text", text: "", image: "", size: 100 })),
         }),
       ),
@@ -309,8 +380,8 @@ function syncSlotEditor() {
   const input = el("input", {
     type: "text",
     value: slot.text,
-    placeholder: "Type here, or pick something below",
-    "aria-label": `${AREA_NAMES[areaName]} ${zone} text`,
+    placeholder: say("Type here, or pick something below"),
+    "aria-label": say("{0} text", spotName(areaName, zone)),
     oninput: (e) =>
       change(() => {
         const text = e.target.value;
@@ -332,8 +403,11 @@ function syncSlotEditor() {
     el(
       "div",
       { class: "chips" },
-      ...CHIPS.map((c) => el("button", { type: "button", class: "chip", text: c.label, title: `Inserts ${c.insert}`, onclick: () => insert(c.insert) })),
-      el("button", { type: "button", class: "chip logo", text: "Logo…", onclick: () => picker.click() }),
+      ...CHIPS.map((c) => {
+        const snippet = say(c.insert); // "Page {page} of {pages}" in the editor's language
+        return el("button", { type: "button", class: "chip", text: say(c.label), title: say("Inserts {0}", snippet), onclick: () => insert(snippet) });
+      }),
+      el("button", { type: "button", class: "chip logo", text: say("Logo…"), onclick: () => picker.click() }),
     ),
   );
 }
@@ -342,12 +416,17 @@ function syncNotices() {
   const notices = [];
   if (server.fileError) {
     notices.push(
-      el("div", { class: "notice bad" }, el("strong", { text: "Your settings file could not be read. " }), `${server.fileError} Saving replaces it; the old file is kept as a .bak copy.`),
+      el(
+        "div",
+        { class: "notice bad" },
+        el("strong", { text: `${say("Your settings file could not be read.")} ` }),
+        say("{0} Saving replaces it; the old file is kept as a .bak copy.", server.fileError),
+      ),
     );
   }
   if (server.envOverride) {
     notices.push(
-      el("div", { class: "notice" }, "MARKDOWN_PDF_SETTINGS is set on this computer, so exports use that instead of the file Studio saves."),
+      el("div", { class: "notice" }, say("MARKDOWN_PDF_SETTINGS is set on this computer, so exports use that instead of the file Studio saves.")),
     );
   }
   for (const areaName of ["header", "footer"]) {
@@ -356,19 +435,23 @@ function syncNotices() {
       el(
         "div",
         { class: "notice" },
-        `The ${areaName} in your file was written by hand with options Studio does not show. It stays untouched. `,
+        `${
+          areaName === "header"
+            ? say("The header in your file was written by hand with options Studio does not show. It stays untouched.")
+            : say("The footer in your file was written by hand with options Studio does not show. It stays untouched.")
+        } `,
         el("a", {
           class: "help",
           href: "https://markdown-pdf.matinfo.tech/reference/header-footer",
           target: "_blank",
           rel: "noopener noreferrer",
-          text: "Header and footer reference",
+          text: say("Header and footer reference"),
         }),
         el("br"),
         el("button", {
           type: "button",
           class: "btn small",
-          text: `Replace the ${areaName} with a simple one`,
+          text: areaName === "header" ? say("Replace the header with a simple one") : say("Replace the footer with a simple one"),
           onclick: () => change(() => (draft[areaName] = emptyDraft()[areaName])),
         }),
       ),
@@ -390,7 +473,7 @@ function sync() {
   // The diagram's side padding follows the margins, so text and rules sit where they will print.
   const side = MARGINS[draft.margin] ?? 15;
   $("sheet").style.setProperty("--side", `${Math.round(side * 0.95)}px`);
-  const layout = matchLayout(draft);
+  const layout = matchLayout(draft, layouts) ?? matchLayout(draft);
   for (const b of $("layouts").children) b.setAttribute("aria-pressed", String(b.dataset.value === layout));
 
   const stack = server.fonts[draft.font];
@@ -408,11 +491,11 @@ function sync() {
 
   const state = $("save-state");
   if (isDirty()) {
-    state.textContent = server.exists ? "Changes not saved" : "Not saved yet";
+    state.textContent = server.exists ? say("Changes not saved") : say("Not saved yet");
     state.className = "dirty";
     $("save").disabled = false;
   } else {
-    state.textContent = "Saved";
+    state.textContent = say("Saved");
     state.className = "saved";
     $("save").disabled = true;
   }
@@ -426,7 +509,7 @@ function syncAccent() {
   const value = draft.accent || own;
   $("accent").value = value;
   $("accent-swatch").style.background = value;
-  $("accent-hint").textContent = ACCENT_HINTS[draft.look] ?? "";
+  $("accent-hint").textContent = ACCENT_HINTS[draft.look] ? say(ACCENT_HINTS[draft.look]) : "";
   $("accent-reset").hidden = !draft.accent || draft.accent.toLowerCase() === own;
 }
 
@@ -464,7 +547,7 @@ function showInFrame(blob, run) {
 async function drawPreview() {
   const run = ++previewRun;
   const status = $("status");
-  status.textContent = "Drawing the page…";
+  status.textContent = say("Drawing the page…");
   status.className = "status busy";
   try {
     const res = await api("/api/preview", { method: "POST", json: { settings: currentSettings() }, raw: true });
@@ -477,18 +560,22 @@ async function drawPreview() {
       showInFrame(blob, run);
     }
     $("problem").hidden = true;
-    const seconds = (Number(res.headers.get("x-render-ms")) / 1000).toFixed(1);
+    const seconds = new Intl.NumberFormat(document.documentElement.lang || undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(
+      Number(res.headers.get("x-render-ms")) / 1000,
+    );
     // An embedded Studio is told by its editor which document each preview draws.
     const named = res.headers.get("x-preview-name");
-    const name = named ? decodeURIComponent(named) : server.preview.sample ? "a sample document" : server.preview.name;
-    status.textContent = `This is the real PDF of ${name}, drawn in ${seconds} s.`;
+    status.textContent =
+      !named && server.preview.sample
+        ? say("This is the real PDF of a sample document, drawn in {0} s.", seconds)
+        : say("This is the real PDF of {0}, drawn in {1} s.", named ? decodeURIComponent(named) : server.preview.name, seconds);
     status.className = "status";
   } catch (error) {
     if (run !== previewRun || error.status === 409) return;
     const box = $("problem");
-    box.replaceChildren(el("strong", { text: "The page could not be drawn" }), error.message);
+    box.replaceChildren(el("strong", { text: say("The page could not be drawn") }), error.message);
     box.hidden = false;
-    status.textContent = "Showing the last page that worked.";
+    status.textContent = say("Showing the last page that worked.");
     status.className = "status";
   }
 }
@@ -505,7 +592,7 @@ async function uploadLogo(file, areaName, zone) {
     });
   } catch (error) {
     const box = $("problem");
-    box.replaceChildren(el("strong", { text: "That logo could not be used" }), error.message);
+    box.replaceChildren(el("strong", { text: say("That logo could not be used") }), error.message);
     box.hidden = false;
   }
 }
@@ -519,7 +606,9 @@ async function save() {
     const { removed = [] } = await api("/api/save", { method: "POST", json: { settings } });
     if (removed.length) {
       $("status").textContent =
-        removed.length === 1 ? `Saved. Removed the logo no longer used (${removed[0]}).` : `Saved. Removed ${removed.length} logos no longer used.`;
+        removed.length === 1
+          ? say("Saved. Removed the logo no longer used ({0}).", removed[0])
+          : say("Saved. Removed {0} logos no longer used.", removed.length);
     }
     raw = settings;
     savedJson = JSON.stringify(settings);
@@ -529,7 +618,7 @@ async function save() {
   } catch (error) {
     button.disabled = false;
     const box = $("problem");
-    box.replaceChildren(el("strong", { text: "Saving did not work" }), error.message);
+    box.replaceChildren(el("strong", { text: say("Saving did not work") }), error.message);
     box.hidden = false;
   }
 }
@@ -764,6 +853,7 @@ function quickSetup(found) {
 
 // ── start ───────────────────────────────────────────────────────────────────
 async function start() {
+  translatePage();
   try {
     server = await api("/api/state");
   } catch (error) {
@@ -771,10 +861,10 @@ async function start() {
       el(
         "div",
         { class: "problem" },
-        el("strong", { text: "Studio is not connected" }),
+        el("strong", { text: say("Studio is not connected") }),
         error.status === 401
-          ? "Open Studio from the link printed in your terminal. Each launch has its own private link."
-          : "The Studio program is no longer running. Start it again with: markdown-pdf-export studio",
+          ? say("Open Studio from the link printed in your terminal. Each launch has its own private link.")
+          : say("The Studio program is no longer running. Start it again with: {0}", "markdown-pdf-export studio"),
       ),
     );
     return;
@@ -783,7 +873,7 @@ async function start() {
   draft = settingsToDraft(raw, { looks: server.looks, templates: server.templates });
   if (!server.exists) {
     // Nothing saved yet: propose a sensible page instead of a bare one.
-    const first = LAYOUTS.find((l) => l.id === FIRST_LAYOUT);
+    const first = layouts.find((l) => l.id === FIRST_LAYOUT);
     draft.header = first.header();
     draft.footer = first.footer();
   }

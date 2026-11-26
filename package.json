@@ -30,11 +30,12 @@
   "scripts": {
     "check": "node --check export.mjs && node --check mcp.mjs && node --check cli.mjs && node --check tool-schemas.mjs",
     "lint": "eslint .",
-    "build": "npm run check && node scripts/bundle-katex-css.mjs && node scripts/bundle-mermaid.mjs && node scripts/build-settings-schema.mjs --check && node scripts/build-settings-reference.mjs --check",
+    "build": "npm run check && node scripts/bundle-katex-css.mjs && node scripts/bundle-mermaid.mjs && node scripts/build-settings-schema.mjs --check && node scripts/build-settings-reference.mjs --check && node scripts/build-studio-strings.mjs --check",
     "build:katex-css": "node scripts/bundle-katex-css.mjs",
     "build:mermaid": "node scripts/bundle-mermaid.mjs",
     "build:schema": "node scripts/build-settings-schema.mjs && node scripts/build-settings-reference.mjs",
     "build:reference": "node scripts/build-settings-reference.mjs",
+    "build:studio-strings": "node scripts/build-studio-strings.mjs",
     "prepack": "npm run build",
     "test": "node --test lib/__tests__/*.test.mjs",
     "test:export": "node test-fixtures/test-export.mjs && node test-fixtures/test-sanitize.mjs",
