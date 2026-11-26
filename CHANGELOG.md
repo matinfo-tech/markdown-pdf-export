@@ -6,6 +6,12 @@ All notable changes to `markdown-pdf-export`. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- Studio: a logo spot with no image yet no longer shows the word "null" under its buttons.
+- Studio: a long page style name wraps inside its card instead of running into the next one.
+- Studio: the time a preview took rounds as in 2.9.1 again (1.45 s shows as 1.4 s, not 1.5 s).
+
 ## [2.10.0] - 2026-11-26
 
 ### Added
