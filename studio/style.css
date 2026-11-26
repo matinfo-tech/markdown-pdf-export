@@ -277,6 +277,8 @@ input[type="range"] { accent-color: var(--accent); }
   color: var(--quiet);
 }
 .look[aria-checked="true"] { color: var(--text); }
+/* A long page style name (another language, a narrow panel) wraps inside its card. */
+.look > span:last-child { max-width: 100%; text-align: center; overflow-wrap: anywhere; hyphens: auto; }
 
 .thumb {
   display: grid;

@@ -22,6 +22,8 @@ All notable changes to `markdown-pdf-export`. The format follows
 - Studio: longer choices no longer push the design controls out of the side panel. The margin
   buttons wrap when a fourth one (**From file**) does not fit, and the paper menu gives way to the
   orientation buttons beside it.
+- Studio: a logo spot with no image yet no longer shows the word "null" under its buttons.
+- Studio: a long page style name wraps inside its card instead of running into the next one.
 
 ## [2.9.1] - 2026-11-26
 
