@@ -14,12 +14,12 @@
       "mimeType": "image/png"
     }
   ],
-  "version": "2.9.0",
+  "version": "2.9.1",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "markdown-pdf-export",
-      "version": "2.9.0",
+      "version": "2.9.1",
       "transport": { "type": "stdio" },
       "packageArguments": [{ "type": "positional", "value": "mcp" }],
       "environmentVariables": [
