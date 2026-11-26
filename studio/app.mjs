@@ -372,7 +372,7 @@ function syncSlotEditor() {
           onclick: () => change(() => (draft[areaName][zone] = { kind: "text", text: "", image: "", size: 100 })),
         }),
       ),
-      slot.image ? sizeRow(slot) : null,
+      ...(slot.image ? [sizeRow(slot)] : []), // replaceChildren would print a null
     );
     return;
   }
@@ -560,8 +560,9 @@ async function drawPreview() {
       showInFrame(blob, run);
     }
     $("problem").hidden = true;
+    // Rounded as before (1.45 → "1.4"); only the decimal mark follows the page's language.
     const seconds = new Intl.NumberFormat(document.documentElement.lang || undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(
-      Number(res.headers.get("x-render-ms")) / 1000,
+      Number((Number(res.headers.get("x-render-ms")) / 1000).toFixed(1)),
     );
     // An embedded Studio is told by its editor which document each preview draws.
     const named = res.headers.get("x-preview-name");
