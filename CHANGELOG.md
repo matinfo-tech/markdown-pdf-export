@@ -6,6 +6,8 @@ All notable changes to `markdown-pdf-export`. The format follows
 
 ## [Unreleased]
 
+## [2.10.0] - 2026-11-26
+
 ### Added
 
 - Studio can be shown in another language by an editor that embeds it: `window.studioHost.text`
@@ -373,7 +375,8 @@ MCP server, usable from any editor or AI assistant.
 - First release, as a Zed extension: Markdown to PDF with Chromium, syntax highlighting,
   structured headers and footers, placeholders and date formats.
 
-[Unreleased]: https://github.com/matinfo-tech/markdown-pdf-export/compare/v2.9.1...HEAD
+[Unreleased]: https://github.com/matinfo-tech/markdown-pdf-export/compare/v2.10.0...HEAD
+[2.10.0]: https://github.com/matinfo-tech/markdown-pdf-export/compare/v2.9.1...v2.10.0
 [2.9.1]: https://github.com/matinfo-tech/markdown-pdf-export/compare/v2.9.0...v2.9.1
 [2.9.0]: https://github.com/matinfo-tech/markdown-pdf-export/compare/v2.8.0...v2.9.0
 [2.8.0]: https://github.com/matinfo-tech/markdown-pdf-export/compare/v2.7.0...v2.8.0
