@@ -15,6 +15,12 @@ All notable changes to `markdown-pdf-export`. The format follows
   layout saved in English is still recognised. Without one, Studio is unchanged. Messages from the
   server and the "Add to my editor" dialog stay in English.
 
+### Fixed
+
+- Studio: longer choices no longer push the design controls out of the side panel. The margin
+  buttons wrap when a fourth one (**From file**) does not fit, and the paper menu gives way to the
+  orientation buttons beside it.
+
 ## [2.9.1] - 2026-11-26
 
 ### Fixed

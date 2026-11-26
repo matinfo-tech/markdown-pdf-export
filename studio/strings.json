@@ -132,9 +132,9 @@
   "{0} (from file)",
   "{0} Saving replaces it; the old file is kept as a .bak copy.",
   "{0} of the file Studio saves.",
+  "{0} text",
   "{0}: a {1} block at the top of a Markdown file changes only that document.",
   "{0}: empty",
   "{0}: every option, placeholder and image setting, for the settings file.",
-  "{0}: text",
   "{0}: {1}"
 ]

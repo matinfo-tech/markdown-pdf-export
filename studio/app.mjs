@@ -381,7 +381,7 @@ function syncSlotEditor() {
     type: "text",
     value: slot.text,
     placeholder: say("Type here, or pick something below"),
-    "aria-label": say("{0}: text", spotName(areaName, zone)),
+    "aria-label": say("{0} text", spotName(areaName, zone)),
     oninput: (e) =>
       change(() => {
         const text = e.target.value;
