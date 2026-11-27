@@ -11,8 +11,7 @@ export const EXPORT_INPUT_SCHEMA = {
   properties: {
     input_path: {
       type: "string",
-      description:
-        "Absolute or relative path to the Markdown file.",
+      description: "Markdown file to export. Use an absolute path.",
     },
     output_path: {
       type: "string",
@@ -203,7 +202,8 @@ export const DOCTOR_INPUT_SCHEMA = {
   properties: {
     input_path: {
       type: "string",
-      description: "Optional Markdown file used to resolve relative settings.",
+      description:
+        "Optional Markdown file used to resolve relative settings. Use an absolute path.",
     },
   },
 };
