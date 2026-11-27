@@ -6,6 +6,8 @@ All notable changes to `markdown-pdf-export`. The format follows
 
 ## [Unreleased]
 
+## [2.10.2] - 2026-11-27
+
 ### Changed
 
 - MCP: `export_markdown_pdf` and `doctor_markdown_pdf` now ask AI assistants for an absolute path to the Markdown file. Some editors start the MCP server outside the project folder, where a relative path points at the wrong place. Relative paths still work as before.
@@ -387,7 +389,8 @@ MCP server, usable from any editor or AI assistant.
 - First release, as a Zed extension: Markdown to PDF with Chromium, syntax highlighting,
   structured headers and footers, placeholders and date formats.
 
-[Unreleased]: https://github.com/matinfo-tech/markdown-pdf-export/compare/v2.10.1...HEAD
+[Unreleased]: https://github.com/matinfo-tech/markdown-pdf-export/compare/v2.10.2...HEAD
+[2.10.2]: https://github.com/matinfo-tech/markdown-pdf-export/compare/v2.10.1...v2.10.2
 [2.10.1]: https://github.com/matinfo-tech/markdown-pdf-export/compare/v2.10.0...v2.10.1
 [2.10.0]: https://github.com/matinfo-tech/markdown-pdf-export/compare/v2.9.1...v2.10.0
 [2.9.1]: https://github.com/matinfo-tech/markdown-pdf-export/compare/v2.9.0...v2.9.1
