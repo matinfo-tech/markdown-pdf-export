@@ -6,6 +6,10 @@ All notable changes to `markdown-pdf-export`. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- MCP: `export_markdown_pdf` and `doctor_markdown_pdf` now ask AI assistants for an absolute path to the Markdown file. Some editors start the MCP server outside the project folder, where a relative path points at the wrong place. Relative paths still work as before.
+
 ## [2.10.1] - 2026-11-26
 
 ### Fixed
